@@ -9,3 +9,18 @@ services:
       POSTGRES_USER: myuser
     ports:
       - '5432:5432'
+  spring_boot_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: 'spring_boot_app'
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
