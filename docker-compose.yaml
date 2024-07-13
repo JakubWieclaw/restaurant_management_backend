@@ -10,6 +10,8 @@ services:
     ports:
       - '5432:5432'
   spring_boot_app:
+    image:
+      'janirr/spring_boot_app:latest'
     build:
       context: .
       dockerfile: Dockerfile
