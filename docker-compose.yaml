@@ -12,10 +12,10 @@ services:
   spring_boot_app:
     image:
       'janirr/spring_boot_app:latest'
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: 'spring_boot_app'
+    #    build:
+    #      context: .
+    #      dockerfile: Dockerfile
+    #    container_name: 'spring_boot_app'
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
       SPRING_DATASOURCE_USERNAME: myuser
