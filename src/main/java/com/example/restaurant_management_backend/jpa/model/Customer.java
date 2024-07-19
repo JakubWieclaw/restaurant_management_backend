@@ -1,6 +1,5 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -12,19 +11,15 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     private String name;
 
-    @NotBlank
     private String surname;
 
     @NotBlank
     private String email;
 
-    @NotBlank
     private String phone;
 
-    @JsonIgnore
     @NotBlank
     private String password; // TODO: Hashing
 
