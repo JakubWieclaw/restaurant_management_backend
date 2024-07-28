@@ -2,18 +2,25 @@ package com.example.restaurant_management_backend.controllers;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.service.MealService;
+import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
+import com.example.restaurant_management_backend.service.MealService;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
+// import io.micrometer.core.ipc.http.HttpSender.Response;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+// import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +30,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
-
-
 
 @RestController
 @RequestMapping("/api/meals")
@@ -52,21 +56,27 @@ public class MealController {
             } else {
                 return ResponseEntity.notFound().build();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(404).body("Meal of id " + id + " not found");
         }
     }
 
     @Operation(summary = "Add a meal")
     @PostMapping("/add")
-    public ResponseEntity<?> addMeal(@RequestBody Meal meal) {
+    public ResponseEntity<?> addMeal(@RequestBody MealAddCommand mealAddCommand) {
+        var logger = LoggerFactory.getLogger(MealController.class);
         try {
+            logger.info("Adding meal");
+            final var meal = new Meal(mealAddCommand.getName(), mealAddCommand.getPrice());
             final var savedMeal = mealService.saveMeal(meal);
+            logger.info("Meal saved successfully: {}", savedMeal);
             return ResponseEntity.ok(savedMeal);
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(400).body("Error adding meal");
+        } catch (ConstraintViolationException e) {
+            logger.error("Validation error", e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation error: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error adding meal", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding meal");
         }
     }
 
@@ -76,8 +86,7 @@ public class MealController {
         try {
             mealService.deleteMealById(id);
             return ResponseEntity.ok("Meal of id " + id + " deleted");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(404).body("Meal of id " + id + " not found");
         }
     }
@@ -94,12 +103,9 @@ public class MealController {
             } else {
                 return ResponseEntity.status(404).body("Meal of id " + id + " not found");
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(404).body("Meal of id " + id + " not found");
         }
     }
-    
-    
-    
+
 }

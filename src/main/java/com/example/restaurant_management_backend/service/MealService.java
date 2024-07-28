@@ -1,19 +1,22 @@
-package com.example.restaurant_management_backend.jpa.service;
+package com.example.restaurant_management_backend.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import com.example.restaurant_management_backend.jpa.model.Meal;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class MealService {
     
-    @Autowired
-    private MealRepository mealRepository;
+    private final MealRepository mealRepository;
     
     public List<Meal> getAllMeals() {
         return mealRepository.findAll();
