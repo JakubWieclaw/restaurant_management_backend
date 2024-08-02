@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,15 +23,11 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsService customerUserDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(UserDetailsService customerUserDetailsService, JwtAuthFilter jwtAuthFilter) {
-        this.customerUserDetailsService = customerUserDetailsService;
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
