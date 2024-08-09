@@ -34,8 +34,14 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Allow unauthenticated access to auth endpoints
-                        .anyRequest().authenticated() // All other requests require authentication
+                        // Whitelist Swagger UI endpoints
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/api/meals/**").permitAll()
+                        
+                        // Other public endpoints
+                        .requestMatchers("/auth/**").permitAll()
+                        
+                        // Any other request requires authentication
+                        .anyRequest().authenticated()
                 ).csrf(AbstractHttpConfigurer::disable) // enable it after testing
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManger())

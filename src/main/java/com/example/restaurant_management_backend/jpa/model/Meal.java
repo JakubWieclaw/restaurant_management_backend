@@ -21,11 +21,11 @@ public class Meal {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotBlank(message = "Name is mandatory")
+    @NotBlank(message = "Nazwa nie może być pusta")
     @Valid
     private String name;
 
-    @Positive(message = "Price must be positive")
+    @Positive(message = "Ceny nie mogą być ujemne")
     @Valid
     private double price;
 

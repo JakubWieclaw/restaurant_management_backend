@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,7 +58,7 @@ public class MealController {
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("Meal of id " + id + " not found");
+            return ResponseEntity.status(404).body("ORA-20001: Nie znaleziono tego dania");
         }
     }
 
@@ -71,12 +72,17 @@ public class MealController {
             final var savedMeal = mealService.saveMeal(meal);
             logger.info("Meal saved successfully: {}", savedMeal);
             return ResponseEntity.ok(savedMeal);
-        } catch (ConstraintViolationException e) {
-            logger.error("Validation error", e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Validation error: " + e.getMessage());
+        } catch (TransactionSystemException e) {
+            Throwable cause = e.getRootCause();
+            if (cause instanceof ConstraintViolationException) {
+                logger.error("Validation error", cause);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cena nie może być ujemna");
+            }
+            logger.error("Transaction error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd przy dodawaniu dania");
         } catch (Exception e) {
             logger.error("Error adding meal", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding meal");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd przy dodawaniu dania");
         }
     }
 
@@ -85,9 +91,9 @@ public class MealController {
     public ResponseEntity<?> deleteMealById(@RequestParam Long id) {
         try {
             mealService.deleteMealById(id);
-            return ResponseEntity.ok("Meal of id " + id + " deleted");
+            return ResponseEntity.ok("Danie usunięte");
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("Meal of id " + id + " not found");
+            return ResponseEntity.status(404).body("Nie znaleziono dania");
         }
     }
 
@@ -101,10 +107,10 @@ public class MealController {
                 final var updatedMeal = mealService.saveMeal(meal);
                 return ResponseEntity.ok(updatedMeal);
             } else {
-                return ResponseEntity.status(404).body("Meal of id " + id + " not found");
+                return ResponseEntity.status(404).body("Nie znaleziono dania");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("Meal of id " + id + " not found");
+            return ResponseEntity.status(404).body("Nie znaleziono dania");
         }
     }
 
