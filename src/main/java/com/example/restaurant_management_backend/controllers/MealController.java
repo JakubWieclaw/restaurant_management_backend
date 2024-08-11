@@ -68,7 +68,13 @@ public class MealController {
         var logger = LoggerFactory.getLogger(MealController.class);
         try {
             logger.info("Adding meal");
-            final var meal = new Meal(mealAddCommand.getName(), mealAddCommand.getPrice());
+            final var meal = new Meal();
+            meal.setName(mealAddCommand.getName());
+            meal.setPrice(mealAddCommand.getPrice());
+            meal.setPhotographUrl(mealAddCommand.getPhotographUrl());
+            meal.setIngredients(mealAddCommand.getIngredients());
+            meal.setWeightOrVolume(mealAddCommand.getWeightOrVolume());
+            meal.setUnitType(mealAddCommand.getUnitType());
             final var savedMeal = mealService.saveMeal(meal);
             logger.info("Meal saved successfully: {}", savedMeal);
             return ResponseEntity.ok(savedMeal);
