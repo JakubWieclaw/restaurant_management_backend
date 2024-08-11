@@ -2,7 +2,6 @@ package com.example.restaurant_management_backend.jpa.model.command;
 
 import lombok.Getter;
 import jakarta.persistence.ElementCollection;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,7 +9,6 @@ import jakarta.validation.constraints.Positive;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.UnitType;
@@ -40,7 +38,14 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
     @NotNull(message = "Kategoria jest wymagana")
     private Long categoryId;
 
-    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId) {
+    @ElementCollection
+    private List<String> allergens = new ArrayList<>(); // List of allergens
+
+    @Positive(message = "Kalorie muszą być dodatnie")
+    @Valid
+    private int calories; // Amount of calories
+
+    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
@@ -48,6 +53,8 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
         this.categoryId = categoryId;
+        this.allergens = allergens;
+        this.calories = calories;
         validateSelf();
     }
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -51,12 +50,19 @@ public class Meal {
     @NotNull(message = "Kategoria nie może być pusta")
     private Long categoryId;
 
+    @ElementCollection
+    private List<String> allergens = new ArrayList<>(); // List of allergens
+
+    @Positive(message = "Kalorie muszą być dodatnie")
+    @Valid
+    private int calories; // Amount of calories
+
     public Meal(String name, double price) {
         this.name = name;
         this.price = price;
     }
 
-    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId) {
+    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
@@ -64,6 +70,8 @@ public class Meal {
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
         this.categoryId = categoryId;
+        this.allergens = allergens;
+        this.calories = calories;
     }
 
     public boolean hasWeightOrVolume() {

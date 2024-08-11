@@ -1,33 +1,23 @@
 package com.example.restaurant_management_backend.controllers;
 
-import java.util.List;
-
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.restaurant_management_backend.jpa.model.Category;
-import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.CategoryAddCommand;
-import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
 import com.example.restaurant_management_backend.service.CategoryService;
-import com.example.restaurant_management_backend.service.MealService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -58,7 +48,7 @@ public class CategoryController {
                 return ResponseEntity.notFound().build();
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching category");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania kategorii");
         }
     }
 
@@ -101,10 +91,10 @@ public class CategoryController {
                 var updatedCategory = categoryService.saveCategory(category);
                 return ResponseEntity.ok(updatedCategory);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono kategorii");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating category");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas aktualizacji kategorii");
         }
     }
 }

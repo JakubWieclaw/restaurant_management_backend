@@ -81,6 +81,8 @@ public class MealController {
             meal.setWeightOrVolume(mealAddCommand.getWeightOrVolume());
             meal.setUnitType(mealAddCommand.getUnitType());
             meal.setCategoryId(mealAddCommand.getCategoryId());
+            meal.setAllergens(mealAddCommand.getAllergens());
+            meal.setCalories(mealAddCommand.getCalories());
             final var savedMeal = mealService.saveMeal(meal);
             logger.info("Meal saved successfully: {}", savedMeal);
             return ResponseEntity.ok(savedMeal);
@@ -111,17 +113,35 @@ public class MealController {
 
     @Operation(summary = "Update a meal by id")
     @PutMapping("update/{id}")
-    public ResponseEntity<?> updateMeal(@PathVariable Long id, @RequestBody Meal meal) {
+    public ResponseEntity<?> updateMeal(@PathVariable Long id, @RequestBody MealAddCommand mealAddCommand) {
+        var logger = LoggerFactory.getLogger(MealController.class);
         try {
             Optional<Meal> mealToUpdate = mealService.getMealById(id);
             if (!mealToUpdate.isEmpty()) {
-                meal.setId(id);
+
+                // Validate if category exists
+                if (!categoryService.getCategoryById(mealAddCommand.getCategoryId()).isPresent()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Podana kategoria nie istnieje");
+                }
+
+                final var meal = mealToUpdate.get();
+                meal.setName(mealAddCommand.getName());
+                meal.setPrice(mealAddCommand.getPrice());
+                meal.setPhotographUrl(mealAddCommand.getPhotographUrl());
+                meal.setIngredients(mealAddCommand.getIngredients());
+                meal.setWeightOrVolume(mealAddCommand.getWeightOrVolume());
+                meal.setUnitType(mealAddCommand.getUnitType());
+                meal.setCategoryId(mealAddCommand.getCategoryId());
+                meal.setAllergens(mealAddCommand.getAllergens());
+                meal.setCalories(mealAddCommand.getCalories());
                 final var updatedMeal = mealService.saveMeal(meal);
+                logger.info("Meal updated successfully: {}", updatedMeal);
                 return ResponseEntity.ok(updatedMeal);
             } else {
                 return ResponseEntity.status(404).body("Nie znaleziono dania");
             }
         } catch (Exception e) {
+            logger.error("Error updating meal", e);
             return ResponseEntity.status(404).body("Nie znaleziono dania");
         }
     }
