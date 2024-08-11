@@ -37,13 +37,17 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
     @Valid
     private UnitType unitType; // Mandatory if weightOrVolume is provided
 
-    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType) {
+    @NotNull(message = "Kategoria jest wymagana")
+    private Long categoryId;
+
+    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
         this.ingredients = ingredients;
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
+        this.categoryId = categoryId;
         validateSelf();
     }
 

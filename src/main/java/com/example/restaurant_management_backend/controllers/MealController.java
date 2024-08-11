@@ -2,7 +2,6 @@ package com.example.restaurant_management_backend.controllers;
 
 import java.util.Optional;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,14 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
+import com.example.restaurant_management_backend.service.CategoryService;
 import com.example.restaurant_management_backend.service.MealService;
 
-// import io.micrometer.core.ipc.http.HttpSender.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-// import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,6 +36,9 @@ public class MealController {
 
     @Autowired
     private final MealService mealService;
+
+    @Autowired
+    private final CategoryService categoryService;
 
     @Operation(summary = "Get all meals")
     @GetMapping("/all")
@@ -67,6 +66,12 @@ public class MealController {
     public ResponseEntity<?> addMeal(@RequestBody MealAddCommand mealAddCommand) {
         var logger = LoggerFactory.getLogger(MealController.class);
         try {
+
+            // Validate if category exists
+            if (!categoryService.getCategoryById(mealAddCommand.getCategoryId()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
+            }
+
             logger.info("Adding meal");
             final var meal = new Meal();
             meal.setName(mealAddCommand.getName());
@@ -117,6 +122,19 @@ public class MealController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(404).body("Nie znaleziono dania");
+        }
+    }
+
+    @Operation(summary = "Delete all meals with a given category id")
+    @DeleteMapping("/delete-meals/{categoryId}")
+    public ResponseEntity<String> deleteAllMealsByCategory(@PathVariable Long categoryId) {
+        try {
+            mealService.deleteMealsByCategoryId(categoryId);
+            return ResponseEntity.ok("All meals with category id " + categoryId + " have been deleted");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting meals");
         }
     }
 

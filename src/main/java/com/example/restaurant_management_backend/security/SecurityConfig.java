@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
                         // Whitelist Swagger UI endpoints
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/api/meals/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/api/meals/**", "api/categories/**").permitAll()
                         
                         // Other public endpoints
                         .requestMatchers("/auth/**").permitAll()
