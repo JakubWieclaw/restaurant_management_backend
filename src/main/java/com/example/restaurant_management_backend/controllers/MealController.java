@@ -80,6 +80,7 @@ public class MealController {
             meal.setIngredients(mealAddCommand.getIngredients());
             meal.setWeightOrVolume(mealAddCommand.getWeightOrVolume());
             meal.setUnitType(mealAddCommand.getUnitType());
+            meal.setCategoryId(mealAddCommand.getCategoryId());
             final var savedMeal = mealService.saveMeal(meal);
             logger.info("Meal saved successfully: {}", savedMeal);
             return ResponseEntity.ok(savedMeal);
@@ -128,13 +129,32 @@ public class MealController {
     @Operation(summary = "Delete all meals with a given category id")
     @DeleteMapping("/delete-meals/{categoryId}")
     public ResponseEntity<String> deleteAllMealsByCategory(@PathVariable Long categoryId) {
+        var logger = LoggerFactory.getLogger(MealController.class);
         try {
             mealService.deleteMealsByCategoryId(categoryId);
             return ResponseEntity.ok("All meals with category id " + categoryId + " have been deleted");
         } catch (IllegalArgumentException e) {
+            logger.error("Category does not exist", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
+            logger.error("Error deleting meals", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting meals");
+        }
+    }
+
+    @Operation(summary = "Get all meals with a given category id")
+    @GetMapping("/get-meals/{categoryId}")
+    public ResponseEntity<?> getMealsByCategory(@PathVariable Long categoryId) {
+        var logger = LoggerFactory.getLogger(MealController.class);
+        try {
+            return ResponseEntity.ok(mealService.getMealsByCategoryId(categoryId));
+        } catch (IllegalArgumentException e) {
+            logger.error("Category does not exist", e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Podana kategoria nie istnieje");
+        } 
+        catch (Exception e) {
+            logger.error("Error fetching meals", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania dań");
         }
     }
 

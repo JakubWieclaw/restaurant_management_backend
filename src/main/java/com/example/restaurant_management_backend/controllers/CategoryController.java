@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
@@ -65,7 +64,7 @@ public class CategoryController {
 
     @Operation(summary = "Add a category")
     @PostMapping("/add")
-    public ResponseEntity<?> addCategory(@RequestBody @Valid CategoryAddCommand categoryAddCommand) {
+    public ResponseEntity<?> addCategory(@RequestBody CategoryAddCommand categoryAddCommand) {
         try {
             var category = new Category(categoryAddCommand.getName());
             var savedCategory = categoryService.saveCategory(category);
@@ -80,15 +79,20 @@ public class CategoryController {
     public ResponseEntity<String> deleteCategoryById(@PathVariable Long id) {
         try {
             categoryService.deleteCategoryById(id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("Kategoria została usunięta");
+        } catch (IllegalStateException e) {
+            // Handle specific exception when meals are associated with the category
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nie można usunąć kategorii dopóki związane są z nią posiłki.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting category");
+            // General error handling for other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas usuwania kategorii");
         }
     }
 
     @Operation(summary = "Update a category by id")
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryAddCommand categoryAddCommand) {
+    public ResponseEntity<?> updateCategory(@PathVariable Long id,
+            @RequestBody @Valid CategoryAddCommand categoryAddCommand) {
         try {
             Optional<Category> categoryToUpdate = categoryService.getCategoryById(id);
             if (categoryToUpdate.isPresent()) {

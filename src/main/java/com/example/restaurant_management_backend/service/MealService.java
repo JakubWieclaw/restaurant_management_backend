@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import com.example.restaurant_management_backend.jpa.model.Meal;
@@ -37,6 +38,7 @@ public class MealService {
         mealRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteMealsByCategoryId(Long categoryId) {
         // Optionally, check if the category exists before deleting meals
         if (!categoryRepository.existsById(categoryId)) {
@@ -45,4 +47,10 @@ public class MealService {
         mealRepository.deleteByCategoryId(categoryId);
     }
 
+    public List<Meal> getMealsByCategoryId(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new IllegalArgumentException("Category with id " + categoryId + " does not exist.");
+        }
+        return mealRepository.findByCategoryId(categoryId);
+    }
 }

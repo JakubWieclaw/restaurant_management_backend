@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
@@ -47,7 +48,7 @@ public class Meal {
     @Enumerated(EnumType.STRING)
     private UnitType unitType; // Unit type, mandatory if weightOrVolume is provided
 
-    @NotBlank(message = "Kategoria nie może być pusta")
+    @NotNull(message = "Kategoria nie może być pusta")
     private Long categoryId;
 
     public Meal(String name, double price) {
