@@ -1,124 +1,84 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
+
 @Entity
+@Getter(AccessLevel.PUBLIC)
+@Setter(AccessLevel.PUBLIC)
+@NoArgsConstructor
+@Table(name = "meal")
 public class Meal {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Nazwa nie może być pusta")
+    @Valid
     private String name;
 
-    @NotBlank
+    @Positive(message = "Cena nie może być ujemna")
+    @Valid
     private double price;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    private String photographUrl; // URL to the photograph, not mandatory
 
-    @ManyToMany(mappedBy = "meals")
-    private List<Order> orders;
+    @ElementCollection
+    private List<String> ingredients = new ArrayList<>(); // List of ingredients
 
-    @ManyToMany
-    @JoinTable(
-            name = "meal_opinion",
-            joinColumns = @JoinColumn(name = "meal_id"),
-            inverseJoinColumns = @JoinColumn(name = "opinion_id")
-    )
-    private List<Opinion> opinions;
+    @Positive(message = "Waga/objętość nie może być ujemna")
+    @Valid
+    private Double weightOrVolume; // Weight or volume
 
-    @ManyToMany
-    @JoinTable(
-            name = "meal_ingredient",
-            joinColumns = @JoinColumn(name = "meal_id"),
-            inverseJoinColumns = @JoinColumn(name = "ingredient_id")
-    )
-    private List<Ingredient> ingredients;
+    @Enumerated(EnumType.STRING)
+    private UnitType unitType; // Unit type, mandatory if weightOrVolume is provided
 
-    @ManyToOne
-    @JoinColumn(name = "coupon_id")
-    private Coupon coupon;
+    @NotNull(message = "Kategoria nie może być pusta")
+    private Long categoryId;
 
-    public Meal(Long id, String name, double price, Category category, List<Order> orders, List<Opinion> opinions, List<Ingredient> ingredients, Coupon coupon) {
-        this.id = id;
+    @ElementCollection
+    private List<String> allergens = new ArrayList<>(); // List of allergens
+
+    @Positive(message = "Kalorie muszą być dodatnie")
+    @Valid
+    private int calories; // Amount of calories
+
+    public Meal(String name, double price) {
         this.name = name;
         this.price = price;
-        this.category = category;
-        this.orders = orders;
-        this.opinions = opinions;
-        this.ingredients = ingredients;
-        this.coupon = coupon;
     }
 
-    public Meal() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
+    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
         this.price = price;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public List<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
-    }
-
-    public List<Opinion> getOpinions() {
-        return opinions;
-    }
-
-    public void setOpinions(List<Opinion> opinions) {
-        this.opinions = opinions;
-    }
-
-    public List<Ingredient> getIngredients() {
-        return ingredients;
-    }
-
-    public void setIngredients(List<Ingredient> ingredients) {
+        this.photographUrl = photographUrl;
         this.ingredients = ingredients;
+        this.weightOrVolume = weightOrVolume;
+        this.unitType = unitType;
+        this.categoryId = categoryId;
+        this.allergens = allergens;
+        this.calories = calories;
     }
 
-    public Coupon getCoupon() {
-        return coupon;
+    public boolean hasWeightOrVolume() {
+        return weightOrVolume != null;
     }
 
-    public void setCoupon(Coupon coupon) {
-        this.coupon = coupon;
+    public boolean isUnitTypeMandatory() {
+        return weightOrVolume != null && unitType == null;
     }
 }

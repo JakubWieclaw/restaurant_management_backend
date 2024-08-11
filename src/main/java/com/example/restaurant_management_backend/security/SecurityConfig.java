@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,23 +23,25 @@ import java.util.Collections;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsService customerUserDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(UserDetailsService customerUserDetailsService, JwtAuthFilter jwtAuthFilter) {
-        this.customerUserDetailsService = customerUserDetailsService;
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Allow unauthenticated access to auth endpoints
-                        .anyRequest().authenticated() // All other requests require authentication
+                        // Whitelist Swagger UI endpoints
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/api/meals/**", "api/categories/**").permitAll()
+                        
+                        // Other public endpoints
+                        .requestMatchers("/auth/**").permitAll()
+                        
+                        // Any other request requires authentication
+                        .anyRequest().authenticated()
                 ).csrf(AbstractHttpConfigurer::disable) // enable it after testing
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManger())
