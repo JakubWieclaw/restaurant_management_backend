@@ -48,7 +48,7 @@ public class MealController {
 
     @Operation(summary = "Get meal by id")
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getMealById(@RequestParam Long id) {
+    public ResponseEntity<?> getMealById(@PathVariable Long id) {
         try {
             Optional<Meal> meal = mealService.getMealById(id);
             if (!meal.isEmpty()) { // do not chnage to isPresent(), Optional.Empty is still treated as present
@@ -102,7 +102,7 @@ public class MealController {
 
     @Operation(summary = "Delete a meal by id")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMealById(@RequestParam Long id) {
+    public ResponseEntity<?> deleteMealById(@PathVariable Long id) {
         try {
             mealService.deleteMealById(id);
             return ResponseEntity.ok("Danie usunięte");

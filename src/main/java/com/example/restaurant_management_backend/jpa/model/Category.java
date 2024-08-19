@@ -21,6 +21,8 @@ public class Category {
     @NotBlank
     private String name;
 
+    private String photographUrl; // URL to the photograph, not mandatory
+
     public Category(String name) {
         this.name = name;
     }

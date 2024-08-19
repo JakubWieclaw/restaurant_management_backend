@@ -88,6 +88,10 @@ public class CategoryController {
             if (categoryToUpdate.isPresent()) {
                 var category = categoryToUpdate.get();
                 category.setName(categoryAddCommand.getName());
+                // if there is a photograph URL in the request, update it
+                if (categoryAddCommand.getPhotographUrl() != null) {
+                    category.setPhotographUrl(categoryAddCommand.getPhotographUrl());
+                }
                 var updatedCategory = categoryService.saveCategory(category);
                 return ResponseEntity.ok(updatedCategory);
             } else {
