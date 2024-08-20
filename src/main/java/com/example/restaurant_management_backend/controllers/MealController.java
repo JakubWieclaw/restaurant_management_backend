@@ -17,6 +17,9 @@ import com.example.restaurant_management_backend.service.CategoryService;
 import com.example.restaurant_management_backend.service.MealService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 
@@ -47,6 +50,8 @@ public class MealController {
     }
 
     @Operation(summary = "Get meal by id")
+    @ApiResponse(description = "Returns a meal with a given id", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = Meal.class)) })
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getMealById(@PathVariable Long id) {
         try {
@@ -69,7 +74,8 @@ public class MealController {
 
             // Validate if category exists
             if (!categoryService.getCategoryById(mealAddCommand.getCategoryId()).isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
             }
 
             logger.info("Adding meal");
@@ -171,8 +177,7 @@ public class MealController {
         } catch (IllegalArgumentException e) {
             logger.error("Category does not exist", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Podana kategoria nie istnieje");
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error fetching meals", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania dań");
         }

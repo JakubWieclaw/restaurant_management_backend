@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,6 +13,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
+@Schema(description = "Model of a category")
 public class Category {
     
     @Id
@@ -25,5 +27,10 @@ public class Category {
 
     public Category(String name) {
         this.name = name;
+    }
+
+    public Category(String name, String photographUrl) {
+        this.name = name;
+        this.photographUrl = photographUrl;
     }
 }
