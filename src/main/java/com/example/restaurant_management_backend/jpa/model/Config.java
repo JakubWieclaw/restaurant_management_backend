@@ -1,15 +1,15 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import com.example.restaurant_management_backend.jpa.additionalModel.DayOfWeek;
-import com.example.restaurant_management_backend.jpa.additionalModel.DayTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.math.BigDecimal;
-import java.util.Map;
 
 
 @Entity
@@ -22,25 +22,32 @@ public class Config {
     private Long id;
 
     @Schema(description = "Name of the restaurant", example = "Restauracja pod niebem")
+    @NotBlank(message = "Nazwa restauracji nie może być pusta")
+    @Valid
     private String restaurantName;
-    @Schema(description = "Postal code of the restaurant", example = "00-000")
+
+    @Schema(description = "Postal code of the restaurant", example = "60-123")
+    @NotBlank(message = "Kod pocztowy nie może być pusty")
+    @Valid
     private String postalCode;
+
     @Schema(description = "City of the restaurant", example = "Warszawa")
+    @NotBlank(message = "Miasto nie może być puste")
+    @Valid
     private String city;
+
     @Schema(description = "Street of the restaurant", example = "ul. Marszałkowska 1")
+    @NotBlank(message = "Ulica nie może być pusta")
+    @Valid
     private String street;
+
     @Schema(description = "Phone number of the restaurant", example = "123456789")
+    @NotBlank(message = "Numer telefonu nie może być pusty")
+    @Valid
     private String phoneNumber;
+
     @Schema(description = "Email of the restaurant", example = "abc@wp.pl")
+    @NotBlank(message = "Email nie może być pusty")
+    @Valid
     private String email;
-
-    @Schema(description = "Opening hours of the restaurant",
-            example =
-                    "{MONDAY: {openingTime: 10:00, closingTime: 22:00}, TUESDAY: {openingTime: 10:00, closingTime: 22:00}, WEDNESDAY: {openingTime: 10:00, closingTime: 22:00}, THURSDAY: {openingTime: 10:00, closingTime: 22:00}, FRIDAY: {openingTime: 10:00, closingTime: 22:00}, SATURDAY: {openingTime: 10:00, closingTime: 22:00}, SUNDAY: {openingTime: 10:00, closingTime: 22:00}}")
-    @ElementCollection
-    private Map<DayOfWeek, DayTime> openingHours;
-
-    @Schema(description = "Delivery prices of the restaurant", example = "{0: 0, 10: 5, 20: 10}")
-    @ElementCollection
-    private Map<Integer, BigDecimal> deliveryPrices;
 }
