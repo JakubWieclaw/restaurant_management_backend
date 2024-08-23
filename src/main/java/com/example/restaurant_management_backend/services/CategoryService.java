@@ -1,15 +1,13 @@
-package com.example.restaurant_management_backend.service;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
+package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
