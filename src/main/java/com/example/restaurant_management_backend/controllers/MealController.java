@@ -1,21 +1,35 @@
 package com.example.restaurant_management_backend.controllers;
 
-import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
-import com.example.restaurant_management_backend.services.CategoryService;
-import com.example.restaurant_management_backend.services.MealService;
-import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.ConstraintViolationException;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
+import com.example.restaurant_management_backend.jpa.model.Meal;
+import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
+import com.example.restaurant_management_backend.service.CategoryService;
+import com.example.restaurant_management_backend.service.MealService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/meals")
@@ -36,8 +50,10 @@ public class MealController {
     }
 
     @Operation(summary = "Get meal by id")
+    @ApiResponse(description = "Returns a meal with a given id", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = Meal.class)) })
     @GetMapping("/get/{id}")
-    public ResponseEntity<?> getMealById(@RequestParam Long id) {
+    public ResponseEntity<?> getMealById(@PathVariable Long id) {
         try {
             Optional<Meal> meal = mealService.getMealById(id);
             if (!meal.isEmpty()) { // do not chnage to isPresent(), Optional.Empty is still treated as present
@@ -58,7 +74,8 @@ public class MealController {
 
             // Validate if category exists
             if (!categoryService.getCategoryById(mealAddCommand.getCategoryId()).isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
             }
 
             logger.info("Adding meal");
@@ -91,7 +108,7 @@ public class MealController {
 
     @Operation(summary = "Delete a meal by id")
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteMealById(@RequestParam Long id) {
+    public ResponseEntity<?> deleteMealById(@PathVariable Long id) {
         try {
             mealService.deleteMealById(id);
             return ResponseEntity.ok("Danie usunięte");

@@ -1,9 +1,13 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.jpa.model.Category;
+import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.CategoryAddCommand;
 import com.example.restaurant_management_backend.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +32,8 @@ public class CategoryController {
     }
 
     @Operation(summary = "Get category by id")
+    @ApiResponse(description = "Returns a meal with a given id", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)) })
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         try {
@@ -47,6 +53,10 @@ public class CategoryController {
     public ResponseEntity<?> addCategory(@RequestBody CategoryAddCommand categoryAddCommand) {
         try {
             var category = new Category(categoryAddCommand.getName());
+            // if there is a photograph URL in the request, add it
+            if (categoryAddCommand.getPhotographUrl() != null) {
+                category.setPhotographUrl(categoryAddCommand.getPhotographUrl());
+            }
             var savedCategory = categoryService.saveCategory(category);
             return ResponseEntity.ok(savedCategory);
         } catch (Exception e) {
@@ -78,6 +88,10 @@ public class CategoryController {
             if (categoryToUpdate.isPresent()) {
                 var category = categoryToUpdate.get();
                 category.setName(categoryAddCommand.getName());
+                // if there is a photograph URL in the request, update it
+                if (categoryAddCommand.getPhotographUrl() != null) {
+                    category.setPhotographUrl(categoryAddCommand.getPhotographUrl());
+                }
                 var updatedCategory = categoryService.saveCategory(category);
                 return ResponseEntity.ok(updatedCategory);
             } else {
