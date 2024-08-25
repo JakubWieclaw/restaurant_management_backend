@@ -15,6 +15,7 @@ public class ConfigMapper {
         config.setPostalCode(configAddCommand.getPostalCode());
         config.setStreet(configAddCommand.getStreet());
         config.setPhoneNumber(configAddCommand.getPhoneNumber());
+        config.setLogoUrl(configAddCommand.getLogoUrl());
         return config;
     }
 }

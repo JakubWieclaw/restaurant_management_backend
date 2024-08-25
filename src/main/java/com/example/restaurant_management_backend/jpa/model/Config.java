@@ -50,4 +50,9 @@ public class Config {
     @NotBlank(message = "Email nie może być pusty")
     @Valid
     private String email;
+
+    @Schema(description = "URL for the logo", example = "https://www.creativefabrica.com/wp-content/uploads/2018/10/Chef-restaurant-logo-by-DEEMKA-STUDIO-4.jpg")
+    @NotBlank(message = "Email nie może być pusty")
+    @Valid
+    private String logoUrl;
 }

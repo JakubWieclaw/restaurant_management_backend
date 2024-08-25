@@ -38,22 +38,38 @@ public class ConfigAddCommand extends SelfValidating<ConfigAddCommand> {
     @NotBlank(message = "Email nie może być pusty")
     @Valid
     private final String email;
+    @Schema(description = "URL for the logo", example = "https://www.creativefabrica.com/wp-content/uploads/2018/10/Chef-restaurant-logo-by-DEEMKA-STUDIO-4.jpg")
+    @NotBlank(message = "Email nie może być pusty")
+    private final String logoUrl;
 
-    @Schema(description = "Opening hours of the restaurant")
-    @NotBlank(message = "Godziny otwarcia nie mogą być puste")
+    @Schema(description = "Opening hours of the restaurant", example = """
+            [
+                {"day":"MONDAY", "openingTime": "10:00", "closingTime": "22:00"},
+                {"day":"TUESDAY", "openingTime": "11:00", "closingTime": "22:00"},
+                {"day":"WEDNESDAY", "openingTime": "12:00", "closingTime": "22:00"},
+                {"day":"THURSDAY", "openingTime": "13:00", "closingTime": "22:00"},
+                {"day":"FRIDAY", "openingTime": "14:00", "closingTime": "22:00"},
+                {"day":"SATURDAY", "openingTime": "15:00", "closingTime": "22:00"},
+                {"day":"SUNDAY", "openingTime": "16:00", "closingTime": "22:00"}
+              ]""")
     private final List<OpeningHour> openingHours;
 
-    @Schema(description = "Delivery prices of the restaurant")
-    @NotBlank(message = "Cennik dostaw nie mogą być puste")
+    @Schema(description = "Delivery prices of the restaurant", example = """
+            [
+                {"maximumRange": 1, "price": 5.99},
+                {"maximumRange": 5, "price": 5.99},
+                {"maximumRange": 10, "price": 5.99}
+              ]""")
     private final List<DeliveryPricing> deliveryPricings;
 
-    public ConfigAddCommand(String restaurantName, String postalCode, String city, String street, String phoneNumber, String email, List<OpeningHour> openingHours, List<DeliveryPricing> deliveryPricings) {
+    public ConfigAddCommand(String restaurantName, String postalCode, String city, String street, String phoneNumber, String email, String logoUrl, List<OpeningHour> openingHours, List<DeliveryPricing> deliveryPricings) {
         this.restaurantName = restaurantName;
         this.postalCode = postalCode;
         this.city = city;
         this.street = street;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.logoUrl = logoUrl;
         this.openingHours = openingHours;
         this.deliveryPricings = deliveryPricings;
         validateSelf();
