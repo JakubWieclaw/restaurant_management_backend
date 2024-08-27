@@ -1,8 +1,12 @@
 package com.example.restaurant_management_backend.controllers;
 
+import com.example.restaurant_management_backend.jpa.model.Config;
 import com.example.restaurant_management_backend.jpa.model.command.ConfigAddCommand;
 import com.example.restaurant_management_backend.services.ConfigService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -27,6 +31,8 @@ public class ConfigController {
     }
 
     @Operation(summary = "Get config")
+    @ApiResponse(description = "Returns the configuration of the system", responseCode = "200", content = {
+        @Content(mediaType = "application/json", schema = @Schema(implementation = Config.class))})
     @GetMapping
     public ResponseEntity<?> getConfig() {
         if (!configService.isSystemInitialized()) {
