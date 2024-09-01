@@ -1,5 +1,7 @@
 package com.example.restaurant_management_backend.controllers;
 
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +11,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-
-import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -90,6 +88,10 @@ public class GlobalExceptionHandler {
             }
         }
 
+        // If no errors were found, add a generic error message
+        if (errors.isEmpty()) {
+            errors.put("error", ex.getMessage());
+        }
         // Return the errors map as the response
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }

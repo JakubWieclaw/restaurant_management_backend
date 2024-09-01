@@ -15,10 +15,13 @@ public class CategoryAddCommand extends SelfValidating<CategoryAddCommand> {
 
     @NotBlank(message = "Nazwa kategorii nie może być pusta")
     private String name;
+    private String photographUrl; // URL to the photograph, not mandatory
 
     @JsonCreator
-    public CategoryAddCommand(@JsonProperty("name") String name) {
+    public CategoryAddCommand(@JsonProperty("name") String name,
+            @JsonProperty("photographUrl") String photographUrl) {
         this.name = name;
+        this.photographUrl = photographUrl; // Can be null if not provided
         validateSelf();
     }
 }

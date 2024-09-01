@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.jpa.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,6 +23,7 @@ import lombok.*;
 @Setter(AccessLevel.PUBLIC)
 @NoArgsConstructor
 @Table(name = "meal")
+@Schema(description = "Model of a meal")
 public class Meal {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

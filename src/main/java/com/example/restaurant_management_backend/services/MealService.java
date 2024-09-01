@@ -1,15 +1,13 @@
-package com.example.restaurant_management_backend.service;
+package com.example.restaurant_management_backend.services;
 
 // import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
-import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
-
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 
 import com.example.restaurant_management_backend.jpa.model.Meal;
+import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
+import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +15,11 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MealService {
-    
+
     private final MealRepository mealRepository;
 
     private final CategoryRepository categoryRepository;
-    
+
     public List<Meal> getAllMeals() {
         return mealRepository.findAll();
     }

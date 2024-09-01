@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -16,6 +17,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtils {
 
+    @Getter
     private final SecretKey secretKey;
     private final long validationTime = Duration.ofHours(10).getSeconds();
 
@@ -84,7 +86,4 @@ public class JwtUtils {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public SecretKey getSecretKey() {
-        return secretKey;
-    }
 }
