@@ -168,4 +168,19 @@ public class MealController {
         }
     }
 
+    @Operation(summary = "Search meals by name")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchMealsByName(@RequestParam("name") String name) {
+        var logger = LoggerFactory.getLogger(MealController.class);
+        try {
+            var meals = mealService.searchMealsByName(name);
+            if (meals.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania o nazwie: " + name);
+            }
+            return ResponseEntity.ok(meals);
+        } catch (Exception e) {
+            logger.error("Error searching meals by name", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd przy wyszukiwaniu dań");
+        }
+    }
 }

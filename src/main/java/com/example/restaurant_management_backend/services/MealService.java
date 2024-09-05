@@ -51,4 +51,8 @@ public class MealService {
         }
         return mealRepository.findByCategoryId(categoryId);
     }
+
+    public List<Meal> searchMealsByName(String name) {
+        return mealRepository.findByNameContainingIgnoreCase(name);
+    }
 }
