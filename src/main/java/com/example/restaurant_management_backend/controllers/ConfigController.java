@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/config")
+@RequestMapping("/admin/api/config")
 @RequiredArgsConstructor
 @Validated
 public class ConfigController {

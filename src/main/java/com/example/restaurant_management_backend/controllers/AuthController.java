@@ -1,8 +1,11 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.jpa.model.Customer;
+import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.dto.RegisterRequest;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.security.JwtUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,13 +34,28 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody Customer customer) {
-        if (customerRepository.findByEmail(customer.getEmail()).isPresent()) {
-            return "User with this email already exists";
+    public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        // Check if the email already exists
+        if (customerRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with this email already exists");
         }
-        customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+
+        // Create a new Customer object
+        Customer customer = new Customer();
+        customer.setName(registerRequest.getName());
+        customer.setSurname(registerRequest.getSurname());
+        customer.setEmail(registerRequest.getEmail());
+        customer.setPhone(registerRequest.getPhone());
+        customer.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+
+        // Assign privileges (ADMIN_PRIVILEGE or USER_PRIVILEGE)
+        Privilege privilege = new Privilege(registerRequest.isAdmin() ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
+        customer.setPrivilege(privilege);
+
+        // Save the new user to the repository
         customerRepository.save(customer);
-        return "User registered successfully";
+
+        return ResponseEntity.ok("User registered successfully");
     }
 
     @PostMapping("/login")
