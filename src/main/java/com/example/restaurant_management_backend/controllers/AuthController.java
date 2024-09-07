@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -59,7 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authenticationRequest =
                     new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
@@ -68,7 +70,16 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
             if (authenticationResponse.isAuthenticated()) {
                 String token = jwtUtils.generateToken(authenticationResponse.getName());
-                return ResponseEntity.ok(token);
+
+                Customer customer = customerRepository.findByEmail(loginRequest.email())
+                        .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
+
+                boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
+
+                return ResponseEntity.ok(Map.of(
+                        "token", token,
+                        "isAdmin", isAdmin
+                ));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nieprawidłowa nazwa użytkownika lub hasło");
