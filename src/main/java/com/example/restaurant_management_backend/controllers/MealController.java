@@ -17,6 +17,7 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -47,9 +48,21 @@ public class MealController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ORA-20001: Nie znaleziono tego dania");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono tego dania");
         }
     }
+
+    @Operation(summary = "Get list of meals by provided ids")
+    @GetMapping("/get-meals-by-ids")
+    public ResponseEntity<?> getMealsByIds(@RequestParam("ids") List<Long> ids) {
+        try {
+            // if at least one meal is not found, return 404
+            return ResponseEntity.ok(mealService.getMealsByIds(ids));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono tych dań");
+        }
+    }
+
 
     @Operation(summary = "Add a meal")
     @PostMapping("/add")

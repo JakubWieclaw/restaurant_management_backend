@@ -1,15 +1,16 @@
 package com.example.restaurant_management_backend.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 
-public class OrdersService {
+public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    public OrdersService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
     }
 
@@ -17,7 +18,7 @@ public class OrdersService {
         return orderRepository.findAll();
     }
 
-    public Order getOrderById(Long id) {
+    public Optional<Order> getOrderById(Long id) {
         return orderRepository.findById(id).orElse(null);
     }
 

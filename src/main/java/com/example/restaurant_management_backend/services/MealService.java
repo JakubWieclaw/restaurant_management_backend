@@ -28,6 +28,11 @@ public class MealService {
         return mealRepository.findById(id);
     }
 
+    // Get meals by provided list of ids
+    public List<Meal> getMealsByIds(List<Long> ids) {
+        return mealRepository.findAllById(ids);
+    }
+
     public Meal saveMeal(Meal meal) {
         return mealRepository.save(meal);
     }
