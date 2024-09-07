@@ -37,7 +37,7 @@ public class AuthController {
     public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         // Check if the email already exists
         if (customerRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User with this email already exists");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Użytkownik z tym adresem e-mail już istnieje");
         }
 
         // Create a new Customer object
@@ -55,7 +55,7 @@ public class AuthController {
         // Save the new user to the repository
         customerRepository.save(customer);
 
-        return ResponseEntity.ok("User registered successfully");
+        return ResponseEntity.ok("Użytkownik został pomyślnie zarejestrowany");
     }
 
     @PostMapping("/login")
@@ -71,9 +71,9 @@ public class AuthController {
                 return ResponseEntity.ok(token);
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nieprawidłowa nazwa użytkownika lub hasło");
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Logowanie nie powiodło się");
     }
 
     public record LoginRequest(String email, String password) {

@@ -1,7 +1,6 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.jpa.model.Category;
-import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.CategoryAddCommand;
 import com.example.restaurant_management_backend.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,7 +32,7 @@ public class CategoryController {
 
     @Operation(summary = "Get category by id")
     @ApiResponse(description = "Returns a meal with a given id", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class)) })
+            @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class))})
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getCategoryById(@PathVariable Long id) {
         try {
@@ -41,7 +40,7 @@ public class CategoryController {
             if (category.isPresent()) {
                 return ResponseEntity.ok(category.get());
             } else {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono kategorii");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania kategorii");
@@ -60,7 +59,7 @@ public class CategoryController {
             var savedCategory = categoryService.saveCategory(category);
             return ResponseEntity.ok(savedCategory);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding category");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania kategorii");
         }
     }
 

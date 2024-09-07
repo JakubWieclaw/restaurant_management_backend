@@ -41,13 +41,13 @@ public class MealController {
     public ResponseEntity<?> getMealById(@PathVariable Long id) {
         try {
             Optional<Meal> meal = mealService.getMealById(id);
-            if (!meal.isEmpty()) { // do not chnage to isPresent(), Optional.Empty is still treated as present
+            if (!meal.isEmpty()) { // do not change to isPresent(), Optional.Empty is still treated as present
                 return ResponseEntity.ok(meal.get());
             } else {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("ORA-20001: Nie znaleziono tego dania");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ORA-20001: Nie znaleziono tego dania");
         }
     }
 
@@ -60,7 +60,7 @@ public class MealController {
             // Validate if category exists
             if (!categoryService.getCategoryById(mealAddCommand.getCategoryId()).isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Category with id " + mealAddCommand.getCategoryId() + " does not exist");
+                        .body("Kategoria o id " + mealAddCommand.getCategoryId() + " nie istnieje");
             }
 
             logger.info("Adding meal");
@@ -98,7 +98,7 @@ public class MealController {
             mealService.deleteMealById(id);
             return ResponseEntity.ok("Danie usunięte");
         } catch (Exception e) {
-            return ResponseEntity.status(404).body("Nie znaleziono dania");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania");
         }
     }
 
@@ -129,11 +129,11 @@ public class MealController {
                 logger.info("Meal updated successfully: {}", updatedMeal);
                 return ResponseEntity.ok(updatedMeal);
             } else {
-                return ResponseEntity.status(404).body("Nie znaleziono dania");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania");
             }
         } catch (Exception e) {
             logger.error("Error updating meal", e);
-            return ResponseEntity.status(404).body("Nie znaleziono dania");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania");
         }
     }
 
@@ -143,13 +143,13 @@ public class MealController {
         var logger = LoggerFactory.getLogger(MealController.class);
         try {
             mealService.deleteMealsByCategoryId(categoryId);
-            return ResponseEntity.ok("All meals with category id " + categoryId + " have been deleted");
+            return ResponseEntity.ok("Wszystkie dania z kategorii o id " + categoryId + " zostały usunięte");
         } catch (IllegalArgumentException e) {
             logger.error("Category does not exist", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             logger.error("Error deleting meals", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting meals");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd przy usuwaniu dań");
         }
     }
 
