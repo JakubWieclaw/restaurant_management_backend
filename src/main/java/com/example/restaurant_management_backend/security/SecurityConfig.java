@@ -34,23 +34,24 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        // Whitelist Swagger UI endpoints
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/api/**").permitAll()
+                        // Whitelist Swagger UI and public endpoints
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/auth/**", "/api/**").permitAll()
 
-                        // Other public endpoints
-                        .requestMatchers("/auth/**").permitAll()
+                        // Restrict access to /admin/api/config/** to users with ADMIN_PRIVILEGE
+                        .requestMatchers("/admin/api/config/**").hasAuthority("ADMIN_PRIVILEGE")
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()
-                ).csrf(AbstractHttpConfigurer::disable) // enable it after testing
+                )
+                .csrf(AbstractHttpConfigurer::disable) // enable this after testing in production
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationManager(authenticationManger())
+                .authenticationManager(authenticationManager())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
     @Bean
-    public AuthenticationManager authenticationManger() {
+    public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setUserDetailsService(customerUserDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
@@ -65,7 +66,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // add endpoints here
+        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // add frontend origins here
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Collections.singletonList("*"));

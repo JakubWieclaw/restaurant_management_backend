@@ -1,20 +1,13 @@
-package com.example.restaurant_management_backend.jpa.model;
+package com.example.restaurant_management_backend.jpa.model.dto;
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
-public class Customer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
+public class RegisterRequest {
     @NotBlank(message = "Imię nie może być puste")
     private String name;
 
@@ -30,7 +23,7 @@ public class Customer {
     @NotBlank(message = "Hasło nie może być puste")
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "privilege_id", referencedColumnName = "id")
-    private Privilege privilege;
+    @JsonProperty
+    private boolean isAdmin;
+
 }
