@@ -5,6 +5,10 @@ import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.model.dto.RegisterRequest;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.security.JwtUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -36,6 +38,8 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Register a new user")
+    @ApiResponse(responseCode = "200", description = "User registered successfully")
     public ResponseEntity<String> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         // Check if the email already exists
         if (customerRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
@@ -61,25 +65,30 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    @Operation(summary = "Log in")
+    @ApiResponse(responseCode = "200", description = "User logged in successfully", content = {
+            @Content(mediaType = "application/json", schema = @Schema(implementation = LoginResponse.class))})
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
         try {
             Authentication authenticationRequest =
                     new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
             Authentication authenticationResponse =
                     this.authenticationManager.authenticate(authenticationRequest);
             SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
+
             if (authenticationResponse.isAuthenticated()) {
                 String token = jwtUtils.generateToken(authenticationResponse.getName());
 
+                // Fetch the customer object
                 Customer customer = customerRepository.findByEmail(loginRequest.email())
                         .orElseThrow(() -> new RuntimeException("Nie znaleziono użytkownika"));
 
                 boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
 
-                return ResponseEntity.ok(Map.of(
-                        "token", token,
-                        "isAdmin", isAdmin
-                ));
+                // Remove sensitive information (password)
+                customer.setPassword(null); // Ensure password is not returned
+
+                return ResponseEntity.ok(new LoginResponse(token, customer, isAdmin));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nieprawidłowa nazwa użytkownika lub hasło");
@@ -88,5 +97,8 @@ public class AuthController {
     }
 
     public record LoginRequest(String email, String password) {
+    }
+
+    public record LoginResponse(String token, Customer customer, boolean admin) {
     }
 }
