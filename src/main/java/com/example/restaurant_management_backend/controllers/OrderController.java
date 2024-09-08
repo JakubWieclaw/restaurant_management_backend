@@ -22,6 +22,7 @@ import com.example.restaurant_management_backend.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -68,6 +69,7 @@ public class OrderController {
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {
         var logger = LoggerFactory.getLogger(OrderController.class);
+        // logger.info("Received OrderAddCommand: {}", orderAddCommand);
         try {
             // check if customer ID is valid
             if (orderAddCommand.getCustomerId() == null) {
@@ -85,7 +87,7 @@ public class OrderController {
             for (Long mealId : orderAddCommand.getMealIds()) {
                 totalPrice += mealService.getMealById(mealId).get().getPrice();
             }
-            // set order with counted total price and current date (no the one from request)
+            // set order with counted total price and current date
             var order = new Order(orderAddCommand.getMealIds(), totalPrice, orderAddCommand.getCustomerId(),
                     orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now());
             orderService.addOrder(order);
