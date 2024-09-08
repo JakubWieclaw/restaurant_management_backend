@@ -192,7 +192,7 @@ public class MealController {
         try {
             var meals = mealService.searchMealsByName(name);
             if (meals.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania o nazwie: " + name);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Nie znaleziono dania o nazwie: " + name);
             }
             return ResponseEntity.ok(meals);
         } catch (Exception e) {

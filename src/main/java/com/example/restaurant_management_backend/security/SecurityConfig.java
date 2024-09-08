@@ -35,10 +35,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
                         // Whitelist Swagger UI and public endpoints
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/auth/**", "/api/**").permitAll()
-
-                        // Restrict access to /admin/api/config/** to users with ADMIN_PRIVILEGE
-                        .requestMatchers("/admin/api/config/**").hasAuthority("ADMIN_PRIVILEGE")
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/auth/**", "/api/**", "/admin/api/config/**").permitAll()
 
                         // Any other request requires authentication
                         .anyRequest().authenticated()

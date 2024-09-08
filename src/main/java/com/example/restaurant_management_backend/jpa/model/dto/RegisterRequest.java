@@ -1,6 +1,5 @@
 package com.example.restaurant_management_backend.jpa.model.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +22,6 @@ public class RegisterRequest {
     @NotBlank(message = "Hasło nie może być puste")
     private String password;
 
-    @JsonProperty
-    private boolean isAdmin;
+    private boolean admin;
 
 }
