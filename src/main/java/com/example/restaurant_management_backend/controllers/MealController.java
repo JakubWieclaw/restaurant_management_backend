@@ -57,7 +57,11 @@ public class MealController {
     public ResponseEntity<?> getMealsByIds(@RequestParam("ids") List<Long> ids) {
         try {
             // if at least one meal is not found, return 404
-            return ResponseEntity.ok(mealService.getMealsByIds(ids));
+            final var list = mealService.getMealsByIds(ids);
+            if (list.size() != ids.size()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono tych dań");
+            }
+            return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono tych dań");
         }

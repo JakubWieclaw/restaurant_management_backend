@@ -3,23 +3,25 @@ package com.example.restaurant_management_backend.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
 
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
 
     public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id).orElse(null);
+        return Optional.ofNullable(orderRepository.findById(id).orElse(null));
     }
 
     public Order addOrder(Order order) {

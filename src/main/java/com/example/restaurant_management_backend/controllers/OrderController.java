@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.controllers;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public class OrderController {
     private final OrderService orderService;
     private final MealService mealService;
 
+
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
@@ -67,6 +69,11 @@ public class OrderController {
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {
         var logger = LoggerFactory.getLogger(OrderController.class);
         try {
+            // check if customer ID is valid
+            if (orderAddCommand.getCustomerId() == null) {
+                return ResponseEntity.badRequest().body("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
+            }
+
             // check if all meal IDs are valid
             for (Long mealId : orderAddCommand.getMealIds()) {
                 if (mealService.getMealById(mealId).isEmpty()) {
@@ -78,8 +85,9 @@ public class OrderController {
             for (Long mealId : orderAddCommand.getMealIds()) {
                 totalPrice += mealService.getMealById(mealId).get().getPrice();
             }
+            // set order with counted total price and current date (no the one from request)
             var order = new Order(orderAddCommand.getMealIds(), totalPrice, orderAddCommand.getCustomerId(),
-                    orderAddCommand.getType(), orderAddCommand.getStatus(), orderAddCommand.getDateTime());
+                    orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now());
             orderService.addOrder(order);
             logger.info("Added new order: {}", order);
             return ResponseEntity.ok(order);
@@ -94,5 +102,51 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania zamówienia");
         }
         return ResponseEntity.badRequest().body("Unknown error");
+    }
+
+    @Operation(summary = "Update order")
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody Order order) {
+        var logger = LoggerFactory.getLogger(OrderController.class);
+        try {
+            // Get order to check if it exists
+            Optional<Order> existingOrder = orderService.getOrderById(id);
+            if (existingOrder.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono zamówienia");
+            }
+            // update order
+            Order updatedOrder = orderService.updateOrder(id, order);
+            logger.info("Updated order: {}", updatedOrder);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (TransactionSystemException e) {
+            Throwable cause = e.getRootCause();
+            if (cause instanceof ConstraintViolationException) {
+                logger.error("Validation error: {}", cause.getMessage());
+                return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
+            }
+        } catch (Exception e) {
+            logger.error("Error while updating order", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas aktualizacji zamówienia");
+        }
+        return ResponseEntity.badRequest().body("Unknown error");
+    }
+
+    @Operation(summary = "Delete order")
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
+        var logger = LoggerFactory.getLogger(OrderController.class);
+        try {
+            // Get order to check if it exists
+            Optional<Order> existingOrder = orderService.getOrderById(id);
+            if (existingOrder.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono zamówienia");
+            }
+            orderService.deleteOrder(id);
+            logger.info("Deleted order with id: {}", id);
+            return ResponseEntity.ok("Usunięto zamówienie");
+        } catch (Exception e) {
+            logger.error("Error while deleting order", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas usuwania zamówienia");
+        }
     }
 }
