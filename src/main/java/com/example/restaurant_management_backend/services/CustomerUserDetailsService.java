@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -30,5 +31,9 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     private Set<GrantedAuthority> convertPrivilegesToAuthorities(Privilege privilege) {
         return Set.of(new SimpleGrantedAuthority(privilege.getPrivilegeName()));
+    }
+
+    public Optional<Customer> getCustomerById(Long id) {
+        return customerRepository.findById(id);
     }
 }

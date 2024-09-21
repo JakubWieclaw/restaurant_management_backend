@@ -1,4 +1,4 @@
-package com.example.restaurant_management_backend.controllers;
+package com.example.restaurant_management_backend.exceptions;
 
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import jakarta.validation.ConstraintViolationException;
@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -42,30 +44,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
-    // @ExceptionHandler(HttpMessageNotReadableException.class)
-    // public ResponseEntity<Map<String, String>>
-    // handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-    // Map<String, String> response = new HashMap<>();
-    // String message = ex.getMessage();
-    // if (message.contains("JSON parse error")) {
-    // response.put("error", "Invalid JSON format");
-    // } else {
-    // response.put("error", "Malformed JSON or missing required fields");
-    // }
-    // return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    // }
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
         Map<String, String> errors = new HashMap<>();
-        var logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
         logger.error("Invalid JSON format", ex);
 
         Throwable cause = ex.getCause();
         if (cause instanceof ValueInstantiationException valueInstantiationException) {
             // Extract the message from the ValueInstantiationException
             String fullMessage = valueInstantiationException.getMessage();
-
             int problemIndex = fullMessage.indexOf("problem:");
             int columnIndex = fullMessage.indexOf("column:");
 
@@ -106,9 +93,20 @@ public class GlobalExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
+        logger.error("Not Found Exception", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.error("Illegal Argument Exception", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleOtherExceptions(Exception ex) {
-        var logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
         logger.error("Unexpected error", ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }

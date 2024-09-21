@@ -1,11 +1,11 @@
 package com.example.restaurant_management_backend.jpa.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@AllArgsConstructor
 public class RegisterRequest {
     @NotBlank(message = "Imię nie może być puste")
     private String name;
