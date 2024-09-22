@@ -1,6 +1,8 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.jpa.model.Config;
+import com.example.restaurant_management_backend.jpa.model.DeliveryPricing;
+import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.command.ConfigAddCommand;
 import com.example.restaurant_management_backend.services.ConfigService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/api/config")
@@ -46,13 +50,13 @@ public class ConfigController {
 
     @GetMapping("/delivery-prices")
     @Operation(summary = "Get delivery prices")
-    public ResponseEntity<?> getDeliveryPrices() {
+    public ResponseEntity<List<DeliveryPricing>> getDeliveryPrices() {
         return ResponseEntity.ok(configService.getDeliveryPrices());
     }
 
     @GetMapping("/opening-hours")
     @Operation(summary = "Get opening hours")
-    public ResponseEntity<?> getOpeningHours() {
+    public ResponseEntity<List<OpeningHour>> getOpeningHours() {
         return ResponseEntity.ok(configService.openingHours());
     }
 }
