@@ -4,7 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -19,14 +18,11 @@ public class OpeningHour {
     private Long id;
 
     @NotNull(message = "Dzień tygodnia nie może być pusty")
-    @Valid
     private DayOfWeek day;
 
     @NotNull(message = "Godzina otwarcia nie może być pusta")
-    @Valid
     private LocalTime openingTime;
 
     @NotNull(message = "Godzina zamknięcia nie może być pusta")
-    @Valid
     private LocalTime closingTime;
 }

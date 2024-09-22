@@ -1,9 +1,9 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Opinion;
 import com.example.restaurant_management_backend.jpa.model.command.OpinionAddCommand;
-import com.example.restaurant_management_backend.jpa.model.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.jpa.repositories.OpinionRepository;
 import com.example.restaurant_management_backend.mappers.OpinionMapper;
 import lombok.RequiredArgsConstructor;

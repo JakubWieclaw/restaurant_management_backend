@@ -18,16 +18,13 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 public class ConfigController {
+
     private final ConfigService configService;
 
     @Operation(summary = "Initialize system")
     @PostMapping("/initialize-system")
-    public ResponseEntity<?> initializeSystem(@Valid @RequestBody ConfigAddCommand configAddCommand) {
-        if (configService.isSystemInitialized()) {
-            return ResponseEntity.badRequest().body("System został już zainicjalizowany");
-        }
+    public ResponseEntity<String> initializeSystem(@Valid @RequestBody ConfigAddCommand configAddCommand) {
         configService.initialize(configAddCommand);
-
         return ResponseEntity.ok("Poprawnie zainicjalizowano system dla restauracji " + configAddCommand.getRestaurantName());
     }
 
@@ -35,19 +32,14 @@ public class ConfigController {
     @ApiResponse(description = "Returns the configuration of the system", responseCode = "200", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = Config.class))})
     @GetMapping
-    public ResponseEntity<?> getConfig() {
-        if (!configService.isSystemInitialized()) {
-            return ResponseEntity.badRequest().body("System nie został zainicjalizowany");
-        }
-        return ResponseEntity.ok(configService.getConfig());
+    public ResponseEntity<Config> getConfig() {
+        Config config = configService.getConfig();
+        return ResponseEntity.ok(config);
     }
 
     @DeleteMapping
     @Operation(summary = "Remove config, delivery prices and opening hours, only for testing purposes")
-    public ResponseEntity<?> removeConfigs() {
-        if (!configService.isSystemInitialized()) {
-            return ResponseEntity.badRequest().body("Nie ma wgranej żadnej konfiguracji");
-        }
+    public ResponseEntity<String> removeConfigs() {
         configService.removeAll();
         return ResponseEntity.ok("Pomyślnie usunięto konfigurację");
     }
