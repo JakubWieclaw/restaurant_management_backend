@@ -36,4 +36,8 @@ public class CustomerUserDetailsService implements UserDetailsService {
     public Optional<Customer> getCustomerById(Long id) {
         return customerRepository.findById(id);
     }
+
+    public Customer getCustomerByIdOrThrowException(Long id) {
+        return customerRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Nie znaleziono klienta o id " + id));
+    }
 }

@@ -25,14 +25,14 @@ public class OpinionService {
     private final OpinionMapper opinionMapper;
 
     public OpinionResponseDTO addOpinion(OpinionAddCommand opinionAddCommand) {
-        checkIfClientAndMealExists(opinionAddCommand);
+        checkIfCustomerExists(opinionAddCommand.getCustomerId());
         if (opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())) {
             throw new IllegalArgumentException(OPINION_ALREADY_EXISTS);
         }
 
         Opinion opinion = new Opinion();
-        opinion.setMeal(mealService.getMealById(opinionAddCommand.getMealId()).get());
-        opinion.setCustomer(customerService.getCustomerById(opinionAddCommand.getCustomerId()).get());
+        opinion.setMeal(mealService.getMealById(opinionAddCommand.getMealId()));
+        opinion.setCustomer(customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId()));
         opinion.setRating(opinionAddCommand.getRating());
         opinion.setComment(opinionAddCommand.getComment());
         opinionRepository.save(opinion);
@@ -41,7 +41,6 @@ public class OpinionService {
     }
 
     public double getAverageRating(Long mealId) {
-        checkIfMealExists(mealId);
         final List<Opinion> opinions = opinionRepository.findAll();
         return opinions.stream()
                 .filter(opinion -> opinion.getMeal().getId().equals(mealId))
@@ -65,7 +64,6 @@ public class OpinionService {
     }
 
     public List<OpinionResponseDTO> getOpinionsForMeal(Long mealId) {
-        checkIfMealExists(mealId);
         final List<Opinion> opinions = opinionRepository.findAll();
 
         if (opinions.isEmpty()) {
@@ -79,7 +77,7 @@ public class OpinionService {
     }
 
     public OpinionResponseDTO updateOpinion(OpinionAddCommand opinionAddCommand) {
-        checkIfClientAndMealExists(opinionAddCommand);
+        checkIfCustomerExists(opinionAddCommand.getCustomerId());
 
         if (!opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())) {
             throw new IllegalArgumentException(NOT_FOUND_OPINIONS);
@@ -96,17 +94,6 @@ public class OpinionService {
         opinionRepository.save(opinion);
 
         return opinionMapper.mapToDto(opinion);
-    }
-
-    private void checkIfClientAndMealExists(OpinionAddCommand opinionAddCommand) {
-        checkIfMealExists(opinionAddCommand.getMealId());
-        checkIfCustomerExists(opinionAddCommand.getCustomerId());
-    }
-
-    private void checkIfMealExists(Long mealId) {
-        if (mealService.getMealById(mealId).isEmpty()) {
-            throw new NotFoundException(DISH_NOT_FOUND);
-        }
     }
 
     private void checkIfCustomerExists(Long customerId) {
