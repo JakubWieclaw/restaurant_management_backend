@@ -5,18 +5,19 @@ import java.util.List;
 import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 
 @Getter
 @NotNull
 public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
-    
+
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
     @JsonProperty("mealIds")
     private List<Long> mealIds;
@@ -33,7 +34,11 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @JsonProperty("status")
     private OrderStatus status;
 
-    public OrderAddCommand(List<Long> mealIds, Long customerId, OrderType type, OrderStatus status) {
+    @JsonCreator
+    public OrderAddCommand(List<Long> mealIds,
+            Long customerId,
+            OrderType type,
+            OrderStatus status) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
