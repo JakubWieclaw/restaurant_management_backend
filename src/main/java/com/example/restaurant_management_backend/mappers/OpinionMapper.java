@@ -1,7 +1,7 @@
 package com.example.restaurant_management_backend.mappers;
 
+import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.jpa.model.Opinion;
-import com.example.restaurant_management_backend.jpa.model.dto.OpinionResponseDTO;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,7 +1,7 @@
 package com.example.restaurant_management_backend.controllers;
 
+import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.jpa.model.command.OpinionAddCommand;
-import com.example.restaurant_management_backend.jpa.model.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.services.OpinionService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
