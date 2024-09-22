@@ -1,0 +1,54 @@
+package com.example.restaurant_management_backend.services;
+
+import com.example.restaurant_management_backend.jpa.model.Customer;
+import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@AllArgsConstructor
+public class PasswordResetService {
+
+    private final EmailService emailService;
+    private final PasswordEncoder passwordEncoder;
+    private final CustomerUserDetailsService customerService;
+
+    public void initiatePasswordReset(String email) {
+        Customer customer = customerService.getCustomerByEmailOrThrowException(email);
+
+        String token = UUID.randomUUID().toString();
+        customer.setResetToken(token);
+        customer.setResetTokenExpiry(LocalDateTime.now().plusMinutes(30));  // Token valid for 30 minutes
+        Customer savedCustomer = customerService.save(customer);
+
+        // Send the reset token to the user's email
+        String resetLink = "http://localhost:8080/password-reset?token=" + token;
+        emailService.sendPasswordResetEmail(savedCustomer.getEmail(), resetLink);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        Customer customer = customerService.getCustomerByResetTokenOrThrowException(token);
+        if (customer == null || customer.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Invalid or expired reset token.");
+        }
+
+        // Reset password
+        customer.setPassword(passwordEncoder.encode(newPassword));
+        customer.setResetToken(null);  // Invalidate the token after use
+        customer.setResetTokenExpiry(null);
+        customerService.save(customer);
+    }
+
+    public void validateResetToken(String token) {
+        Customer customer = customerService.getCustomerByResetTokenOrThrowException(token);
+
+        // Check if the token is expired
+        if (customer.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Reset token has expired.");
+        }
+    }
+}
+
