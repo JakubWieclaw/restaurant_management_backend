@@ -25,7 +25,9 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     public RegisterResponseDTO registerUser(RegisterUserCommand registerUserCommand) {
-        customerService.getCustomerByEmailOrThrowException(registerUserCommand.getEmail());
+        if (customerService.getCustomerByEmail(registerUserCommand.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Klient o podanym adresie e-mail już istnieje");
+        }
 
         Customer customer = createCustomerObject(registerUserCommand);
         Privilege privilege = new Privilege(registerUserCommand.isAdmin() ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");

@@ -11,18 +11,17 @@ import java.util.Properties;
 public class MailConfig {
 
     @Bean
-    public JavaMailSender getJavaMailSender() {
+    public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("smtp.example.com");
-        mailSender.setPort(587);
-
-        mailSender.setUsername("your-email@example.com");
-        mailSender.setPassword("your-password");
+        mailSender.setHost("smtp.gmail.com");
+        mailSender.setPort(465); // Use port 465 for SSL
+        mailSender.setUsername("restaurantmanagerbot@gmail.com");
+        mailSender.setPassword("fbfuwezoztbaxbqt");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.ssl.enable", "true"); // Enable SSL
         props.put("mail.debug", "true");
 
         return mailSender;

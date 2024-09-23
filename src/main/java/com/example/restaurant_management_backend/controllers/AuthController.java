@@ -34,20 +34,19 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // Forgot Password: Handle forgot password request to initiate the process
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
         passwordResetService.initiatePasswordReset(email);
         return ResponseEntity.ok("A password reset link has been sent to your email.");
     }
 
-    @GetMapping("/reset")
+    @GetMapping("/password-reset")
     public ResponseEntity<String> resetPasswordForm(@RequestParam("token") String token) {
         passwordResetService.validateResetToken(token);
         return ResponseEntity.ok("Valid token. Proceed to reset password.");
     }
 
-    @PostMapping("/reset")
+    @PostMapping("/password-reset")
     public ResponseEntity<String> resetPassword(@RequestParam("token") String token,
                                                 @RequestParam("newPassword") String newPassword) {
         passwordResetService.resetPassword(token, newPassword);

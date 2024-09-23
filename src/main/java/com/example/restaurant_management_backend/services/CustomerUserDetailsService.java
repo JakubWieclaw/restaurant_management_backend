@@ -47,6 +47,10 @@ public class CustomerUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono klienta o adresie e-mail " + email));
     }
 
+    public Optional<Customer> getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email);
+    }
+
     public Optional<Customer> getCustomerByResetToken(String resetToken) {
         return customerRepository.findByResetToken(resetToken);
     }

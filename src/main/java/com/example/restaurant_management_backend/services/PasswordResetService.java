@@ -1,6 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.jpa.model.Customer;
+import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,15 +26,17 @@ public class PasswordResetService {
         Customer savedCustomer = customerService.save(customer);
 
         // Send the reset token to the user's email
-        String resetLink = "http://localhost:8080/password-reset?token=" + token;
-        emailService.sendPasswordResetEmail(savedCustomer.getEmail(), resetLink);
+        String resetLink = "http://localhost:5173/auth/password-reset?token=" + token;
+        try {
+            emailService.sendPasswordResetEmail(savedCustomer.getEmail(), resetLink);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void resetPassword(String token, String newPassword) {
+        validateResetToken(token);
         Customer customer = customerService.getCustomerByResetTokenOrThrowException(token);
-        if (customer == null || customer.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Invalid or expired reset token.");
-        }
 
         // Reset password
         customer.setPassword(passwordEncoder.encode(newPassword));
