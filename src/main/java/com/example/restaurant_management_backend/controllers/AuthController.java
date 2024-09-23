@@ -5,21 +5,20 @@ import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.jpa.model.command.LoginCommand;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.services.AuthService;
+import com.example.restaurant_management_backend.services.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private AuthService authService;
+    private PasswordResetService passwordResetService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
@@ -33,5 +32,24 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginCommand loginCommand) {
         LoginResponseDTO response = authService.login(loginCommand.getEmail(), loginCommand.getPassword());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
+        passwordResetService.initiatePasswordReset(email);
+        return ResponseEntity.ok("A password reset link has been sent to your email.");
+    }
+
+    @GetMapping("/password-reset")
+    public ResponseEntity<String> resetPasswordForm(@RequestParam("token") String token) {
+        passwordResetService.validateResetToken(token);
+        return ResponseEntity.ok("Valid token. Proceed to reset password.");
+    }
+
+    @PostMapping("/password-reset")
+    public ResponseEntity<String> resetPassword(@RequestParam("token") String token,
+                                                @RequestParam("newPassword") String newPassword) {
+        passwordResetService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("Password reset successful.");
     }
 }
