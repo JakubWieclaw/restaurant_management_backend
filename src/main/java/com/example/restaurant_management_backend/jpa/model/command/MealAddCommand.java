@@ -1,19 +1,20 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import lombok.Getter;
+import com.example.restaurant_management_backend.common.SelfValidating;
+import com.example.restaurant_management_backend.jpa.model.UnitType;
 import jakarta.persistence.ElementCollection;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
-import com.example.restaurant_management_backend.jpa.model.UnitType;
-
 @Getter
+@Setter
 @NotNull
 public class MealAddCommand extends SelfValidating<MealAddCommand> {
 

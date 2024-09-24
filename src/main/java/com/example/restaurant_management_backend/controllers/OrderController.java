@@ -78,15 +78,16 @@ public class OrderController {
             }
 
             // check if all meal IDs are valid
-            for (Long mealId : orderAddCommand.getMealIds()) {
-                if (mealService.getMealById(mealId).isEmpty()) {
-                    return ResponseEntity.badRequest().body("Nie znaleziono dania o id " + mealId);
-                }
-            }
+            // for (Long mealId : orderAddCommand.getMealIds()) {
+            //     // if meal throws illegal argument exception, return bad request
+            //     // if (mealService.getMealById(mealId).isEmpty()) {
+            //     //     return ResponseEntity.badRequest().body("Nie znaleziono dania o id " + mealId);
+            //     // }
+            // }
             // count total price
             double totalPrice = 0;
             for (Long mealId : orderAddCommand.getMealIds()) {
-                totalPrice += mealService.getMealById(mealId).get().getPrice();
+                totalPrice += mealService.getMealById(mealId).getPrice();
             }
             // set order with counted total price and current date
             var order = new Order(orderAddCommand.getMealIds(), totalPrice, orderAddCommand.getCustomerId(),
@@ -101,7 +102,11 @@ public class OrderController {
                 logger.error("Validation error: {}", cause.getMessage());
                 return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            logger.error("Error while adding order", e);
+            return ResponseEntity.badRequest().body("Nie znaleziono dania o podanym id");
+        } 
+        catch (Exception e) {
             logger.error("Error while adding order", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania zamówienia");
         }

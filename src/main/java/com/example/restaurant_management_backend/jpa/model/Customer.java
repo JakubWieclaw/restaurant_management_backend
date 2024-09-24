@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -33,4 +35,8 @@ public class Customer {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "privilege_id", referencedColumnName = "id")
     private Privilege privilege;
+
+    // Fields for password reset
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
 }
