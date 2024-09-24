@@ -96,6 +96,7 @@ public class OrderController {
             return ResponseEntity.ok(order);
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
+            logger.error("Error while adding order", e);
             if (cause instanceof ConstraintViolationException) {
                 logger.error("Validation error: {}", cause.getMessage());
                 return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");

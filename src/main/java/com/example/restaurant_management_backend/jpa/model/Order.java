@@ -35,7 +35,7 @@ public class Order {
     @NotNull(message = "Typ zamówienia nie może być pusty")
     private OrderType type;
 
-    @NotBlank(message = "Status musi mieć jedną z wartości: WAITING, IN_PROGRESS, READY, IN_DELIVERY, DELIVERED, CANCELED")
+    @NotNull(message = "Status musi mieć jedną z wartości: WAITING, IN_PROGRESS, READY, IN_DELIVERY, DELIVERED, CANCELED")
     private OrderStatus status;
 
     // Date and time of order creation
