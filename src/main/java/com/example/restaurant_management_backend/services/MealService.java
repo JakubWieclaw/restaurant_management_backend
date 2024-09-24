@@ -18,6 +18,10 @@ public class MealService {
     private final CategoryRepository categoryRepository;
     private final MealMapper mealMapper;
 
+    public List<Meal> searchMealsByName(String name) {
+        return mealRepository.findByNameContainingIgnoreCase(name);
+    }
+
     public List<Meal> getAllMeals() {
         return mealRepository.findAll();
     }
@@ -63,4 +67,5 @@ public class MealService {
             throw new IllegalArgumentException("Kategoria o id " + categoryId + " nie istnieje");
         }
     }
+
 }

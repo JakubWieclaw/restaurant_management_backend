@@ -5,6 +5,7 @@ import com.example.restaurant_management_backend.jpa.model.command.MealAddComman
 import com.example.restaurant_management_backend.services.MealService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -60,5 +61,15 @@ public class MealController {
     @GetMapping("/get-meals/{categoryId}")
     public ResponseEntity<List<Meal>> getMealsByCategory(@PathVariable Long categoryId) {
         return ResponseEntity.ok(mealService.getMealsByCategoryId(categoryId));
+    }
+
+    @Operation(summary = "Search meals by name")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchMealsByName(@RequestParam("name") String name) {
+        var meals = mealService.searchMealsByName(name);
+        if (meals.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono dania o nazwie: " + name);
+        }
+        return ResponseEntity.ok(meals);
     }
 }
