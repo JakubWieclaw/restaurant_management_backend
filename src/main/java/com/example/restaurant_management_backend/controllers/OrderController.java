@@ -38,7 +38,6 @@ public class OrderController {
     private final OrderService orderService;
     private final MealService mealService;
 
-
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
@@ -74,15 +73,17 @@ public class OrderController {
         try {
             // check if customer ID is valid
             if (orderAddCommand.getCustomerId() == null) {
-                return ResponseEntity.badRequest().body("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
+                return ResponseEntity.badRequest()
+                        .body("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
             }
 
             // check if all meal IDs are valid
             // for (Long mealId : orderAddCommand.getMealIds()) {
-            //     // if meal throws illegal argument exception, return bad request
-            //     // if (mealService.getMealById(mealId).isEmpty()) {
-            //     //     return ResponseEntity.badRequest().body("Nie znaleziono dania o id " + mealId);
-            //     // }
+            // // if meal throws illegal argument exception, return bad request
+            // // if (mealService.getMealById(mealId).isEmpty()) {
+            // // return ResponseEntity.badRequest().body("Nie znaleziono dania o id " +
+            // mealId);
+            // // }
             // }
             // count total price
             double totalPrice = 0;
@@ -105,8 +106,7 @@ public class OrderController {
         } catch (IllegalArgumentException e) {
             logger.error("Error while adding order", e);
             return ResponseEntity.badRequest().body("Nie znaleziono dania o podanym id");
-        } 
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error while adding order", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania zamówienia");
         }
