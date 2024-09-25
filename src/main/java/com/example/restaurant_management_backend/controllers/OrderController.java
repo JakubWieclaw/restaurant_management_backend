@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -133,7 +134,11 @@ public class OrderController {
                 logger.error("Validation error: {}", cause.getMessage());
                 return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
             }
-        } catch (Exception e) {
+        } catch (JpaSystemException e) {
+            logger.error("Error while updating order", e);
+            return ResponseEntity.badRequest().body("Podane zamówienie nie istnieje");
+        }
+        catch (Exception e) {
             logger.error("Error while updating order", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas aktualizacji zamówienia");
         }
