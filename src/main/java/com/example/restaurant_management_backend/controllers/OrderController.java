@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.transaction.TransactionSystemException;
@@ -42,9 +43,11 @@ public class OrderController {
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
+        var logger = LoggerFactory.getLogger(OrderController.class);
         try {
             return ResponseEntity.ok(orderService.getOrders());
         } catch (Exception e) {
+            logger.error("Error while getting all orders", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówień");
         }
     }
@@ -59,7 +62,9 @@ public class OrderController {
             if (order.isPresent()) {
                 return ResponseEntity.ok(order.get());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Nie znaleziono zamówienia");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Nie znaleziono zamówienia");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówienia");

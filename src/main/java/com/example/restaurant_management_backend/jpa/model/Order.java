@@ -16,6 +16,7 @@ import lombok.*;
 @Entity(name = "orders")
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
+@NoArgsConstructor
 public class Order {
     
     @Id
