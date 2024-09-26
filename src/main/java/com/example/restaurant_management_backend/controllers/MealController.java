@@ -31,6 +31,7 @@ public class MealController {
         return ResponseEntity.ok(mealService.getMealById(id));
     }
 
+
     @Operation(summary = "Add a meal")
     @PostMapping("/add")
     public ResponseEntity<Meal> addMeal(@RequestBody MealAddCommand mealAddCommand) {
