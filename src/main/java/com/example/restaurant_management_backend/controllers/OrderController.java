@@ -1,6 +1,7 @@
 package com.example.restaurant_management_backend.controllers;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class OrderController {
         }
     }
 
-    @Operation(summary = "Add new order")
+    @Operation(summary = "Add new order with possibility to exclude unwanted ingredients (it is a map where key is index of mealId in mealIds list and value is list of unwanted ingredients)\nIt allows to exclude unwanted ingredients from specific mal, not for all meals with given id")
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {
         var logger = LoggerFactory.getLogger(OrderController.class);
@@ -83,22 +84,36 @@ public class OrderController {
                         .body("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
             }
 
-            // check if all meal IDs are valid
-            // for (Long mealId : orderAddCommand.getMealIds()) {
-            // // if meal throws illegal argument exception, return bad request
-            // // if (mealService.getMealById(mealId).isEmpty()) {
-            // // return ResponseEntity.badRequest().body("Nie znaleziono dania o id " +
-            // mealId);
-            // // }
-            // }
-            // count total price
+            // chaeck if indices provided as keys in unwantedIngredients map are within range of mealIds list
+            // The hash map key are indices of list in mealIds, not mealIds themselves
+            if (orderAddCommand.getUnwantedIngredients() != null) {
+                for (Long key : orderAddCommand.getUnwantedIngredients().keySet()) {
+                    if (key < 0 || key >= orderAddCommand.getMealIds().size()) {
+                        return ResponseEntity.badRequest().body("Niepoprawny indeks w mapie niechcianych składników");
+                    }
+                    // TODO: Check if the ingredient is actually present in the meal
+
+                    final var mealId = orderAddCommand.getMealIds().get(key.intValue());
+                    final var meal = mealService.getMealById(mealId);
+
+                    List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().get(key);
+                    List<String> mealIngredients = meal.getIngredients();
+
+                    for (String unwantedIngredient : unwantedIngredients) {
+                        if (!mealIngredients.contains(unwantedIngredient)) {
+                            return ResponseEntity.badRequest().body("Niepoprawny składnik w zbiorze niechcianych składników dla dania: " + meal.getName() + " na pozycji " + key);
+                        }
+                    }
+                }
+            }
+
             double totalPrice = 0;
             for (Long mealId : orderAddCommand.getMealIds()) {
                 totalPrice += mealService.getMealById(mealId).getPrice();
             }
             // set order with counted total price and current date
             var order = new Order(orderAddCommand.getMealIds(), totalPrice, orderAddCommand.getCustomerId(),
-                    orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now());
+                    orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now(), orderAddCommand.getUnwantedIngredients());
             orderService.addOrder(order);
             logger.info("Added new order: {}", order);
             return ResponseEntity.ok(order);
