@@ -2,6 +2,7 @@ package com.example.restaurant_management_backend.jpa.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashMap;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -43,12 +44,16 @@ public class Order {
     @NotNull(message = "Data i czas zamówienia nie mogą być puste")
     private LocalDateTime dateTime;
 
-    public Order(List<Long> mealIds, double totalPrice, Long customerId, OrderType type, OrderStatus status, LocalDateTime dateTime) {
+    // Hash HashMap of ids and list of unwanted ingredients
+    private HashMap<Long, List<String>> unwantedIngredients;
+
+    public Order(List<Long> mealIds, double totalPrice, Long customerId, OrderType type, OrderStatus status, LocalDateTime dateTime, HashMap<Long, List<String>> unwantedIngredients) {
         this.mealIds = mealIds;
         this.totalPrice = totalPrice;
         this.customerId = customerId;
         this.type = type;
         this.status = status;
         this.dateTime = dateTime;
+        this.unwantedIngredients = unwantedIngredients;
     }
 }

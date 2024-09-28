@@ -1,5 +1,7 @@
 package com.example.restaurant_management_backend.exceptions;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import jakarta.validation.ConstraintViolationException;
@@ -66,7 +68,8 @@ public class GlobalExceptionHandler {
                         .map(Object::toString)
                         .collect(Collectors.joining(", "));
 
-                String errorMessage = "Niewłaściwa wartość: " + ex.getValue() + " dla pola " + fieldName + ". Dozwolone wartości: " + allowedValues;
+                String errorMessage = "Niewłaściwa wartość: " + ex.getValue() + " dla pola " + fieldName
+                        + ". Dozwolone wartości: " + allowedValues;
                 errors.put(fieldName, errorMessage);
             } else {
                 // Handle other cases where the target type is not an enum
@@ -109,7 +112,18 @@ public class GlobalExceptionHandler {
             }
         }
         if (cause instanceof InvalidFormatException) {
-            return handleInvalidFormatException((InvalidFormatException) cause);         
+            return handleInvalidFormatException((InvalidFormatException) cause);
+        }
+
+        if (cause instanceof JsonMappingException) {
+            // if cause of the cause is JsonParseException, handle it
+            Throwable causeOfCause = cause.getCause();
+            if (causeOfCause instanceof JsonParseException) {
+                return handleJsonParseException((JsonParseException) causeOfCause);
+            }
+        }
+        if (cause instanceof JsonParseException) {
+            return handleJsonParseException((JsonParseException) cause);
         }
 
         // If no errors were found, add a generic error message
@@ -117,6 +131,21 @@ public class GlobalExceptionHandler {
             errors.put("error", ex.getMessage());
         }
         // Return the errors map as the response
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JsonParseException.class)
+    public ResponseEntity<Map<String, String>> handleJsonParseException(JsonParseException ex) {
+        logger.error("JSON parsing error", ex);
+        Map<String, String> errors = new HashMap<>();
+
+        // Extract the full message from the exception
+        String fullMessage = ex.getOriginalMessage(); // Get the original error message from the exception
+
+        // Add the extracted error message to the response
+        errors.put("error", fullMessage);
+
+        // Return the error response with a BAD_REQUEST status
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 

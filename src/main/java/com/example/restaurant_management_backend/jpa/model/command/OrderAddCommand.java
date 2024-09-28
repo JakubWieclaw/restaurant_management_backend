@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.example.restaurant_management_backend.common.SelfValidating;
@@ -25,14 +26,18 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @NotNull(message = "Status musi mieć jedną z wartości: OCZEKUJACE, W_TRAKCIE_REALIZACJI, GOTOWE, W_DOSTRACZENIU, DOSTARCZONE, ODRZUCONE")
     private OrderStatus status;
 
+    private HashMap<Long, List<String>> unwantedIngredients;
+
     public OrderAddCommand(List<Long> mealIds,
             Long customerId,
             OrderType type,
-            OrderStatus status) {
+            OrderStatus status,
+            HashMap<Long, List<String>> unwantedIngredients) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
         this.status = status;
+        this.unwantedIngredients = unwantedIngredients;
         validateSelf();
     }
 }
