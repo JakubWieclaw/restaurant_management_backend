@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity(name = "orders")
@@ -47,7 +48,11 @@ public class Order {
     // Hash HashMap of ids and list of unwanted ingredients
     private HashMap<Long, List<String>> unwantedIngredients;
 
-    public Order(List<Long> mealIds, double totalPrice, Long customerId, OrderType type, OrderStatus status, LocalDateTime dateTime, HashMap<Long, List<String>> unwantedIngredients) {
+    // Up to 150 characters
+    @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
+    private String deliveryAddress;
+
+    public Order(List<Long> mealIds, double totalPrice, Long customerId, OrderType type, OrderStatus status, LocalDateTime dateTime, HashMap<Long, List<String>> unwantedIngredients, String deliveryAddress) {
         this.mealIds = mealIds;
         this.totalPrice = totalPrice;
         this.customerId = customerId;
@@ -55,5 +60,6 @@ public class Order {
         this.status = status;
         this.dateTime = dateTime;
         this.unwantedIngredients = unwantedIngredients;
+        this.deliveryAddress = deliveryAddress;
     }
 }

@@ -8,6 +8,7 @@ import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 @Getter
@@ -28,16 +29,21 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
 
     private HashMap<Long, List<String>> unwantedIngredients;
 
+    @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
+    private String deliveryAddress;
+
     public OrderAddCommand(List<Long> mealIds,
             Long customerId,
             OrderType type,
             OrderStatus status,
-            HashMap<Long, List<String>> unwantedIngredients) {
+            HashMap<Long, List<String>> unwantedIngredients,
+            String deliveryAddress) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
         this.status = status;
         this.unwantedIngredients = unwantedIngredients;
+        this.deliveryAddress = deliveryAddress;
         validateSelf();
     }
 }
