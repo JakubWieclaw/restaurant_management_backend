@@ -113,7 +113,7 @@ public class OrderController {
             }
             // set order with counted total price and current date
             var order = new Order(orderAddCommand.getMealIds(), totalPrice, orderAddCommand.getCustomerId(),
-                    orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now(), orderAddCommand.getUnwantedIngredients());
+                    orderAddCommand.getType(), orderAddCommand.getStatus(), LocalDateTime.now(), orderAddCommand.getUnwantedIngredients(), orderAddCommand.getDeliveryAddress());
             orderService.addOrder(order);
             logger.info("Added new order: {}", order);
             return ResponseEntity.ok(order);
