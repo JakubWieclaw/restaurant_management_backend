@@ -8,23 +8,24 @@ import com.example.restaurant_management_backend.services.AuthService;
 import com.example.restaurant_management_backend.services.PasswordResetService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthController {
 
-    private AuthService authService;
-    private PasswordResetService passwordResetService;
+    private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user")
     public ResponseEntity<RegisterResponseDTO> registerUser(@Valid @RequestBody RegisterUserCommand registerUserCommand) {
         RegisterResponseDTO response = authService.registerUser(registerUserCommand);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
@@ -35,21 +36,24 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
+    @Operation(summary = "Initiate password reset process")
+    public ResponseEntity<Void> forgotPassword(@RequestParam("email") String email) {
         passwordResetService.initiatePasswordReset(email);
-        return ResponseEntity.ok("A password reset link has been sent to your email.");
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/password-reset")
+    @Operation(summary = "Validate password reset token")
     public ResponseEntity<String> resetPasswordForm(@RequestParam("token") String token) {
         passwordResetService.validateResetToken(token);
-        return ResponseEntity.ok("Valid token. Proceed to reset password.");
+        return ResponseEntity.ok("Token jest ważny. Postępuj zgodnie z instrukcjami na stronie.");
     }
 
     @PostMapping("/password-reset")
-    public ResponseEntity<String> resetPassword(@RequestParam("token") String token,
-                                                @RequestParam("newPassword") String newPassword) {
+    @Operation(summary = "Reset password")
+    public ResponseEntity<Void> resetPassword(@RequestParam("token") String token,
+                                              @RequestParam("newPassword") String newPassword) {
         passwordResetService.resetPassword(token, newPassword);
-        return ResponseEntity.ok("Password reset successful.");
+        return ResponseEntity.noContent().build();
     }
 }

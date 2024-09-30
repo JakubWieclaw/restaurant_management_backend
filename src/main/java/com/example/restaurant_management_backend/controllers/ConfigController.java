@@ -9,8 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,38 +27,61 @@ public class ConfigController {
 
     private final ConfigService configService;
 
-    @Operation(summary = "Initialize system")
+    @Operation(summary = "Initialize the system with configuration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "System successfully initialized"),
+            @ApiResponse(responseCode = "409", description = "System already initialized", content = @Content)
+    })
     @PostMapping("/initialize-system")
-    public ResponseEntity<String> initializeSystem(@Valid @RequestBody ConfigAddCommand configAddCommand) {
+    public ResponseEntity<Void> initializeSystem(@Valid @RequestBody ConfigAddCommand configAddCommand) {
         configService.initialize(configAddCommand);
-        return ResponseEntity.ok("Poprawnie zainicjalizowano system dla restauracji " + configAddCommand.getRestaurantName());
+        return ResponseEntity.status(HttpStatus.CREATED).build(); // Return 201 Created
     }
 
-    @Operation(summary = "Get config")
-    @ApiResponse(description = "Returns the configuration of the system", responseCode = "200", content = {
-            @Content(mediaType = "application/json", schema = @Schema(implementation = Config.class))})
+    @Operation(summary = "Get system configuration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns the system configuration", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = Config.class))}),
+            @ApiResponse(responseCode = "404", description = "System not initialized", content = @Content)
+    })
     @GetMapping
     public ResponseEntity<Config> getConfig() {
         Config config = configService.getConfig();
         return ResponseEntity.ok(config);
     }
 
+    @Operation(summary = "Remove all configurations including delivery prices and opening hours (testing purposes only)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Configuration successfully removed"),
+            @ApiResponse(responseCode = "404", description = "No configuration to remove", content = @Content)
+    })
     @DeleteMapping
-    @Operation(summary = "Remove config, delivery prices and opening hours, only for testing purposes")
-    public ResponseEntity<String> removeConfigs() {
+    public ResponseEntity<Void> removeConfigs() {
         configService.removeAll();
-        return ResponseEntity.ok("Pomyślnie usunięto konfigurację");
+        return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Get delivery prices configuration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns the delivery pricing configuration", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = DeliveryPricing.class))}),
+            @ApiResponse(responseCode = "404", description = "System not initialized", content = @Content)
+    })
     @GetMapping("/delivery-prices")
-    @Operation(summary = "Get delivery prices")
     public ResponseEntity<List<DeliveryPricing>> getDeliveryPrices() {
-        return ResponseEntity.ok(configService.getDeliveryPrices());
+        List<DeliveryPricing> deliveryPrices = configService.getDeliveryPrices();
+        return ResponseEntity.ok(deliveryPrices);
     }
 
+    @Operation(summary = "Get opening hours configuration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns the opening hours configuration", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = OpeningHour.class))}),
+            @ApiResponse(responseCode = "404", description = "System not initialized", content = @Content)
+    })
     @GetMapping("/opening-hours")
-    @Operation(summary = "Get opening hours")
     public ResponseEntity<List<OpeningHour>> getOpeningHours() {
-        return ResponseEntity.ok(configService.openingHours());
+        List<OpeningHour> openingHours = configService.getOpeningHours();
+        return ResponseEntity.ok(openingHours);
     }
 }

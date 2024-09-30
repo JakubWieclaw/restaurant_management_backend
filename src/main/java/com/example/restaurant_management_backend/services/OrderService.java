@@ -1,14 +1,12 @@
 package com.example.restaurant_management_backend.services;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,11 +19,11 @@ public class OrderService {
     }
 
     public Optional<Order> getOrderById(Long id) {
-        return Optional.ofNullable(orderRepository.findById(id).orElse(null));
+        return orderRepository.findById(id);
     }
 
-    public Order addOrder(Order order) {
-        return orderRepository.save(order);
+    public void addOrder(Order order) {
+        orderRepository.save(order);
     }
 
     public Order updateOrder(Long id, Order order) {

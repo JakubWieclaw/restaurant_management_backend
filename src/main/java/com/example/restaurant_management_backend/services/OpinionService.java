@@ -2,6 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Opinion;
 import com.example.restaurant_management_backend.jpa.model.command.OpinionAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.OpinionRepository;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +21,7 @@ public class OpinionService {
     public static final String DISH_NOT_FOUND = "Nie znaleziono dania";
     public static final String CLIENT_NOT_FOUND = "Nie znaleziono klienta";
     public static final String OPINION_ALREADY_EXISTS = "Opinia dla tego dania już istnieje";
+
     private final MealService mealService;
     private final OpinionRepository opinionRepository;
     private final CustomerUserDetailsService customerService;
@@ -26,8 +29,9 @@ public class OpinionService {
 
     public OpinionResponseDTO addOpinion(OpinionAddCommand opinionAddCommand) {
         checkIfCustomerExists(opinionAddCommand.getCustomerId());
+
         if (opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())) {
-            throw new IllegalArgumentException(OPINION_ALREADY_EXISTS);
+            throw new ResourceConflictException(OPINION_ALREADY_EXISTS);
         }
 
         Opinion opinion = new Opinion();
@@ -35,43 +39,27 @@ public class OpinionService {
         opinion.setCustomer(customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId()));
         opinion.setRating(opinionAddCommand.getRating());
         opinion.setComment(opinionAddCommand.getComment());
-        opinionRepository.save(opinion);
 
+        opinionRepository.save(opinion);
         return opinionMapper.mapToDto(opinion);
     }
 
-    public double getAverageRating(Long mealId) {
-        final List<Opinion> opinions = opinionRepository.findAll();
-        return opinions.stream()
-                .filter(opinion -> opinion.getMeal().getId().equals(mealId))
-                .mapToInt(Opinion::getRating)
-                .average()
-                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND_OPINIONS));
+    public Optional<Double> getAverageRating(Long mealId) {
+        List<Opinion> opinions = opinionRepository.findByMealId(mealId);
+        return opinions.isEmpty()
+                ? Optional.empty()
+                : Optional.of(opinions.stream().mapToInt(Opinion::getRating).average().orElse(0.0));
     }
 
     public List<OpinionResponseDTO> getOpinionsForCustomer(Long customerId) {
         checkIfCustomerExists(customerId);
-        final List<Opinion> opinions = opinionRepository.findAll();
-
-        if (opinions.isEmpty()) {
-            throw new IllegalArgumentException(NOT_FOUND_OPINIONS);
-        }
-
-        return opinions.stream()
-                .filter(opinion -> opinion.getCustomer().getId().equals(customerId))
+        return opinionRepository.findByCustomerId(customerId).stream()
                 .map(opinionMapper::mapToDto)
                 .collect(Collectors.toList());
     }
 
     public List<OpinionResponseDTO> getOpinionsForMeal(Long mealId) {
-        final List<Opinion> opinions = opinionRepository.findAll();
-
-        if (opinions.isEmpty()) {
-            throw new IllegalArgumentException(NOT_FOUND_OPINIONS);
-        }
-
-        return opinions.stream()
-                .filter(opinion -> opinion.getMeal().getId().equals(mealId))
+        return opinionRepository.findByMealId(mealId).stream()
                 .map(opinionMapper::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -79,15 +67,8 @@ public class OpinionService {
     public OpinionResponseDTO updateOpinion(OpinionAddCommand opinionAddCommand) {
         checkIfCustomerExists(opinionAddCommand.getCustomerId());
 
-        if (!opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())) {
-            throw new IllegalArgumentException(NOT_FOUND_OPINIONS);
-        }
-
-        Opinion opinion = opinionRepository.findAll().stream()
-                .filter(op -> op.getMeal().getId().equals(opinionAddCommand.getMealId()))
-                .filter(op -> op.getCustomer().getId().equals(opinionAddCommand.getCustomerId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(NOT_FOUND_OPINIONS));
+        Opinion opinion = opinionRepository.findByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_OPINIONS));
 
         opinion.setRating(opinionAddCommand.getRating());
         opinion.setComment(opinionAddCommand.getComment());

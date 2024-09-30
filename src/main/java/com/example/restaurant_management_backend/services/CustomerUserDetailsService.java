@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
@@ -39,12 +40,12 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     public Customer getCustomerByIdOrThrowException(Long id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono klienta o id " + id));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono klienta o id " + id));
     }
 
     public Customer getCustomerByEmailOrThrowException(String email) {
         return customerRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono klienta o adresie e-mail " + email));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono klienta o adresie e-mail " + email));
     }
 
     public Optional<Customer> getCustomerByEmail(String email) {
@@ -57,7 +58,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     public Customer getCustomerByResetTokenOrThrowException(String resetToken) {
         return customerRepository.findByResetToken(resetToken)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono klienta z tokenem resetującym " + resetToken));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono klienta z tokenem resetującym " + resetToken));
     }
 
     public Customer save(Customer customer) {

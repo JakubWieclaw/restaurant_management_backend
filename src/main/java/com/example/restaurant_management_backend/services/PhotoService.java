@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ public class PhotoService {
 
     public String uploadPhoto(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new IllegalArgumentException("Nie podano pliku");
+            throw new NotFoundException("Nie podano pliku");
         }
 
         String uploadDirPath = new File(UPLOAD_DIR).getAbsolutePath();
@@ -36,7 +37,7 @@ public class PhotoService {
         Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists()) {
-            throw new IllegalArgumentException("Nie znaleziono pliku o nazwie " + filename);
+            throw new NotFoundException("Nie znaleziono pliku o nazwie " + filename);
         }
 
         return resource;

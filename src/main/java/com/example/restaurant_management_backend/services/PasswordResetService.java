@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ public class PasswordResetService {
 
         // Check if the token is expired
         if (customer.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Reset token has expired.");
+            throw new CredentialsExpiredException("Token resetujący stracił ważność.");
         }
     }
 }

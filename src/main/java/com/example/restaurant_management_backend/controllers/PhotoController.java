@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,12 +29,12 @@ public class PhotoController {
     @Operation(summary = "Upload a file", description = "Uploads an image file", requestBody = @RequestBody(content = @Content(mediaType = "multipart/form-data", schema = @Schema(type = "object", properties = {
             @StringToClassMapItem(key = "file", value = MultipartFile.class)
     }))), responses = {
-            @ApiResponse(responseCode = "200", description = "File uploaded successfully"),
+            @ApiResponse(responseCode = "201", description = "File uploaded successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid file")
     })
     public ResponseEntity<String> uploadPhoto(@RequestParam("file") MultipartFile file) throws IOException {
         String fileName = photoService.uploadPhoto(file);
-        return ResponseEntity.ok(fileName);
+        return ResponseEntity.status(HttpStatus.CREATED).body(fileName);
     }
 
     @GetMapping("/download")

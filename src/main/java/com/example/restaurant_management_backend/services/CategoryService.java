@@ -1,5 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.model.command.CategoryAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
@@ -22,7 +24,7 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono kategorii o id " + id));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono kategorii o id " + id));
     }
 
     public Category addCategory(CategoryAddCommand categoryAddCommand) {
@@ -44,7 +46,7 @@ public class CategoryService {
 
     public void deleteCategoryById(Long id) {
         if (mealRepository.existsByCategoryId(id)) {
-            throw new IllegalStateException("Nie można usunąć kategorii, ponieważ są z nią powiązane posiłki.");
+            throw new ResourceConflictException("Nie można usunąć kategorii, ponieważ są z nią powiązane posiłki.");
         }
         categoryRepository.deleteById(id);
     }

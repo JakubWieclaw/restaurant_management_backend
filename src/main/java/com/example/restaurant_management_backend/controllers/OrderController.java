@@ -1,9 +1,15 @@
 package com.example.restaurant_management_backend.controllers;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
+import com.example.restaurant_management_backend.jpa.model.Order;
+import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
+import com.example.restaurant_management_backend.services.MealService;
+import com.example.restaurant_management_backend.services.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,26 +17,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.restaurant_management_backend.jpa.model.Order;
-import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
-import com.example.restaurant_management_backend.services.MealService;
-import com.example.restaurant_management_backend.services.OrderService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-// import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -124,9 +115,6 @@ public class OrderController {
                 logger.error("Validation error: {}", cause.getMessage());
                 return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
             }
-        } catch (IllegalArgumentException e) {
-            logger.error("Error while adding order", e);
-            return ResponseEntity.badRequest().body("Nie znaleziono dania o podanym id");
         } catch (Exception e) {
             logger.error("Error while adding order", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania zamówienia");

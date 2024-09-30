@@ -2,6 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.dto.LoginResponseDTO;
 import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
+import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
@@ -26,7 +27,7 @@ public class AuthService {
 
     public RegisterResponseDTO registerUser(RegisterUserCommand registerUserCommand) {
         if (customerService.getCustomerByEmail(registerUserCommand.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Klient o podanym adresie e-mail już istnieje");
+            throw new ResourceConflictException("Użytownik o podanym adresie email już istnieje");
         }
 
         Customer customer = createCustomerObject(registerUserCommand);
@@ -34,12 +35,7 @@ public class AuthService {
         customer.setPrivilege(privilege);
         Customer savedCustomer = customerService.save(customer);
 
-        return new RegisterResponseDTO(
-                savedCustomer.getId(),
-                savedCustomer.getName(),
-                savedCustomer.getSurname(),
-                savedCustomer.getEmail(),
-                savedCustomer.getPhone());
+        return buildRegisterResponse(savedCustomer);
     }
 
     public LoginResponseDTO login(String email, String password) {
@@ -52,29 +48,40 @@ public class AuthService {
             Customer customer = customerService.getCustomerByEmailOrThrowException(email);
             boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
 
-            return new LoginResponseDTO(
-                    token,
-                    customer.getId(),
-                    customer.getName(),
-                    customer.getSurname(),
-                    customer.getEmail(),
-                    isAdmin
-            );
+            return buildLoginResponse(customer, token, isAdmin);
+        } else {
+            throw new BadCredentialsException("Złe dane logowania");
         }
-
-        throw new BadCredentialsException("Logowanie nie powiodło się");
     }
 
-
     private Customer createCustomerObject(RegisterUserCommand registerUserCommand) {
-        Customer customer = new Customer();
+        return Customer.builder()
+                .name(registerUserCommand.getName())
+                .surname(registerUserCommand.getSurname())
+                .email(registerUserCommand.getEmail())
+                .phone(registerUserCommand.getPhone())
+                .password(passwordEncoder.encode(registerUserCommand.getPassword()))
+                .build();
+    }
 
-        customer.setName(registerUserCommand.getName());
-        customer.setSurname(registerUserCommand.getSurname());
-        customer.setEmail(registerUserCommand.getEmail());
-        customer.setPhone(registerUserCommand.getPhone());
-        customer.setPassword(passwordEncoder.encode(registerUserCommand.getPassword()));
+    private RegisterResponseDTO buildRegisterResponse(Customer customer) {
+        return new RegisterResponseDTO(
+                customer.getId(),
+                customer.getName(),
+                customer.getSurname(),
+                customer.getEmail(),
+                customer.getPhone()
+        );
+    }
 
-        return customer;
+    private LoginResponseDTO buildLoginResponse(Customer customer, String token, boolean isAdmin) {
+        return new LoginResponseDTO(
+                token,
+                customer.getId(),
+                customer.getName(),
+                customer.getSurname(),
+                customer.getEmail(),
+                isAdmin
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
@@ -28,7 +29,7 @@ public class MealService {
 
     public Meal getMealById(Long id) {
         return mealRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono dania o id " + id));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono dania o id " + id));
     }
 
     public Meal addMeal(MealAddCommand mealAddCommand) {
@@ -46,7 +47,7 @@ public class MealService {
 
     public void deleteMealById(Long id) {
         if (!mealRepository.existsById(id)) {
-            throw new IllegalArgumentException("Nie znaleziono dania o id " + id);
+            throw new NotFoundException("Nie znaleziono dania o id " + id);
         }
         mealRepository.deleteById(id);
     }
@@ -64,7 +65,7 @@ public class MealService {
 
     private void validateCategory(Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
-            throw new IllegalArgumentException("Kategoria o id " + categoryId + " nie istnieje");
+            throw new NotFoundException("Kategoria o id " + categoryId + " nie istnieje");
         }
     }
 

@@ -1,5 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.SystemAlreadyInitializedException;
+import com.example.restaurant_management_backend.exceptions.SystemNotInitializedException;
 import com.example.restaurant_management_backend.jpa.model.Config;
 import com.example.restaurant_management_backend.jpa.model.DeliveryPricing;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
@@ -13,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -23,15 +24,25 @@ public class ConfigService {
     private final OpeningHourRepository openingHourRepository;
     private final ConfigMapper configMapper;
 
-    public boolean isSystemInitialized() {
-        return !configRepository.findAll().isEmpty();
+    private boolean isSystemInitialized() {
+        return configRepository.count() > 0;
+    }
+
+    private void ensureSystemNotInitialized() {
+        if (isSystemInitialized()) {
+            throw new SystemAlreadyInitializedException("System został już zainicjalizowany.");
+        }
+    }
+
+    private void ensureSystemInitialized() {
+        if (!isSystemInitialized()) {
+            throw new SystemNotInitializedException("System nie został jeszcze zainicjalizowany.");
+        }
     }
 
     @Transactional
     public void initialize(ConfigAddCommand configAddCommand) {
-        if (isSystemInitialized()) {
-            throw new IllegalArgumentException("System został już zainicjalizowany");
-        }
+        ensureSystemNotInitialized();
 
         deliveryPriceRepository.saveAll(configAddCommand.getDeliveryPricings());
         openingHourRepository.saveAll(configAddCommand.getOpeningHours());
@@ -42,28 +53,22 @@ public class ConfigService {
         return configRepository.findAll()
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("System nie został zainicjalizowany"));
+                .orElseThrow(() -> new SystemNotInitializedException("System nie został jeszcze zainicjalizowany."));
     }
 
     public List<DeliveryPricing> getDeliveryPrices() {
-        if (!isSystemInitialized()) {
-            throw new IllegalArgumentException("System nie został zainicjalizowany");
-        }
+        ensureSystemInitialized();
         return deliveryPriceRepository.findAll();
     }
 
-    public List<OpeningHour> openingHours() {
-        if (!isSystemInitialized()) {
-            throw new IllegalArgumentException("System nie został zainicjalizowany");
-        }
+    public List<OpeningHour> getOpeningHours() {
+        ensureSystemInitialized();
         return openingHourRepository.findAll();
     }
 
     @Transactional
     public void removeAll() {
-        if (!isSystemInitialized()) {
-            throw new IllegalArgumentException("Nie ma wgranej żadnej konfiguracji");
-        }
+        ensureSystemInitialized();
 
         deliveryPriceRepository.deleteAll();
         openingHourRepository.deleteAll();

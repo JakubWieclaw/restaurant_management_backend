@@ -24,26 +24,29 @@ public class OpinionController {
     @PostMapping("/add")
     public ResponseEntity<OpinionResponseDTO> addOpinion(@RequestBody @Valid OpinionAddCommand opinionAddCommand) {
         OpinionResponseDTO opinion = opinionService.addOpinion(opinionAddCommand);
-        return ResponseEntity.ok(opinion);
+        return ResponseEntity.status(201).body(opinion);
     }
 
     @Operation(summary = "Get average rating for meal")
     @GetMapping("/average-rating/{mealId}")
     public ResponseEntity<Double> getAverageRating(@PathVariable Long mealId) {
-        double averageRating = opinionService.getAverageRating(mealId);
-        return ResponseEntity.ok(averageRating);
+        return opinionService.getAverageRating(mealId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @Operation(summary = "Get opinions for customer")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OpinionResponseDTO>> getOpinionsForCustomer(@PathVariable Long customerId) {
-        return ResponseEntity.ok(opinionService.getOpinionsForCustomer(customerId));
+        List<OpinionResponseDTO> opinions = opinionService.getOpinionsForCustomer(customerId);
+        return opinions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(opinions);
     }
 
     @Operation(summary = "Get opinions for meal")
     @GetMapping("/meal/{mealId}")
     public ResponseEntity<List<OpinionResponseDTO>> getOpinionsForMeal(@PathVariable Long mealId) {
-        return ResponseEntity.ok(opinionService.getOpinionsForMeal(mealId));
+        List<OpinionResponseDTO> opinions = opinionService.getOpinionsForMeal(mealId);
+        return opinions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(opinions);
     }
 
     @Operation(summary = "Update opinion for customer")

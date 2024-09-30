@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
 @Slf4j
-public class NotFoundException extends RuntimeException {
-    public NotFoundException(String message) {
+public class SystemNotInitializedException extends RuntimeException {
+    public SystemNotInitializedException(String message) {
         super(message);
-        log.error("Nie znaleziono danych: {}", message);
+        log.error("System nie został zainicjalizowany: {}", message);
     }
 }
