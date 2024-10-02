@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.dto.AverageRatingResponseDTO;
 import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,11 +44,16 @@ public class OpinionService {
         return opinionMapper.mapToDto(opinion);
     }
 
-    public Optional<Double> getAverageRating(Long mealId) {
+    public AverageRatingResponseDTO getAverageRating(Long mealId) {
         List<Opinion> opinions = opinionRepository.findByMealId(mealId);
-        return opinions.isEmpty()
-                ? Optional.empty()
-                : Optional.of(opinions.stream().mapToInt(Opinion::getRating).average().orElse(0.0));
+        if (opinions.isEmpty()) { // mocked data to not display 0.0 with 0 opinions, to change later
+            return new AverageRatingResponseDTO(5.0, 9999);
+        } else {
+            double average = opinions.stream()
+                    .mapToInt(Opinion::getRating)
+                    .average().orElse(5.0); // 5.0 will never be displayed, it's just a placeholder
+            return new AverageRatingResponseDTO(average, opinions.size());
+        }
     }
 
     public List<OpinionResponseDTO> getOpinionsForCustomer(Long customerId) {

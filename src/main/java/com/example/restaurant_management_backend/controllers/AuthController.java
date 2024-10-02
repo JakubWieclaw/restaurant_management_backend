@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/auth")
@@ -46,7 +49,7 @@ public class AuthController {
     @Operation(summary = "Validate password reset token")
     public ResponseEntity<String> resetPasswordForm(@RequestParam("token") String token) {
         passwordResetService.validateResetToken(token);
-        return ResponseEntity.ok("Token jest ważny. Postępuj zgodnie z instrukcjami na stronie.");
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/password-reset")
@@ -54,6 +57,10 @@ public class AuthController {
     public ResponseEntity<Void> resetPassword(@RequestParam("token") String token,
                                               @RequestParam("newPassword") String newPassword) {
         passwordResetService.resetPassword(token, newPassword);
-        return ResponseEntity.noContent().build();
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl("http://localhost:5173/auth")
+                .build()
+                .toUri();
+        return ResponseEntity.status(HttpStatus.SEE_OTHER).location(uri).build();
     }
 }

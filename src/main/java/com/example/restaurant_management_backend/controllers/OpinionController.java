@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.controllers;
 
+import com.example.restaurant_management_backend.dto.AverageRatingResponseDTO;
 import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.jpa.model.command.OpinionAddCommand;
 import com.example.restaurant_management_backend.services.OpinionService;
@@ -29,30 +30,25 @@ public class OpinionController {
 
     @Operation(summary = "Get average rating for meal")
     @GetMapping("/average-rating/{mealId}")
-    public ResponseEntity<Double> getAverageRating(@PathVariable Long mealId) {
-        return opinionService.getAverageRating(mealId)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.noContent().build());
+    public ResponseEntity<AverageRatingResponseDTO> getAverageRating(@PathVariable Long mealId) {
+        return ResponseEntity.ok(opinionService.getAverageRating(mealId));
     }
 
     @Operation(summary = "Get opinions for customer")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<OpinionResponseDTO>> getOpinionsForCustomer(@PathVariable Long customerId) {
-        List<OpinionResponseDTO> opinions = opinionService.getOpinionsForCustomer(customerId);
-        return opinions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(opinions);
+        return ResponseEntity.ok(opinionService.getOpinionsForCustomer(customerId));
     }
 
     @Operation(summary = "Get opinions for meal")
     @GetMapping("/meal/{mealId}")
     public ResponseEntity<List<OpinionResponseDTO>> getOpinionsForMeal(@PathVariable Long mealId) {
-        List<OpinionResponseDTO> opinions = opinionService.getOpinionsForMeal(mealId);
-        return opinions.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(opinions);
+        return ResponseEntity.ok(opinionService.getOpinionsForMeal(mealId));
     }
 
     @Operation(summary = "Update opinion for customer")
     @PutMapping("/update")
     public ResponseEntity<OpinionResponseDTO> updateOpinion(@RequestBody @Valid OpinionAddCommand opinionAddCommand) {
-        OpinionResponseDTO opinion = opinionService.updateOpinion(opinionAddCommand);
-        return ResponseEntity.ok(opinion);
+        return ResponseEntity.ok(opinionService.updateOpinion(opinionAddCommand));
     }
 }
