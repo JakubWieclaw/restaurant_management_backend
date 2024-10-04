@@ -34,10 +34,17 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        // Whitelist Swagger UI and public endpoints
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**", "/auth/**", "/api/**", "/admin/api/config/**").permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**",
+                                "/auth/**",
+                                "/api/**",
+                                "/admin/api/config/**",
+                                "/error")
+                        .permitAll()
 
-                        // Any other request requires authentication
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable) // enable this after testing in production

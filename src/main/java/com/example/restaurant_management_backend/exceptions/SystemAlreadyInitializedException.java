@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class SystemAlreadyInitializedException extends RuntimeException {
     public SystemAlreadyInitializedException(String message) {
         super(message);
-        log.error("System został już zainicjowany: {}", message);
+        log.error("System already initialized: {}", message);
     }
 }
