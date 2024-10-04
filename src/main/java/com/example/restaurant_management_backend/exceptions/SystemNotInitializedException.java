@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class SystemNotInitializedException extends RuntimeException {
     public SystemNotInitializedException(String message) {
         super(message);
-        log.error("System nie został zainicjalizowany: {}", message);
+        log.error("System not initialized yet: {}", message);
     }
 }
