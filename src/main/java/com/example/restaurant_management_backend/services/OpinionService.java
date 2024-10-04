@@ -46,8 +46,8 @@ public class OpinionService {
 
     public AverageRatingResponseDTO getAverageRating(Long mealId) {
         List<Opinion> opinions = opinionRepository.findByMealId(mealId);
-        if (opinions.isEmpty()) { // mocked data to not display 0.0 with 0 opinions, to change later
-            return new AverageRatingResponseDTO(5.0, 9999);
+        if (opinions.isEmpty()) {
+            return new AverageRatingResponseDTO(null, 0);
         } else {
             double average = opinions.stream()
                     .mapToInt(Opinion::getRating)
