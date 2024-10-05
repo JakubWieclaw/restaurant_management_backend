@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
         super(message);
-        log.error("Nie znaleziono danych: {}", message);
+        log.error("Not found: {}", message);
     }
 }
