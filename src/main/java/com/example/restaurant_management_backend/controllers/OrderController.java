@@ -60,6 +60,20 @@ public class OrderController {
         }
     }
 
+    @Operation(summary = "Get all orders of a customer")
+    @GetMapping("/get/customer/{customerId}")
+    public ResponseEntity<?> getAllOrdersOfCustomer(@PathVariable Long customerId) {
+        var logger = LoggerFactory.getLogger(OrderController.class);
+        try {
+            return ResponseEntity.ok(orderService.getAllOrdersOfCustomer(customerId));
+        } catch (NotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }  catch (Exception e) {
+            logger.error("Error while getting all orders of customer", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówień klienta");
+        }
+    }
+
     @Operation(summary = "Add new order")
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {

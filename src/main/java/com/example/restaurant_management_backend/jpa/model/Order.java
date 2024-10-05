@@ -53,9 +53,12 @@ public class Order {
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
+    @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
+    private int deliveryDistance;
+
     public Order(List<MealQuantity> mealIds, double totalPrice, Long customerId, OrderType type,
             OrderStatus status, LocalDateTime dateTime, HashMap<Integer, List<String>> unwantedIngredients,
-            String deliveryAddress) {
+            String deliveryAddress, int deliveryDistance) {
         this.mealIds = mealIds;
         this.totalPrice = totalPrice;
         this.customerId = customerId;
@@ -64,5 +67,6 @@ public class Order {
         this.dateTime = dateTime;
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
+        this.deliveryDistance = deliveryDistance;
     }
 }

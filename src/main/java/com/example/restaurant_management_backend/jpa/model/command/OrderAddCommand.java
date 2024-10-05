@@ -34,18 +34,23 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
+    @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
+    private int deliveryDistance;
+
     public OrderAddCommand(List<MealQuantity> mealIds,
                            Long customerId,
                            OrderType type,
                            OrderStatus status,
                            HashMap<Integer, List<String>> unwantedIngredients,
-                           String deliveryAddress) {
+                           String deliveryAddress,
+                           int deliveryDistance) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
         this.status = status;
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
+        this.deliveryDistance = deliveryDistance;
         validateSelf();
     }
 }
