@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -149,30 +149,59 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TransactionSystemException.class)
-    public ResponseEntity<Map<String, String>> handleTransactionSystemException(TransactionSystemException ex) {
+    public ResponseEntity<StandardErrorResponse> handleTransactionSystemException(TransactionSystemException ex, HttpServletRequest request) {
         Throwable cause = ex.getRootCause();
-        if (cause instanceof ConstraintViolationException) {
-            return handleConstraintViolationExceptions((ConstraintViolationException) cause);
-        }
-        return new ResponseEntity<>(Map.of("error", "Transaction error: " + ex.getMessage()),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+        String message = cause != null ? cause.getMessage() : "Wystąpił błąd transakcji";
+
+        StandardErrorResponse response = new StandardErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Błąd Transakcji",
+                message,
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
-        logger.error("Bad credentials", ex);
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
-    }
+    public ResponseEntity<StandardErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+        logger.error("Nieprawidłowe dane logowania", ex);
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<String> handleIOException(IOException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("File operation error: " + ex.getMessage());
+        StandardErrorResponse response = new StandardErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Brak Autoryzacji",
+                "Nieprawidłowe dane logowania",
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(CredentialsExpiredException.class)
-    public ResponseEntity<String> handleException(IOException ex) {
-        logger.error("Credentials expired", ex);
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Przedawnione dane: " + ex.getMessage());
+    public ResponseEntity<StandardErrorResponse> handleCredentialsExpiredException(CredentialsExpiredException ex, HttpServletRequest request) {
+        logger.error("Poświadczenia wygasły", ex);
+
+        StandardErrorResponse response = new StandardErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Wygasłe Poświadczenia",
+                "Poświadczenia wygasły",
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
+
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<StandardErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
+//        logger.error("Unhandled exception", ex);
+//
+//        StandardErrorResponse response = new StandardErrorResponse(
+//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+//                "Internal Server Error",
+//                ex.getMessage(),
+//                request.getRequestURI()
+//        );
+//
+//        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 }

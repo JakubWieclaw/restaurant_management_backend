@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -29,6 +30,7 @@ public class Customer {
     @NotBlank(message = "Numer telefonu nie może być pusty")
     private String phone;
 
+    @JsonIgnore
     @NotBlank(message = "Hasło nie może być puste")
     private String password;
 
