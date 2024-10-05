@@ -1,4 +1,4 @@
-package com.example.restaurant_management_backend.dto;
+package com.example.restaurant_management_backend.jpa.model.command;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -14,20 +14,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateCouponRequestDTO {
+public class CouponAddCommand {
 
-    @NotBlank(message = "Coupon code cannot be blank")
+    @NotBlank(message = "Kod kuponu nie może być pusty")
     private String code;
 
-    @NotNull(message = "Discount percentage must be provided")
+    @NotNull(message = "Należy podać procent zniżki")
     private Double discountPercentage;
 
-    @NotNull(message = "Customer ID must be provided")
+    @NotNull(message = "Należy podać ID klienta")
     private Long customerId;
 
-    @NotNull(message = "Meal ID must be provided")
+    @NotNull(message = "Należy podać ID posiłku")
     private Long mealId;
 
-    @Future(message = "Expiry date must be in the future")
+    @Future(message = "Data wygaśnięcia musi być w przyszłości")
     private LocalDateTime expiryDate;
 }

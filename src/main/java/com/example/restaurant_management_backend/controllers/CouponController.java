@@ -1,7 +1,7 @@
 package com.example.restaurant_management_backend.controllers;
 
-import com.example.restaurant_management_backend.dto.CreateCouponRequestDTO;
 import com.example.restaurant_management_backend.jpa.model.Coupon;
+import com.example.restaurant_management_backend.jpa.model.command.CouponAddCommand;
 import com.example.restaurant_management_backend.services.CouponService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class CouponController {
     private final CouponService couponService;
 
     @PostMapping("/create")
-    public ResponseEntity<Coupon> createCoupon(@RequestBody @Valid CreateCouponRequestDTO couponRequestDTO) {
+    public ResponseEntity<Coupon> createCoupon(@RequestBody @Valid CouponAddCommand couponRequestDTO) {
         Coupon coupon = couponService.createCoupon(
                 couponRequestDTO.getCode(),
                 couponRequestDTO.getDiscountPercentage(),
