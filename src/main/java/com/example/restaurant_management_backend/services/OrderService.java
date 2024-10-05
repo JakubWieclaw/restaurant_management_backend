@@ -6,6 +6,8 @@ import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,8 +32,8 @@ public class OrderService {
     public Order addOrder(OrderAddCommand orderAddCommand) {
         // Validate the order command before processing
         validateOrderAddCommand(orderAddCommand);
-        
-        // Calculate the total price after validation
+
+        // Calculate the total price considering the quantities
         double totalPrice = calculateTotalPrice(orderAddCommand.getMealIds());
 
         // Create and save the order
@@ -43,8 +45,7 @@ public class OrderService {
                 orderAddCommand.getStatus(),
                 LocalDateTime.now(),
                 orderAddCommand.getUnwantedIngredients(),
-                orderAddCommand.getDeliveryAddress()
-        );
+                orderAddCommand.getDeliveryAddress());
         return orderRepository.save(order);
     }
 
@@ -67,44 +68,67 @@ public class OrderService {
     }
 
     private void validateOrderAddCommand(OrderAddCommand orderAddCommand) {
-        // Check for customer ID validity
+        // Check if customer ID is valid
         if (orderAddCommand.getCustomerId() == null) {
             throw new IllegalArgumentException("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
         }
 
-        // Validate meal IDs and unwanted ingredients
-        if (orderAddCommand.getUnwantedIngredients() != null) {
-            for (Long key : orderAddCommand.getUnwantedIngredients().keySet()) {
-                if (key < 0 || key >= orderAddCommand.getMealIds().size()) {
-                    throw new IllegalArgumentException("Niepoprawny indeks w mapie niechcianych składników");
-                }
+        // Validate the list of mealId and quantity pairs
+        List<List<Long>> mealIds = orderAddCommand.getMealIds();
+        if (mealIds == null || mealIds.isEmpty()) {
+            throw new IllegalArgumentException("Lista posiłków nie może być pusta");
+        }
 
-                Long mealId = orderAddCommand.getMealIds().get(key.intValue());
-                Meal meal = mealService.getMealById(mealId); // This method will throw NotFoundException if meal doesn't exist
+        for (int i = 0; i < mealIds.size(); i++) {
+            List<Long> pair = mealIds.get(i);
 
-                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().get(key);
+            // Ensure each pair has exactly two elements: mealId and quantity
+            if (pair == null || pair.size() != 2) {
+                throw new IllegalArgumentException(
+                        "Nieprawidłowy format dla pozycji " + i + ": oczekiwano pary (mealId, ilość)");
+            }
+
+            Long mealId = Long.valueOf(pair.get(0)); // mealId
+            Long quantity = pair.get(1); // quantity
+
+            // Validate mealId
+            if (!mealService.mealExists(mealId)) {
+                throw new IllegalArgumentException("Niepoprawny identyfikator posiłku: " + mealId);
+            }
+
+            // Validate quantity (should be positive)
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException(
+                        "Ilość posiłku dla identyfikatora " + mealId + " musi być większa niż 0");
+            }
+
+            // Validate unwanted ingredients for the meal at index i
+            if (orderAddCommand.getUnwantedIngredients() != null
+                    && orderAddCommand.getUnwantedIngredients().containsKey(i)) {
+                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().get(i);
+                Meal meal = mealService.getMealById(mealId); // Get the meal
+
+                // Check if the unwanted ingredients exist in the meal
                 List<String> mealIngredients = meal.getIngredients();
-
                 for (String unwantedIngredient : unwantedIngredients) {
                     if (!mealIngredients.contains(unwantedIngredient)) {
-                        throw new IllegalArgumentException("Niepoprawny składnik w zbiorze niechcianych składników dla dania: " + meal.getName() + " na pozycji " + key);
+                        throw new IllegalArgumentException("Niepoprawny składnik '" + unwantedIngredient
+                                + "' dla posiłku: " + meal.getName() + " (indeks: " + i + ")");
                     }
                 }
             }
         }
-
-        // Ensure all meal IDs are valid
-        for (Long mealId : orderAddCommand.getMealIds()) {
-            if (!mealService.mealExists(mealId)) {
-                throw new IllegalArgumentException("Niepoprawny identyfikator posiłku: " + mealId);
-            }
-        }
     }
 
-    private double calculateTotalPrice(List<Long> mealIds) {
+    private double calculateTotalPrice(List<List<Long>> mealIds) {
         return mealIds.stream()
-                .map(mealService::getMealById) // Get the Meal object
-                .mapToDouble(Meal::getPrice)   // Extract the price from the Meal object
+                .mapToDouble(pair -> {
+                    Long mealId = Long.valueOf(pair.get(0)); // Get meal ID
+                    Long quantity = pair.get(1); // Get quantity
+                    Meal meal = mealService.getMealById(mealId);
+                    return meal.getPrice() * quantity;
+                })
                 .sum();
     }
+
 }

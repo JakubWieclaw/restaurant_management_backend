@@ -3,6 +3,8 @@ package com.example.restaurant_management_backend.jpa.model.command;
 import java.util.HashMap;
 import java.util.List;
 
+import org.springframework.data.util.Pair;
+
 import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
@@ -16,7 +18,7 @@ import lombok.Getter;
 public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
 
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
-    private List<Long> mealIds;
+    private List<List<Long>> mealIds;
 
     @PositiveOrZero(message = "Identifikator klienta musi być dodatni, lub zero dla niezalogowanego klienta")
     private Long customerId;
@@ -27,17 +29,17 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @NotNull(message = "Status musi mieć jedną z wartości: OCZEKUJACE, W_TRAKCIE_REALIZACJI, GOTOWE, W_DOSTRACZENIU, DOSTARCZONE, ODRZUCONE")
     private OrderStatus status;
 
-    private HashMap<Long, List<String>> unwantedIngredients;
+    private HashMap<Integer, List<String>> unwantedIngredients;  // Key changed to meal position in list
 
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
-    public OrderAddCommand(List<Long> mealIds,
-            Long customerId,
-            OrderType type,
-            OrderStatus status,
-            HashMap<Long, List<String>> unwantedIngredients,
-            String deliveryAddress) {
+    public OrderAddCommand(List<List<Long>> mealIds,
+                           Long customerId,
+                           OrderType type,
+                           OrderStatus status,
+                           HashMap<Integer, List<String>> unwantedIngredients,
+                           String deliveryAddress) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
