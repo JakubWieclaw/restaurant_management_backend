@@ -2,12 +2,12 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
+import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -74,30 +74,23 @@ public class OrderService {
         }
 
         // Validate the list of mealId and quantity pairs
-        List<List<Long>> mealIds = orderAddCommand.getMealIds();
+        final var mealIds = orderAddCommand.getMealIds();
         if (mealIds == null || mealIds.isEmpty()) {
             throw new IllegalArgumentException("Lista posiłków nie może być pusta");
         }
 
         for (int i = 0; i < mealIds.size(); i++) {
-            List<Long> pair = mealIds.get(i);
+            final var mealQuantity = mealIds.get(i);
 
-            // Ensure each pair has exactly two elements: mealId and quantity
-            if (pair == null || pair.size() != 2) {
-                throw new IllegalArgumentException(
-                        "Nieprawidłowy format dla pozycji " + i + ": oczekiwano pary (mealId, ilość)");
-            }
-
-            Long mealId = Long.valueOf(pair.get(0)); // mealId
-            Long quantity = pair.get(1); // quantity
-
+            final var mealId = mealQuantity.getMealId();
+            final var quantity = mealQuantity.getQuantity();
             // Validate mealId
             if (!mealService.mealExists(mealId)) {
-                throw new IllegalArgumentException("Niepoprawny identyfikator posiłku: " + mealId);
+                throw new NotFoundException("Posiłek o identyfikatorze " + mealId + " nie istnieje");
             }
 
             // Validate quantity (should be positive)
-            if (quantity == null || quantity <= 0) {
+            if (quantity <= 0) {
                 throw new IllegalArgumentException(
                         "Ilość posiłku dla identyfikatora " + mealId + " musi być większa niż 0");
             }
@@ -120,11 +113,11 @@ public class OrderService {
         }
     }
 
-    private double calculateTotalPrice(List<List<Long>> mealIds) {
-        return mealIds.stream()
-                .mapToDouble(pair -> {
-                    Long mealId = Long.valueOf(pair.get(0)); // Get meal ID
-                    Long quantity = pair.get(1); // Get quantity
+    private double calculateTotalPrice(List<MealQuantity> mealQuantities) {
+        return mealQuantities.stream()
+                .mapToDouble(mealQuantity -> {
+                    Long mealId = mealQuantity.getMealId();
+                    int quantity = mealQuantity.getQuantity();
                     Meal meal = mealService.getMealById(mealId);
                     return meal.getPrice() * quantity;
                 })

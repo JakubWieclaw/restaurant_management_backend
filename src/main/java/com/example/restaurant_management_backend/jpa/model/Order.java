@@ -3,18 +3,20 @@ package com.example.restaurant_management_backend.jpa.model;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.data.util.Pair;
-
 import java.util.HashMap;
 
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
 
 @Entity(name = "orders")
 @Getter(AccessLevel.PUBLIC)
@@ -26,8 +28,10 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @ElementCollection
+    @CollectionTable(name = "order_meal_quantities", joinColumns = @JoinColumn(name = "order_id"))
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
-    private List<List<Long>> mealIds;
+    private List<MealQuantity> mealIds;
 
     @PositiveOrZero(message = "Cena nie może być ujemna")
     private double totalPrice;
@@ -49,7 +53,7 @@ public class Order {
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
-    public Order(List<List<Long>> mealIds, double totalPrice, Long customerId, OrderType type,
+    public Order(List<MealQuantity> mealIds, double totalPrice, Long customerId, OrderType type,
             OrderStatus status, LocalDateTime dateTime, HashMap<Integer, List<String>> unwantedIngredients,
             String deliveryAddress) {
         this.mealIds = mealIds;

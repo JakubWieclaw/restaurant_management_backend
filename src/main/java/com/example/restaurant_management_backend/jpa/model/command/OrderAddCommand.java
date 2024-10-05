@@ -3,9 +3,9 @@ package com.example.restaurant_management_backend.jpa.model.command;
 import java.util.HashMap;
 import java.util.List;
 
-import org.springframework.data.util.Pair;
 
 import com.example.restaurant_management_backend.common.SelfValidating;
+import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +18,7 @@ import lombok.Getter;
 public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
 
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
-    private List<List<Long>> mealIds;
+    private List<MealQuantity> mealIds;
 
     @PositiveOrZero(message = "Identifikator klienta musi być dodatni, lub zero dla niezalogowanego klienta")
     private Long customerId;
@@ -34,7 +34,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
-    public OrderAddCommand(List<List<Long>> mealIds,
+    public OrderAddCommand(List<MealQuantity> mealIds,
                            Long customerId,
                            OrderType type,
                            OrderStatus status,
