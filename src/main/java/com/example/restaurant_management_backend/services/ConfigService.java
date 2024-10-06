@@ -36,7 +36,7 @@ public class ConfigService {
 
     private void ensureSystemInitialized() {
         if (!isSystemInitialized()) {
-            throw new SystemNotInitializedException("System nie został jeszcze zainicjalizowany.");
+            throw new SystemNotInitializedException("Proszę zainicjalizować system.");
         }
     }
 
@@ -53,7 +53,7 @@ public class ConfigService {
         return configRepository.findAll()
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new SystemNotInitializedException("System nie został jeszcze zainicjalizowany."));
+                .orElseThrow(() -> new SystemNotInitializedException("Proszę zainicjalizować system."));
     }
 
     public List<DeliveryPricing> getDeliveryPrices() {

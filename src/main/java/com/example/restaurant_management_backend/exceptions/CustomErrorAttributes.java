@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -13,7 +14,8 @@ public class CustomErrorAttributes extends DefaultErrorAttributes {
 
     @Override
     public Map<String, Object> getErrorAttributes(WebRequest webRequest, ErrorAttributeOptions options) {
-        Map<String, Object> errorAttributes = super.getErrorAttributes(webRequest, options);
+        // super.getErrorAttributes(webRequest, options); returns a map with the default error attributes
+        Map<String, Object> errorAttributes = new HashMap<>();
 
         Throwable error = getError(webRequest);
         if (error instanceof ResponseStatusException) {
