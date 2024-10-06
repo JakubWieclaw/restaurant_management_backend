@@ -1,17 +1,17 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import lombok.Getter;
-import lombok.Setter;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AccessLevel;
+import lombok.*;
 
 
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
 @Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
 public class MealQuantity {
 
     @NotNull(message = "Identyfikator posiłku nie może być pusty")
@@ -21,9 +21,4 @@ public class MealQuantity {
     @NotBlank(message = "Ilość nie może być pusta")
     @Positive(message = "Ilość musi być dodatnia")
     private int quantity;
-
-    public MealQuantity(Long mealId, int quantity) {
-        this.mealId = mealId;
-        this.quantity = quantity;
-    }
 }

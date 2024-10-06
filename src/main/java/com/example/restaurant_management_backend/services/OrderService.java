@@ -4,16 +4,16 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.Order;
+import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -112,17 +112,15 @@ public class OrderService {
             }
 
             // Validate unwanted ingredients for the meal at index i
-            if (orderAddCommand.getUnwantedIngredients() != null
-                    && orderAddCommand.getUnwantedIngredients().containsKey(i)) {
-                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().get(i);
+            if (orderAddCommand.getUnwantedIngredients() != null) {
+                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().stream().map(UnwantedIngredient::getIngredient).toList();
                 Meal meal = mealService.getMealById(mealId); // Get the meal
 
                 // Check if the unwanted ingredients exist in the meal
                 List<String> mealIngredients = meal.getIngredients();
                 for (String unwantedIngredient : unwantedIngredients) {
                     if (!mealIngredients.contains(unwantedIngredient)) {
-                        throw new IllegalArgumentException("Niepoprawny składnik '" + unwantedIngredient
-                                + "' dla posiłku: " + meal.getName() + " (indeks: " + i + ")");
+                        throw new IllegalArgumentException(STR."Niepoprawny składnik '\{unwantedIngredient}' dla posiłku: \{meal.getName()} (indeks: \{i})");
                     }
                 }
             }

@@ -1,21 +1,16 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import java.util.HashMap;
-
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity(name = "orders")
@@ -48,7 +43,9 @@ public class Order {
     @NotNull(message = "Data i czas zamówienia nie mogą być puste")
     private LocalDateTime dateTime;
 
-    private HashMap<Integer, List<String>> unwantedIngredients; // Key corresponds to index of meal in mealIds
+    @ElementCollection
+    @CollectionTable(name = "unwanted_ingredients", joinColumns = @JoinColumn(name = "order_id"))
+    private List<UnwantedIngredient> unwantedIngredients;
 
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
@@ -57,8 +54,8 @@ public class Order {
     private int deliveryDistance;
 
     public Order(List<MealQuantity> mealIds, double totalPrice, Long customerId, OrderType type,
-            OrderStatus status, LocalDateTime dateTime, HashMap<Integer, List<String>> unwantedIngredients,
-            String deliveryAddress, int deliveryDistance) {
+                 OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
+                 String deliveryAddress, int deliveryDistance) {
         this.mealIds = mealIds;
         this.totalPrice = totalPrice;
         this.customerId = customerId;

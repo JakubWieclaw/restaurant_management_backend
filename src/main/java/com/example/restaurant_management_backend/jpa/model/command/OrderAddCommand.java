@@ -1,17 +1,16 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import java.util.HashMap;
-import java.util.List;
-
-
 import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
+import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 @NotNull
@@ -29,7 +28,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @NotNull(message = "Status musi mieć jedną z wartości: OCZEKUJACE, W_TRAKCIE_REALIZACJI, GOTOWE, W_DOSTRACZENIU, DOSTARCZONE, ODRZUCONE")
     private OrderStatus status;
 
-    private HashMap<Integer, List<String>> unwantedIngredients;  // Key changed to meal position in list
+    private List<UnwantedIngredient> unwantedIngredients;
 
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
@@ -41,7 +40,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
                            Long customerId,
                            OrderType type,
                            OrderStatus status,
-                           HashMap<Integer, List<String>> unwantedIngredients,
+                           List<UnwantedIngredient> unwantedIngredients,
                            String deliveryAddress,
                            int deliveryDistance) {
         this.mealIds = mealIds;
