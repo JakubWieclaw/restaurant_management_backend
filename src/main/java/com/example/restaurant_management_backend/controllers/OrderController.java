@@ -27,7 +27,6 @@ public class OrderController {
 
     private final OrderService orderService;
 
-
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
@@ -40,7 +39,6 @@ public class OrderController {
         }
     }
 
-    
     @Operation(summary = "Get order by id")
     @ApiResponse(description = "Returns an order with a given id", content = {
             @Content(mediaType = "application/json", schema = @Schema(implementation = Order.class)) })
@@ -52,8 +50,8 @@ public class OrderController {
                 return ResponseEntity.ok(order.get());
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.TEXT_PLAIN)
-                    .body("Nie znaleziono zamówienia");
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .body("Nie znaleziono zamówienia");
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówienia");
@@ -68,9 +66,10 @@ public class OrderController {
             return ResponseEntity.ok(orderService.getAllOrdersOfCustomer(customerId));
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }  catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error while getting all orders of customer", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówień klienta");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Błąd podczas pobierania zamówień klienta");
         }
     }
 
@@ -101,15 +100,19 @@ public class OrderController {
     }
 
     @Operation(summary = "Update order")
-    @PostMapping("/update/{id}")
-    public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody Order order) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody OrderAddCommand orderAddCommand) {
         var logger = LoggerFactory.getLogger(OrderController.class);
+        logger.info("Received OrderUpdateCommand: {}", orderAddCommand);
+
         try {
-            Order updatedOrder = orderService.updateOrder(id, order);
+            Order updatedOrder = orderService.updateOrder(id, orderAddCommand);
             logger.info("Updated order: {}", updatedOrder);
             return ResponseEntity.ok(updatedOrder);
         } catch (NotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (TransactionSystemException e) {
             Throwable cause = e.getRootCause();
             if (cause instanceof ConstraintViolationException) {
@@ -120,11 +123,12 @@ public class OrderController {
             logger.error("Error while updating order", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas aktualizacji zamówienia");
         }
+
         return ResponseEntity.badRequest().body("Unknown error");
     }
 
     @Operation(summary = "Delete order")
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
         var logger = LoggerFactory.getLogger(OrderController.class);
         try {

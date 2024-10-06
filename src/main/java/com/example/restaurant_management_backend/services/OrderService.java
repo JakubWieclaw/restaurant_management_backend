@@ -64,14 +64,30 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public Order updateOrder(Long id, Order order) {
-        // Ensure the order exists before updating
-        if (!orderRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono zamówienia");
-        }
-        // Set the ID for the update
-        order.setId(id);
-        return orderRepository.save(order);
+    public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
+        // Ensure the order exists
+        Order existingOrder = orderRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
+
+        // Validate the new order data
+        validateOrderAddCommand(orderAddCommand);
+
+        // Recalculate the total price considering the new mealIds and delivery distance
+        double newTotalPrice = calculateTotalPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+
+        // Update the existing order with new details from OrderAddCommand
+        existingOrder.setMealIds(orderAddCommand.getMealIds());
+        existingOrder.setCustomerId(orderAddCommand.getCustomerId());
+        existingOrder.setType(orderAddCommand.getType());
+        existingOrder.setStatus(orderAddCommand.getStatus());
+        existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());
+        existingOrder.setDeliveryAddress(orderAddCommand.getDeliveryAddress());
+        existingOrder.setDeliveryDistance(orderAddCommand.getDeliveryDistance());
+        existingOrder.setTotalPrice(newTotalPrice);
+        existingOrder.setDateTime(LocalDateTime.now());
+
+        // Save and return the updated order
+        return orderRepository.save(existingOrder);
     }
 
     public void deleteOrder(Long id) {
@@ -113,14 +129,16 @@ public class OrderService {
 
             // Validate unwanted ingredients for the meal at index i
             if (orderAddCommand.getUnwantedIngredients() != null) {
-                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().stream().map(UnwantedIngredient::getIngredient).toList();
+                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().stream()
+                        .map(UnwantedIngredient::getIngredient).toList();
                 Meal meal = mealService.getMealById(mealId); // Get the meal
 
                 // Check if the unwanted ingredients exist in the meal
                 List<String> mealIngredients = meal.getIngredients();
                 for (String unwantedIngredient : unwantedIngredients) {
                     if (!mealIngredients.contains(unwantedIngredient)) {
-                        throw new IllegalArgumentException(STR."Niepoprawny składnik '\{unwantedIngredient}' dla posiłku: \{meal.getName()} (indeks: \{i})");
+                        throw new IllegalArgumentException("Niepoprawny składnik '" + unwantedIngredient
+                                + "' dla posiłku: " + meal.getName() + " (indeks: " + i + ")");
                     }
                 }
             }
