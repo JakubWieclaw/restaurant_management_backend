@@ -69,4 +69,7 @@ public class MealService {
         }
     }
 
+    public boolean mealExists(Long mealId) {
+        return mealRepository.existsById(mealId);
+    }   
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -90,15 +89,14 @@ public class GlobalExceptionHandler {
             // Extract the message from the ValueInstantiationException
             String fullMessage = valueInstantiationException.getMessage();
             int problemIndex = fullMessage.indexOf("problem:");
-            int columnIndex = fullMessage.indexOf("column:");
+            int columnIndex = fullMessage.indexOf("at ");
 
             if (problemIndex != -1 && columnIndex != -1) {
                 fullMessage = fullMessage.substring(problemIndex + 8, columnIndex).trim();
             }
 
             // Regular expression to match the field names and their messages
-            // String regex = "([a-zA-Z]+): ([^,\\n]+)";
-            String regex = "(\\b[a-zA-Z]+\\b):\\s([^,]+)(?:,|$)";
+            String regex = "(\\b[a-zA-Z]+\\b):\\s([^,]+(?:,\\s(?![a-zA-Z]+:)[^,]+)*)";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(fullMessage);
 
@@ -149,59 +147,59 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(TransactionSystemException.class)
-    public ResponseEntity<StandardErrorResponse> handleTransactionSystemException(TransactionSystemException ex, HttpServletRequest request) {
+    public ResponseEntity<String> handleTransactionSystemException(TransactionSystemException ex) {
         Throwable cause = ex.getRootCause();
         String message = cause != null ? cause.getMessage() : "Wystąpił błąd transakcji";
-
-        StandardErrorResponse response = new StandardErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Błąd Transakcji",
-                message,
-                request.getRequestURI()
-        );
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(message + " %s".formatted(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<StandardErrorResponse> handleBadCredentialsException(BadCredentialsException ex, HttpServletRequest request) {
+    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
         logger.error("Nieprawidłowe dane logowania", ex);
-
-        StandardErrorResponse response = new StandardErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Brak Autoryzacji",
-                "Nieprawidłowe dane logowania",
-                request.getRequestURI()
-        );
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>("Nieprawidłowe dane logowania %s".formatted(ex.getMessage()),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(CredentialsExpiredException.class)
-    public ResponseEntity<StandardErrorResponse> handleCredentialsExpiredException(CredentialsExpiredException ex, HttpServletRequest request) {
+    public ResponseEntity<String> handleCredentialsExpiredException(CredentialsExpiredException ex) {
         logger.error("Poświadczenia wygasły", ex);
-
-        StandardErrorResponse response = new StandardErrorResponse(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Wygasłe Poświadczenia",
-                "Poświadczenia wygasły",
-                request.getRequestURI()
-        );
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<StandardErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
-//        logger.error("Unhandled exception", ex);
-//
-//        StandardErrorResponse response = new StandardErrorResponse(
-//                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-//                "Internal Server Error",
-//                ex.getMessage(),
-//                request.getRequestURI()
-//        );
-//
-//        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.error("Invalid argument", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    // Custom Exceptions
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
+        logger.error("Resource not found", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<String> handleResourceConflictException(ResourceConflictException ex) {
+        logger.error("Resource conflict", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(SystemAlreadyInitializedException.class)
+    public ResponseEntity<String> handleSystemAlreadyInitializedException(SystemAlreadyInitializedException ex) {
+        logger.error("System already initialized", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(SystemNotInitializedException.class)
+    public ResponseEntity<String> handleSystemNotInitializedException(SystemNotInitializedException ex) {
+        logger.error("System not initialized", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(CouponInvalidException.class)
+    public ResponseEntity<String> handleCouponInvalidException(CouponInvalidException ex) {
+        logger.error("Invalid coupon", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
