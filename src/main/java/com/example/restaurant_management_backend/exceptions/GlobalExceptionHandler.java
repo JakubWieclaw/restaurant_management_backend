@@ -89,15 +89,14 @@ public class GlobalExceptionHandler {
             // Extract the message from the ValueInstantiationException
             String fullMessage = valueInstantiationException.getMessage();
             int problemIndex = fullMessage.indexOf("problem:");
-            int columnIndex = fullMessage.indexOf("column:");
+            int columnIndex = fullMessage.indexOf("at ");
 
             if (problemIndex != -1 && columnIndex != -1) {
                 fullMessage = fullMessage.substring(problemIndex + 8, columnIndex).trim();
             }
 
             // Regular expression to match the field names and their messages
-            // String regex = "([a-zA-Z]+): ([^,\\n]+)";
-            String regex = "(\\b[a-zA-Z]+\\b):\\s([^,]+)(?:,|$)";
+            String regex = "(\\b[a-zA-Z]+\\b):\\s([^,]+(?:,\\s(?![a-zA-Z]+:)[^,]+)*)";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(fullMessage);
 
@@ -157,7 +156,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
         logger.error("Nieprawidłowe dane logowania", ex);
-        return new ResponseEntity<>("Nieprawidłowe dane logowania %s".formatted(ex.getMessage()), HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>("Nieprawidłowe dane logowania %s".formatted(ex.getMessage()),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(CredentialsExpiredException.class)
