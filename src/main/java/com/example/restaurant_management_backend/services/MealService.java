@@ -63,6 +63,12 @@ public class MealService {
         return mealRepository.findByCategoryId(categoryId);
     }
 
+    public boolean mealContainsIngredients(Long mealId, List<String> ingredients) {
+        Meal meal = getMealById(mealId);
+        // Check if all ingredients are present in the meal
+        return meal.getIngredients().containsAll(ingredients);
+    }
+
     private void validateCategory(Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
             throw new NotFoundException("Kategoria o id " + categoryId + " nie istnieje");
