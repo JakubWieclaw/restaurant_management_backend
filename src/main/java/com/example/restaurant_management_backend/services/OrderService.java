@@ -126,21 +126,35 @@ public class OrderService {
                 throw new IllegalArgumentException(
                         "Ilość posiłku dla identyfikatora " + mealId + " musi być większa niż 0");
             }
+        }
 
-            // Validate unwanted ingredients for the meal at index i
-            if (orderAddCommand.getUnwantedIngredients() != null) {
-                List<String> unwantedIngredients = orderAddCommand.getUnwantedIngredients().stream()
-                        .map(UnwantedIngredient::getIngredient).toList();
-                Meal meal = mealService.getMealById(mealId); // Get the meal
+        // Validate unwanted ingredients for the meal at index i
+        List<UnwantedIngredient> unwantedIngredients = orderAddCommand.getUnwantedIngredients();
+        if (unwantedIngredients != null) {
+            for (int i = 0; i < unwantedIngredients.size(); i++) {
+                final var unwantedIngredient = unwantedIngredients.get(i);
+                final var mealIndex = unwantedIngredient.getMealIndex();
+                final var ingredients = unwantedIngredient.getIngredients();
 
-                // Check if the unwanted ingredients exist in the meal
-                List<String> mealIngredients = meal.getIngredients();
-                for (String unwantedIngredient : unwantedIngredients) {
-                    if (!mealIngredients.contains(unwantedIngredient)) {
-                        throw new IllegalArgumentException("Niepoprawny składnik '" + unwantedIngredient
-                                + "' dla posiłku: " + meal.getName() + " (indeks: " + i + ")");
-                    }
+                // Validate mealIndex
+                if (mealIndex < 0 || mealIndex >= mealIds.size()) {
+                    throw new IllegalArgumentException("Indeks posiłku musi być liczbą nieujemną bądź większy niż rozmiar listy posiłków");
                 }
+
+                // Validate ingredients
+                if (ingredients == null || ingredients.isEmpty()) {
+                    throw new IllegalArgumentException("Lista niechcianych składników nie może być pusta");
+                }
+
+                // iterate through mealIds (onlty through indexes mentioned in unwantedIngredients) and check if given meal consists of unwanted ingredients
+                final var mealQuanity = mealIds.get(mealIndex);
+                final var meal = mealService.getMealById(mealQuanity.getMealId());
+
+                // check if all ingredients are present in the meal
+                if (!meal.getIngredients().containsAll(ingredients)) {
+                    throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex + " nie zawiera wszystkich podanych składników");
+                }
+
             }
         }
     }
