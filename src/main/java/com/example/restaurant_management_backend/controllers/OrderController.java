@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Optional;
 
 @RestController
@@ -25,12 +27,12 @@ import java.util.Optional;
 @Validated
 public class OrderController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
     private final OrderService orderService;
 
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
-        var logger = LoggerFactory.getLogger(OrderController.class);
         try {
             return ResponseEntity.ok(orderService.getOrders());
         } catch (Exception e) {
@@ -61,7 +63,6 @@ public class OrderController {
     @Operation(summary = "Get all orders of a customer")
     @GetMapping("/get/customer/{customerId}")
     public ResponseEntity<?> getAllOrdersOfCustomer(@PathVariable Long customerId) {
-        var logger = LoggerFactory.getLogger(OrderController.class);
         try {
             return ResponseEntity.ok(orderService.getAllOrdersOfCustomer(customerId));
         } catch (NotFoundException e) {
@@ -76,7 +77,6 @@ public class OrderController {
     @Operation(summary = "Add new order")
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {
-        var logger = LoggerFactory.getLogger(OrderController.class);
         logger.info("Received OrderAddCommand: {}", orderAddCommand);
         try {
             Order createdOrder = orderService.addOrder(orderAddCommand);
@@ -102,7 +102,6 @@ public class OrderController {
     @Operation(summary = "Update order")
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody OrderAddCommand orderAddCommand) {
-        var logger = LoggerFactory.getLogger(OrderController.class);
         logger.info("Received OrderUpdateCommand: {}", orderAddCommand);
 
         try {
@@ -128,18 +127,10 @@ public class OrderController {
     }
 
     @Operation(summary = "Delete order")
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteOrder(@PathVariable Long id) {
-        var logger = LoggerFactory.getLogger(OrderController.class);
-        try {
-            orderService.deleteOrder(id);
-            logger.info("Deleted order with id: {}", id);
-            return ResponseEntity.ok("Usunięto zamówienie");
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Error while deleting order", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas usuwania zamówienia");
-        }
+    @PostMapping("/delete/{id}")
+    public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        logger.info("Deleted order with id: {}", id);
+        return ResponseEntity.ok("Usunięto zamówienie");
     }
 }

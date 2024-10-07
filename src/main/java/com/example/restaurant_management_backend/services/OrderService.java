@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.GlobalExceptionHandler;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
@@ -90,8 +91,20 @@ public class OrderService {
         return orderRepository.save(existingOrder);
     }
 
+    /**
+     * Deletes an order by its ID.
+     * <p>
+     * This method checks if an order with the given ID exists in the repository.
+     * If the order does not exist, it throws a {@link NotFoundException}.
+     * The {@link NotFoundException} is handled by the {@link GlobalExceptionHandler},
+     * which returns a response with a 404 status code to the client.
+     * </p>
+     *
+     * @param id the ID of the order to be deleted
+     * @throws NotFoundException if the order with the specified ID does not exist
+     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
+     */
     public void deleteOrder(Long id) {
-        // Check if the order exists before deletion
         if (!orderRepository.existsById(id)) {
             throw new NotFoundException("Nie znaleziono zamówienia");
         }
