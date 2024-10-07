@@ -4,11 +4,13 @@ import com.example.restaurant_management_backend.common.SelfValidating;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class OpinionAddCommand extends SelfValidating<OpinionAddCommand> {
     @NotNull(message = "Id posiłku nie może być puste")
     private Long mealId;
