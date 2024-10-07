@@ -30,13 +30,17 @@ public class OrderService {
     }
 
     public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
+        Optional<Order> order = orderRepository.findById(id);
+        if (!order.isPresent()) {
+            throw new NotFoundException("Nie znaleziono zamówienia");
+        }
+        return order;
     }
 
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         // if customerID is null or it does not exist, thrown NotFoundException
-        if (customerId == null) {
-            throw new NotFoundException("Podany identyfikator klienta jest niepoprawny");
+        if (customerId == null || customerId < 0) {
+            throw new IllegalArgumentException("Niepoprawne ID klienta");
         }
         if (!customerRepository.existsById(customerId)) {
             throw new NotFoundException("Klient o identyfikatorze " + customerId + " nie istnieje");

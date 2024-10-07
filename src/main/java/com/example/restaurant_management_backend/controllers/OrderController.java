@@ -33,12 +33,9 @@ public class OrderController {
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
-        try {
-            return ResponseEntity.ok(orderService.getOrders());
-        } catch (Exception e) {
-            logger.error("Error while getting all orders", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówień");
-        }
+        orderService.getOrders();
+        logger.info("Getting all orders");
+        return ResponseEntity.ok(orderService.getOrders());
     }
 
     @Operation(summary = "Get order by id")
@@ -46,32 +43,15 @@ public class OrderController {
             @Content(mediaType = "application/json", schema = @Schema(implementation = Order.class)) })
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
-        try {
-            Optional<Order> order = orderService.getOrderById(id);
-            if (order.isPresent()) {
-                return ResponseEntity.ok(order.get());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .contentType(MediaType.TEXT_PLAIN)
-                        .body("Nie znaleziono zamówienia");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas pobierania zamówienia");
-        }
+        final var order = orderService.getOrderById(id);
+        return ResponseEntity.ok(order.get());
     }
 
     @Operation(summary = "Get all orders of a customer")
     @GetMapping("/get/customer/{customerId}")
     public ResponseEntity<?> getAllOrdersOfCustomer(@PathVariable Long customerId) {
-        try {
-            return ResponseEntity.ok(orderService.getAllOrdersOfCustomer(customerId));
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Error while getting all orders of customer", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Błąd podczas pobierania zamówień klienta");
-        }
+        final var ordersList = orderService.getAllOrdersOfCustomer(customerId);
+        return ResponseEntity.ok(ordersList);
     }
 
     @Operation(summary = "Add new order")
@@ -127,7 +107,7 @@ public class OrderController {
     }
 
     @Operation(summary = "Delete order")
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         logger.info("Deleted order with id: {}", id);
