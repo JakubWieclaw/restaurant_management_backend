@@ -44,6 +44,7 @@ public class OrderController {
     @GetMapping("/get/{id}")
     public ResponseEntity<?> getOrderById(@PathVariable Long id) {
         final var order = orderService.getOrderById(id);
+        logger.info("Getting order with id: {}", id);
         return ResponseEntity.ok(order.get());
     }
 
@@ -51,59 +52,24 @@ public class OrderController {
     @GetMapping("/get/customer/{customerId}")
     public ResponseEntity<?> getAllOrdersOfCustomer(@PathVariable Long customerId) {
         final var ordersList = orderService.getAllOrdersOfCustomer(customerId);
+        logger.info("Getting all orders of customer with id: {}", customerId);
         return ResponseEntity.ok(ordersList);
     }
 
     @Operation(summary = "Add new order")
     @PostMapping("/add")
     public ResponseEntity<?> addOrder(@RequestBody OrderAddCommand orderAddCommand) {
-        logger.info("Received OrderAddCommand: {}", orderAddCommand);
-        try {
-            Order createdOrder = orderService.addOrder(orderAddCommand);
-            logger.info("Added new order: {}", createdOrder);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (TransactionSystemException e) {
-            Throwable cause = e.getRootCause();
-            if (cause instanceof ConstraintViolationException) {
-                logger.error("Validation error: {}", cause.getMessage());
-                return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
-            }
-        } catch (Exception e) {
-            logger.error("Error while adding order", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas dodawania zamówienia");
-        }
-        return ResponseEntity.badRequest().body("Unknown error");
+        Order createdOrder = orderService.addOrder(orderAddCommand);
+        logger.info("Added new order: {}", createdOrder);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
     }
 
     @Operation(summary = "Update order")
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateOrder(@PathVariable Long id, @RequestBody OrderAddCommand orderAddCommand) {
-        logger.info("Received OrderUpdateCommand: {}", orderAddCommand);
-
-        try {
-            Order updatedOrder = orderService.updateOrder(id, orderAddCommand);
-            logger.info("Updated order: {}", updatedOrder);
-            return ResponseEntity.ok(updatedOrder);
-        } catch (NotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (TransactionSystemException e) {
-            Throwable cause = e.getRootCause();
-            if (cause instanceof ConstraintViolationException) {
-                logger.error("Validation error: {}", cause.getMessage());
-                return ResponseEntity.badRequest().body("Niepoprawne dane zamówienia");
-            }
-        } catch (Exception e) {
-            logger.error("Error while updating order", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Błąd podczas aktualizacji zamówienia");
-        }
-
-        return ResponseEntity.badRequest().body("Unknown error");
+        Order updatedOrder = orderService.updateOrder(id, orderAddCommand);
+        logger.info("Updated order: {}", updatedOrder);
+        return ResponseEntity.status(HttpStatus.CREATED).body(updatedOrder);
     }
 
     @Operation(summary = "Delete order")
