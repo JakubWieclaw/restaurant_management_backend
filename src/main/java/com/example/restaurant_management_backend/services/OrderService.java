@@ -25,7 +25,7 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ConfigService configService;
 
-     /**
+    /**
      * Retrieves all orders from the repository.
      *
      * @return a list of all orders
@@ -38,7 +38,8 @@ public class OrderService {
      * Retrieves an order by its ID.
      * <p>
      * If the order does not exist, this method throws a {@link NotFoundException},
-     * which is handled by the {@link GlobalExceptionHandler} to return a 404 response.
+     * which is handled by the {@link GlobalExceptionHandler} to return a 404
+     * response.
      * </p>
      *
      * @param id the ID of the order to retrieve
@@ -58,13 +59,15 @@ public class OrderService {
      * Retrieves all orders for a specific customer.
      * <p>
      * This method checks if the customer ID is valid and exists in the repository.
-     * If the customer ID is null, negative, or does not exist, it throws an exception.
+     * If the customer ID is null, negative, or does not exist, it throws an
+     * exception.
      * </p>
      *
      * @param customerId the ID of the customer
      * @return a list of orders associated with the specified customer
      * @throws IllegalArgumentException if the customer ID is invalid
-     * @throws NotFoundException if the customer with the specified ID does not exist
+     * @throws NotFoundException        if the customer with the specified ID does
+     *                                  not exist
      */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
@@ -86,7 +89,7 @@ public class OrderService {
      * @param orderAddCommand the data required to add a new order
      * @return the newly created and saved order
      * @throws IllegalArgumentException if the order data is invalid
-     * @throws NotFoundException if a referenced meal does not exist
+     * @throws NotFoundException        if a referenced meal does not exist
      */
     public Order addOrder(OrderAddCommand orderAddCommand) {
         validateOrderAddCommand(orderAddCommand);
@@ -108,14 +111,16 @@ public class OrderService {
     /**
      * Updates an existing order with new details.
      * <p>
-     * This method ensures the order exists, validates the new order data, recalculates
+     * This method ensures the order exists, validates the new order data,
+     * recalculates
      * the total price, and updates the order with the new information.
      * </p>
      *
-     * @param id the ID of the order to be updated
+     * @param id              the ID of the order to be updated
      * @param orderAddCommand the new order data to update
      * @return the updated order
-     * @throws NotFoundException if the order with the specified ID does not exist
+     * @throws NotFoundException        if the order with the specified ID does not
+     *                                  exist
      * @throws IllegalArgumentException if the new order data is invalid
      */
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
@@ -143,7 +148,8 @@ public class OrderService {
      * <p>
      * This method checks if an order with the given ID exists in the repository.
      * If the order does not exist, it throws a {@link NotFoundException}.
-     * The {@link NotFoundException} is handled by the {@link GlobalExceptionHandler},
+     * The {@link NotFoundException} is handled by the
+     * {@link GlobalExceptionHandler},
      * which returns a response with a 404 status code to the client.
      * </p>
      *
@@ -203,7 +209,8 @@ public class OrderService {
 
                 // Validate mealIndex
                 if (mealIndex < 0 || mealIndex >= mealIds.size()) {
-                    throw new IllegalArgumentException("Indeks posiłku musi być liczbą nieujemną bądź większy niż rozmiar listy posiłków");
+                    throw new IllegalArgumentException(
+                            "Indeks posiłku musi być liczbą nieujemną bądź większy niż rozmiar listy posiłków");
                 }
 
                 // Validate ingredients
@@ -211,13 +218,15 @@ public class OrderService {
                     throw new IllegalArgumentException("Lista niechcianych składników nie może być pusta");
                 }
 
-                // iterate through mealIds (onlty through indexes mentioned in unwantedIngredients) and check if given meal consists of unwanted ingredients
+                // iterate through mealIds (onlty through indexes mentioned in
+                // unwantedIngredients) and check if given meal consists of unwanted ingredients
                 final var mealQuanity = mealIds.get(mealIndex);
                 final var meal = mealService.getMealById(mealQuanity.getMealId());
 
                 // check if all ingredients are present in the meal
                 if (!meal.getIngredients().containsAll(ingredients)) {
-                    throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
+                    throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex
+                            + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
                 }
 
             }
