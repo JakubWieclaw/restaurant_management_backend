@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.GlobalExceptionHandler;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
@@ -24,18 +25,53 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ConfigService configService;
 
+    /**
+     * Retrieves all orders from the repository.
+     *
+     * @return a list of all orders
+     */
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
 
+    /**
+     * Retrieves an order by its ID.
+     * <p>
+     * If the order does not exist, this method throws a {@link NotFoundException},
+     * which is handled by the {@link GlobalExceptionHandler} to return a 404
+     * response.
+     * </p>
+     *
+     * @param id the ID of the order to retrieve
+     * @return an {@link Optional} containing the order if found
+     * @throws NotFoundException if the order with the specified ID does not exist
+     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
+     */
     public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
+        Optional<Order> order = orderRepository.findById(id);
+        if (!order.isPresent()) {
+            throw new NotFoundException("Nie znaleziono zamówienia");
+        }
+        return order;
     }
 
+    /**
+     * Retrieves all orders for a specific customer.
+     * <p>
+     * This method checks if the customer ID is valid and exists in the repository.
+     * If the customer ID is null, negative, or does not exist, it throws an
+     * exception.
+     * </p>
+     *
+     * @param customerId the ID of the customer
+     * @return a list of orders associated with the specified customer
+     * @throws IllegalArgumentException if the customer ID is invalid
+     * @throws NotFoundException        if the customer with the specified ID does
+     *                                  not exist
+     */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
-        // if customerID is null or it does not exist, thrown NotFoundException
-        if (customerId == null) {
-            throw new NotFoundException("Podany identyfikator klienta jest niepoprawny");
+        if (customerId == null || customerId < 0) {
+            throw new IllegalArgumentException("Niepoprawne ID klienta");
         }
         if (!customerRepository.existsById(customerId)) {
             throw new NotFoundException("Klient o identyfikatorze " + customerId + " nie istnieje");
@@ -43,14 +79,22 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
+    /**
+     * Adds a new order to the repository.
+     * <p>
+     * This method validates the order details, calculates the total price, creates
+     * a new order object, and saves it to the repository.
+     * </p>
+     *
+     * @param orderAddCommand the data required to add a new order
+     * @return the newly created and saved order
+     * @throws IllegalArgumentException if the order data is invalid
+     * @throws NotFoundException        if a referenced meal does not exist
+     */
     public Order addOrder(OrderAddCommand orderAddCommand) {
-        // Validate the order command before processing
         validateOrderAddCommand(orderAddCommand);
-
-        // Calculate the total price considering the quantities
         double totalPrice = calculateTotalPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
 
-        // Create and save the order
         Order order = new Order(
                 orderAddCommand.getMealIds(),
                 totalPrice,
@@ -64,18 +108,28 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    /**
+     * Updates an existing order with new details.
+     * <p>
+     * This method ensures the order exists, validates the new order data,
+     * recalculates
+     * the total price, and updates the order with the new information.
+     * </p>
+     *
+     * @param id              the ID of the order to be updated
+     * @param orderAddCommand the new order data to update
+     * @return the updated order
+     * @throws NotFoundException        if the order with the specified ID does not
+     *                                  exist
+     * @throws IllegalArgumentException if the new order data is invalid
+     */
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
-        // Ensure the order exists
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
 
-        // Validate the new order data
         validateOrderAddCommand(orderAddCommand);
-
-        // Recalculate the total price considering the new mealIds and delivery distance
         double newTotalPrice = calculateTotalPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
 
-        // Update the existing order with new details from OrderAddCommand
         existingOrder.setMealIds(orderAddCommand.getMealIds());
         existingOrder.setCustomerId(orderAddCommand.getCustomerId());
         existingOrder.setType(orderAddCommand.getType());
@@ -86,12 +140,24 @@ public class OrderService {
         existingOrder.setTotalPrice(newTotalPrice);
         existingOrder.setDateTime(LocalDateTime.now());
 
-        // Save and return the updated order
         return orderRepository.save(existingOrder);
     }
 
+    /**
+     * Deletes an order by its ID.
+     * <p>
+     * This method checks if an order with the given ID exists in the repository.
+     * If the order does not exist, it throws a {@link NotFoundException}.
+     * The {@link NotFoundException} is handled by the
+     * {@link GlobalExceptionHandler},
+     * which returns a response with a 404 status code to the client.
+     * </p>
+     *
+     * @param id the ID of the order to be deleted
+     * @throws NotFoundException if the order with the specified ID does not exist
+     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
+     */
     public void deleteOrder(Long id) {
-        // Check if the order exists before deletion
         if (!orderRepository.existsById(id)) {
             throw new NotFoundException("Nie znaleziono zamówienia");
         }
@@ -116,6 +182,11 @@ public class OrderService {
             // getMealID provides integer, cast it to Long
             final var mealId = mealQuantity.getMealId();
             final var quantity = mealQuantity.getQuantity();
+
+            if (mealId == null) {
+                throw new IllegalArgumentException("Identyfikator posiłku i ilość nie mogą być puste");
+            }
+
             // Validate mealId
             if (!mealService.mealExists(mealId)) {
                 throw new NotFoundException("Posiłek o identyfikatorze " + mealId + " nie istnieje");
@@ -138,7 +209,8 @@ public class OrderService {
 
                 // Validate mealIndex
                 if (mealIndex < 0 || mealIndex >= mealIds.size()) {
-                    throw new IllegalArgumentException("Indeks posiłku musi być liczbą nieujemną bądź większy niż rozmiar listy posiłków");
+                    throw new IllegalArgumentException(
+                            "Indeks posiłku musi być liczbą nieujemną bądź większy niż rozmiar listy posiłków");
                 }
 
                 // Validate ingredients
@@ -146,13 +218,15 @@ public class OrderService {
                     throw new IllegalArgumentException("Lista niechcianych składników nie może być pusta");
                 }
 
-                // iterate through mealIds (onlty through indexes mentioned in unwantedIngredients) and check if given meal consists of unwanted ingredients
+                // iterate through mealIds (onlty through indexes mentioned in
+                // unwantedIngredients) and check if given meal consists of unwanted ingredients
                 final var mealQuanity = mealIds.get(mealIndex);
                 final var meal = mealService.getMealById(mealQuanity.getMealId());
 
                 // check if all ingredients are present in the meal
                 if (!meal.getIngredients().containsAll(ingredients)) {
-                    throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex + " nie zawiera wszystkich podanych składników");
+                    throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex
+                            + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
                 }
 
             }
