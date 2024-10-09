@@ -34,7 +34,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     private String deliveryAddress;
 
     @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
-    private int deliveryDistance;
+    private double deliveryDistance;
 
     public OrderAddCommand(List<MealQuantity> mealIds,
                            Long customerId,
@@ -42,7 +42,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
                            OrderStatus status,
                            List<UnwantedIngredient> unwantedIngredients,
                            String deliveryAddress,
-                           int deliveryDistance) {
+                           double deliveryDistance) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
