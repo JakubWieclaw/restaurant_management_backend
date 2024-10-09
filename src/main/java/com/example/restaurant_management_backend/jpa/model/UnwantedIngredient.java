@@ -15,7 +15,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class UnwantedIngredient {
 
     @PositiveOrZero(message = "Indeks posiłku musi być liczbą nieujemną")
@@ -23,6 +22,13 @@ public class UnwantedIngredient {
 
     // should contain only of unique strings
 
-    private Set<String> ingredients;
+    private List<String> ingredients;
+
+    public UnwantedIngredient(int mealIndex, List<String> ingredients) {
+        this.mealIndex = mealIndex;
+
+        // make ingredients unique
+        this.ingredients = List.copyOf(Set.copyOf(ingredients));
+    }
 }
 
