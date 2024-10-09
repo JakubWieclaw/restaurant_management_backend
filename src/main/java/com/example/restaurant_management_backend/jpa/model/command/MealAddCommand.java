@@ -58,21 +58,4 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
         this.calories = calories;
         validateSelf();
     }
-
-    // Ensure unitType is provided if weightOrVolume is present
-    // @Override
-    // protected void validateSelf() {
-    //     super.validateSelf();
-    //     if (weightOrVolume != null && unitType == null) {
-    //         throw new ConstraintViolationException(Set.of(
-    //             new ConstraintViolationImpl<>(
-    //                 "Unit type is required when weight or volume is provided",
-    //                 MealAddCommand.class,
-    //                 "unitType",
-    //                 "unitType",
-    //                 null
-    //             )
-    //         ));
-    //     }
-    // }
 }

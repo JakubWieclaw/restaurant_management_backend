@@ -93,11 +93,13 @@ public class OrderService {
      */
     public Order addOrder(OrderAddCommand orderAddCommand) {
         validateOrderAddCommand(orderAddCommand);
-        double totalPrice = calculateTotalPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double orderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double deliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         Order order = new Order(
                 orderAddCommand.getMealIds(),
-                totalPrice,
+                orderPrice,
+                deliveryPrice,
                 orderAddCommand.getCustomerId(),
                 orderAddCommand.getType(),
                 orderAddCommand.getStatus(),
@@ -128,7 +130,8 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
 
         validateOrderAddCommand(orderAddCommand);
-        double newTotalPrice = calculateTotalPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
         existingOrder.setCustomerId(orderAddCommand.getCustomerId());
@@ -137,7 +140,8 @@ public class OrderService {
         existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());
         existingOrder.setDeliveryAddress(orderAddCommand.getDeliveryAddress());
         existingOrder.setDeliveryDistance(orderAddCommand.getDeliveryDistance());
-        existingOrder.setTotalPrice(newTotalPrice);
+        existingOrder.setOrderPrice(newOrderPrice);
+        existingOrder.setDeliveryPrice(newDeliveryPrice);
         existingOrder.setDateTime(LocalDateTime.now());
 
         return orderRepository.save(existingOrder);
@@ -233,11 +237,19 @@ public class OrderService {
         }
     }
 
-    private double calculateTotalPrice(List<MealQuantity> mealQuantities, int deliveryDistance) {
+    private double calculateOrderPrice(List<MealQuantity> mealQuantities, double deliveryDistance) {
+        return mealQuantities.stream()
+                .mapToDouble(mealQuantity -> {
+                    Long mealId = mealQuantity.getMealId();
+                    int quantity = mealQuantity.getQuantity();
+                    Meal meal = mealService.getMealById(mealId);
+                    return meal.getPrice() * quantity;
+                })
+                .sum();
+    }
+
+    private double countDeliveryPrice(double deliveryDistance) {
         double deliveryPrice = 0;
-        // Get all delivery pricing from config service, browse through them and find
-        // the one that matches the distance, if the distance exceeds the maximum
-        // distance, throw IllegalArgumentException
         if (deliveryDistance > 0) {
             final var deliveryPrices = configService.getDeliveryPrices();
             for (var deliveryPriceEntry : deliveryPrices) {
@@ -251,14 +263,7 @@ public class OrderService {
         if (deliveryPrice == 0 && deliveryDistance > 0) {
             throw new IllegalArgumentException("Nie znaleziono ceny dostawy dla odległości: " + deliveryDistance);
         }
-        return mealQuantities.stream()
-                .mapToDouble(mealQuantity -> {
-                    Long mealId = mealQuantity.getMealId();
-                    int quantity = mealQuantity.getQuantity();
-                    Meal meal = mealService.getMealById(mealId);
-                    return meal.getPrice() * quantity;
-                })
-                .sum() + deliveryPrice;
+        return deliveryPrice;
     }
 
 }

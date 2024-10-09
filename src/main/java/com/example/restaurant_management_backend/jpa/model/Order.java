@@ -29,7 +29,7 @@ public class Order {
     private List<MealQuantity> mealIds;
 
     @PositiveOrZero(message = "Cena nie może być ujemna")
-    private double totalPrice;
+    private double orderPrice;
 
     @PositiveOrZero(message = "Identifikator klienta musi być null, dodatni, lub zero")
     private Long customerId;
@@ -51,13 +51,17 @@ public class Order {
     private String deliveryAddress;
 
     @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
-    private int deliveryDistance;
+    private double deliveryDistance;
 
-    public Order(List<MealQuantity> mealIds, double totalPrice, Long customerId, OrderType type,
+    @PositiveOrZero(message = "Cena dostawy nie może być ujemna")
+    private double deliveryPrice;
+
+    public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,
                  OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
-                 String deliveryAddress, int deliveryDistance) {
+                 String deliveryAddress, double deliveryDistance) {
         this.mealIds = mealIds;
-        this.totalPrice = totalPrice;
+        this.orderPrice = orderPrice;
+        this.deliveryPrice = deliveryPrice;
         this.customerId = customerId;
         this.type = type;
         this.status = status;
