@@ -22,6 +22,7 @@ public class UnwantedIngredient {
 
     // should contain only of unique strings
 
+    // could be a set, but JS is stupid
     private List<String> ingredients;
 
     public UnwantedIngredient(int mealIndex, List<String> ingredients) {
