@@ -71,11 +71,11 @@ public class Meal {
         this.calories = calories;
     }
 
-    public boolean hasWeightOrVolume() {
-        return weightOrVolume != null;
-    }
+    // public boolean hasWeightOrVolume() {
+    //     return weightOrVolume != null;
+    // }
 
-    public boolean isUnitTypeMandatory() {
-        return weightOrVolume != null && unitType == null;
-    }
+    // public boolean isUnitTypeMandatory() {
+    //     return weightOrVolume != null && unitType == null;
+    // }
 }
