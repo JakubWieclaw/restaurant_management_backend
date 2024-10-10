@@ -5,6 +5,7 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.Order;
+import com.example.restaurant_management_backend.jpa.model.OrderType;
 import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
@@ -180,6 +181,17 @@ public class OrderService {
             throw new IllegalArgumentException("Lista posiłków nie może być pusta");
         }
 
+        // 0.01 is used t oavoid issues regarding double precision
+        // If deliverydistance is greater than 0 and order type is NA_MIEJSCU, throw an exception
+        if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.NA_MIEJSCU)) {
+            throw new IllegalArgumentException("Zamówenie na miejscu nie może mieć odległości dostawy większej niż 0");
+        }
+
+        // If deliverydistance is 0 and order type is DOSTAWA, throw an exception
+        if (orderAddCommand.getDeliveryDistance() < 0.01 && orderAddCommand.getType().equals(OrderType.DOSTAWA)) {
+            throw new IllegalArgumentException("Zamówienie na dostawę musi mieć odległość dostawy większą niż 0");
+        }
+
         for (int i = 0; i < mealIds.size(); i++) {
             final var mealQuantity = mealIds.get(i);
 
@@ -252,6 +264,8 @@ public class OrderService {
         double deliveryPrice = 0;
         if (deliveryDistance > 0) {
             final var deliveryPrices = configService.getDeliveryPrices();
+            // Sort delivery prices by maximum range
+            deliveryPrices.sort((a, b) -> (int) (a.getMaximumRange() - b.getMaximumRange()));
             for (var deliveryPriceEntry : deliveryPrices) {
                 final var maxRange = deliveryPriceEntry.getMaximumRange();
                 if (maxRange >= deliveryDistance) {
