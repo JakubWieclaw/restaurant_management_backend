@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,6 +42,10 @@ public class CustomerUserDetailsService implements UserDetailsService {
     public Customer getCustomerByIdOrThrowException(Long id) {
         return customerRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Nie znaleziono klienta o id " + id));
+    }
+
+    public List<Customer> getAllCustomers() {
+        return customerRepository.findAll();
     }
 
     public Customer getCustomerByEmailOrThrowException(String email) {
