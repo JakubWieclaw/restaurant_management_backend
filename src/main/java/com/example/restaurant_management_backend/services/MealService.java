@@ -15,6 +15,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MealService {
+    public static final String NOT_FOUND_MEAL_ID = "Nie znaleziono dania o id ";
+    public static final String CATEGORY_WITH_ID = "Kategoria o id ";
+    public static final String DOES_NOT_EXIST = " nie istnieje";
     private final MealRepository mealRepository;
     private final CategoryRepository categoryRepository;
     private final MealMapper mealMapper;
@@ -29,7 +32,7 @@ public class MealService {
 
     public Meal getMealById(Long id) {
         return mealRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Nie znaleziono dania o id " + id));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_MEAL_ID + id));
     }
 
     public Meal addMeal(MealAddCommand mealAddCommand) {
@@ -47,7 +50,7 @@ public class MealService {
 
     public void deleteMealById(Long id) {
         if (!mealRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono dania o id " + id);
+            throw new NotFoundException(NOT_FOUND_MEAL_ID + id);
         }
         mealRepository.deleteById(id);
     }
@@ -71,7 +74,7 @@ public class MealService {
 
     private void validateCategory(Long categoryId) {
         if (!categoryRepository.existsById(categoryId)) {
-            throw new NotFoundException("Kategoria o id " + categoryId + " nie istnieje");
+            throw new NotFoundException(CATEGORY_WITH_ID + categoryId + DOES_NOT_EXIST);
         }
     }
 

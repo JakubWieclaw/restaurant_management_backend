@@ -19,6 +19,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ConfigService {
+    public static final String SYSTEM_WAS_INITIALIZED = "System został już zainicjalizowany.";
+    public static final String SYSTEM_NOT_INITIALIZED = "Proszę zainicjalizować system.";
     private final ConfigRepository configRepository;
     private final DeliveryPriceRepository deliveryPriceRepository;
     private final OpeningHourRepository openingHourRepository;
@@ -30,13 +32,14 @@ public class ConfigService {
 
     private void ensureSystemNotInitialized() {
         if (isSystemInitialized()) {
-            throw new SystemAlreadyInitializedException("System został już zainicjalizowany.");
+            throw new SystemAlreadyInitializedException(SYSTEM_WAS_INITIALIZED);
         }
     }
 
     private void ensureSystemInitialized() {
         if (!isSystemInitialized()) {
-            throw new SystemNotInitializedException("Proszę zainicjalizować system.");
+            throw new SystemNotInitializedException(SYSTEM_NOT_INITIALIZED);
+
         }
     }
 
@@ -53,7 +56,7 @@ public class ConfigService {
         return configRepository.findAll()
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new SystemNotInitializedException("Proszę zainicjalizować system."));
+                .orElseThrow(() -> new SystemNotInitializedException(SYSTEM_NOT_INITIALIZED));
     }
 
     public List<DeliveryPricing> getDeliveryPrices() {

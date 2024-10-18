@@ -2,11 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.GlobalExceptionHandler;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
-import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.model.MealQuantity;
-import com.example.restaurant_management_backend.jpa.model.Order;
-import com.example.restaurant_management_backend.jpa.model.OrderType;
-import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
+import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
@@ -21,6 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderService {
 
+    public static final String NOT_FOUND_ORDER = "Nie znaleziono zamówienia";
+    public static final String INVALID_ID = "Niepoprawne ID klienta";
     private final MealService mealService;
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
@@ -50,8 +48,8 @@ public class OrderService {
      */
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
-        if (!order.isPresent()) {
-            throw new NotFoundException("Nie znaleziono zamówienia");
+        if (order.isEmpty()) {
+            throw new NotFoundException(NOT_FOUND_ORDER);
         }
         return order;
     }
@@ -72,7 +70,7 @@ public class OrderService {
      */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
-            throw new IllegalArgumentException("Niepoprawne ID klienta");
+            throw new IllegalArgumentException(INVALID_ID);
         }
         if (!customerRepository.existsById(customerId)) {
             throw new NotFoundException("Klient o identyfikatorze " + customerId + " nie istnieje");
@@ -128,7 +126,7 @@ public class OrderService {
      */
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
         validateOrderAddCommand(orderAddCommand);
         double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
@@ -164,7 +162,7 @@ public class OrderService {
      */
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono zamówienia");
+            throw new NotFoundException(NOT_FOUND_ORDER);
         }
         orderRepository.deleteById(id);
     }
