@@ -19,6 +19,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class TableReservationService {
+    public static final String CANNOT_MAKE_RESERVATION_IN_PAST = "Nie można dokonać rezerwacji w przeszłości";
+    public static final String NO_TABLE_FOUND_FOR_THIS_TIME = "Brakuje stolika w podanym przedziale czasowym";
     private final ConfigService configService;
     private final TableService tableService;
     private final TableReservationRepository tableReservationRepository;
@@ -61,14 +63,14 @@ public class TableReservationService {
 
     public void makeReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId) {
         if (day.isBefore(ZonedDateTime.now().toLocalDate())) {
-            throw new InvalidReservationException("Nie można dokonać rezerwacji w przeszłości");
+            throw new InvalidReservationException(CANNOT_MAKE_RESERVATION_IN_PAST);
         }
         int tables = tableService.countTablesWithGreaterOrEqualCapacity(numberOfPeople);
         final var tableReservationList = getTableReservations(day);
 
         List<TableReservation> reservationsInConflict = getReservationsInConflict(startTime, endTime, tableReservationList);
         if (reservationsInConflict.size() >= tables) {
-            throw new InvalidReservationException("Brakuje stolika w podanym przedziale czasowym");
+            throw new InvalidReservationException(NO_TABLE_FOUND_FOR_THIS_TIME);
         }
 
         TableReservation tableReservation = new TableReservation();
@@ -84,7 +86,7 @@ public class TableReservationService {
     }
 
     private List<TableReservation> getTableReservations(LocalDate day) {
-        return tableReservationRepository.findAllByReservationDate(day);
+        return tableReservationRepository.findAllByDay(day);
     }
 
     private List<TableReservation> getReservationsInConflict(LocalTime startTime, LocalTime endTime, List<TableReservation> tableReservations) {

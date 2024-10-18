@@ -22,7 +22,6 @@ public class TableReservationController {
 
     private final TableReservationService tableReservationService;
 
-    // Endpoint to check possible reservation hours for a specific day using RequestBody
     @PostMapping("/available-hours/day")
     public ResponseEntity<List<LocalTime>> getAvailableHoursForDay(@RequestBody ReservationQueryRequest queryRequest) {
         List<LocalTime> availableHours = tableReservationService.checkPossibleHoursForDay(
@@ -34,7 +33,6 @@ public class TableReservationController {
         return ResponseEntity.ok(availableHours);
     }
 
-    // Endpoint to check possible reservation hours for multiple days using RequestBody
     @PostMapping("/available-hours/days")
     public ResponseEntity<List<PossibleReservationHoursForDay>> getAvailableHoursForDays(@RequestBody ReservationQueryRequest queryRequest) {
         List<PossibleReservationHoursForDay> availableHoursForDays = tableReservationService.checkPossibleHoursForDays(

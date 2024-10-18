@@ -30,7 +30,6 @@ public class TableReservation {
     private LocalTime startTime;
     @NotNull
     private LocalTime endTime;
-    private long duration; // default 2 hours
-    // allow null for not registered users
+    private long duration;
     private Long customerId;
 }
