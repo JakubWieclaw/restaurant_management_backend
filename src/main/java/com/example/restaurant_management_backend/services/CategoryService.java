@@ -15,6 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryService {
 
+    public static final String NOT_FOUND_CATEGORY_WITH_ID = "Nie znaleziono kategorii o id ";
+    public static final String CANNOT_REMOVE_CATEGORY_MEALS_ARE_CONNECTED = "Nie można usunąć kategorii, ponieważ są z nią powiązane posiłki.";
     private final CategoryRepository categoryRepository;
     private final MealRepository mealRepository;
 
@@ -24,7 +26,7 @@ public class CategoryService {
 
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Nie znaleziono kategorii o id " + id));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_CATEGORY_WITH_ID + id));
     }
 
     public Category addCategory(CategoryAddCommand categoryAddCommand) {
@@ -46,7 +48,7 @@ public class CategoryService {
 
     public void deleteCategoryById(Long id) {
         if (mealRepository.existsByCategoryId(id)) {
-            throw new ResourceConflictException("Nie można usunąć kategorii, ponieważ są z nią powiązane posiłki.");
+            throw new ResourceConflictException(CANNOT_REMOVE_CATEGORY_MEALS_ARE_CONNECTED);
         }
         categoryRepository.deleteById(id);
     }

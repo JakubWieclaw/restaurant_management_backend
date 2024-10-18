@@ -14,16 +14,19 @@ import java.nio.file.Paths;
 @Service
 public class PhotoService {
     private static final String UPLOAD_DIR = "uploads/";
+    public static final String FILENAME_NOT_PRESENT = "Nie podano pliku";
+    public static final String DIR_NOT_CREATED_FOR_FILES = "Nie udało się utworzyć katalogu na pliki";
+    public static final String NOT_FOUND_FILE_WITH_NAME = "Nie znaleziono pliku o nazwie ";
 
     public String uploadPhoto(MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            throw new NotFoundException("Nie podano pliku");
+            throw new NotFoundException(FILENAME_NOT_PRESENT);
         }
 
         String uploadDirPath = new File(UPLOAD_DIR).getAbsolutePath();
         File uploadDir = new File(uploadDirPath);
         if (!uploadDir.exists() && !uploadDir.mkdirs()) {
-            throw new IOException("Nie udało się utworzyć katalogu na pliki");
+            throw new IOException(DIR_NOT_CREATED_FOR_FILES);
         }
 
         String filePath = uploadDirPath + File.separator + file.getOriginalFilename();
@@ -37,7 +40,7 @@ public class PhotoService {
         Resource resource = new UrlResource(filePath.toUri());
 
         if (!resource.exists()) {
-            throw new NotFoundException("Nie znaleziono pliku o nazwie " + filename);
+            throw new NotFoundException(NOT_FOUND_FILE_WITH_NAME + filename);
         }
 
         return resource;

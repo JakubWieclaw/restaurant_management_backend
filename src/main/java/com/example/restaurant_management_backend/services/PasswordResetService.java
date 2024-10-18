@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PasswordResetService {
 
+    public static final String RESET_TOKEN_NOT_VALID_ANYMORE = "Token resetujący stracił ważność.";
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final CustomerUserDetailsService customerService;
@@ -51,7 +52,7 @@ public class PasswordResetService {
 
         // Check if the token is expired
         if (customer.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new CredentialsExpiredException("Token resetujący stracił ważność.");
+            throw new CredentialsExpiredException(RESET_TOKEN_NOT_VALID_ANYMORE);
         }
     }
 }
