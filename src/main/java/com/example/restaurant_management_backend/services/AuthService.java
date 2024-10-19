@@ -60,7 +60,7 @@ public class AuthService {
                 .surname(registerUserCommand.getSurname())
                 .email(registerUserCommand.getEmail())
                 .phone(registerUserCommand.getPhone())
-                .password(passwordEncoder.encode(registerUserCommand.getPassword()))
+                .passwordHash(passwordEncoder.encode(registerUserCommand.getPassword()))
                 .build();
     }
 

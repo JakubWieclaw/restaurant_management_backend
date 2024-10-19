@@ -40,7 +40,7 @@ public class PasswordResetService {
         Customer customer = customerService.getCustomerByResetTokenOrThrowException(token);
 
         // Reset password
-        customer.setPassword(passwordEncoder.encode(newPassword));
+        customer.setPasswordHash(passwordEncoder.encode(newPassword));
         customer.setResetToken(null);  // Invalidate the token after use
         customer.setResetTokenExpiry(null);
         customerService.save(customer);

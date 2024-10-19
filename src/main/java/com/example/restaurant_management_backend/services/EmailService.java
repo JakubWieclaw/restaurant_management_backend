@@ -32,4 +32,23 @@ public class EmailService {
 
         mailSender.send(mimeMessage);
     }
+
+    public void sendRegistrationConfirmationEmail(String to, String customerName) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333;\">" +
+                "<h2 style=\"color: #0056b3;\">Potwierdzenie rejestracji</h2>" +
+                "<p>Witaj, " + customerName + "</p>" +
+                "<p>Twoje konto zostało pomyślnie zarejestrowane w naszym systemie.</p>" +
+                "<p>Możesz teraz zalogować się na swoje konto i korzystać z naszych usług.</p>" +
+                "<p>Dziękujemy, <br>Zespół zarządzania restauracją</p>" +
+                "</div>";
+
+        helper.setTo(to);
+        helper.setSubject("Potwierdzenie rejestracji");
+        helper.setText(htmlContent, true);  // Set the second parameter to true for HTML
+
+        mailSender.send(mimeMessage);
+    }
 }
