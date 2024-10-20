@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.controllers;
 import com.example.restaurant_management_backend.jpa.model.Coupon;
 import com.example.restaurant_management_backend.jpa.model.command.CouponAddCommand;
 import com.example.restaurant_management_backend.services.CouponService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ public class CouponController {
     private final CouponService couponService;
 
     @PostMapping("/create")
+    @Operation(summary = "Create a new coupon")
     public ResponseEntity<Coupon> createCoupon(@RequestBody @Valid CouponAddCommand couponRequestDTO) {
         Coupon coupon = couponService.createCoupon(
                 couponRequestDTO.getCode(),
@@ -32,14 +34,14 @@ public class CouponController {
         return new ResponseEntity<>(coupon, HttpStatus.CREATED);
     }
 
-    // Endpoint to deactivate a coupon
+    @Operation(summary = "Deactivate a coupon")
     @PutMapping("/deactivate/{couponId}")
     public ResponseEntity<Void> deactivateCoupon(@PathVariable Long couponId) {
         couponService.deactivateCoupon(couponId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Endpoint to validate a coupon
+    @Operation(summary = "Validate a coupon")
     @GetMapping("/validate")
     public ResponseEntity<Boolean> validateCoupon(@RequestParam String code,
                                                   @RequestParam Long customerId,
@@ -48,7 +50,7 @@ public class CouponController {
         return new ResponseEntity<>(isValid, HttpStatus.OK);
     }
 
-    // Endpoint to apply a coupon
+    @Operation(summary = "Apply a coupon")
     @GetMapping("/apply")
     public ResponseEntity<Double> applyCoupon(@RequestParam String code,
                                               @RequestParam Long customerId,
@@ -58,7 +60,7 @@ public class CouponController {
         return new ResponseEntity<>(discountedPrice, HttpStatus.OK);
     }
 
-    // Endpoint to get all coupons for a customer
+    @Operation(summary = "Get all coupons for customer")
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<Coupon>> getCouponsForCustomer(@PathVariable Long customerId) {
         List<Coupon> coupons = couponService.getCouponsForCustomer(customerId);
@@ -66,6 +68,7 @@ public class CouponController {
     }
 
     // Endpoint to get all coupons for a specific meal
+    @Operation(summary = "Get all coupons for a meal")
     @GetMapping("/meal/{mealId}")
     public ResponseEntity<List<Coupon>> getCouponsForMeal(@PathVariable Long mealId) {
         List<Coupon> coupons = couponService.getCouponsForMeal(mealId);

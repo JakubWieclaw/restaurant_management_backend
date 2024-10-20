@@ -39,4 +39,6 @@ public class Coupon {
 
     @NotNull(message = "Kupon musi być aktywny lub nieaktywny")
     private Boolean active; // Indicates if the coupon is currently active
+
+    private boolean availableToAllCustomers; // Indicates if the coupon is available to all customers
 }

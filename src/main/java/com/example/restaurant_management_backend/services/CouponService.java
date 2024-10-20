@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,22 @@ public class CouponService {
         return couponRepository.save(coupon);
     }
 
+    public Coupon createCouponForAllCustomers(String code, Double discountPercentage, Long mealId, LocalDateTime expiryDate) {
+        Meal meal = mealRepository.findById(mealId)
+                .orElseThrow(() -> new NotFoundException(MEAL_NOT_FOUND));
+
+        Coupon coupon = Coupon.builder()
+                .code(code)
+                .discountPercentage(discountPercentage)
+                .meal(meal)
+                .expiryDate(expiryDate)
+                .active(true)
+                .availableToAllCustomers(true)
+                .build();
+
+        return couponRepository.save(coupon);
+    }
+
     public void deactivateCoupon(Long couponId) {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
@@ -59,8 +76,7 @@ public class CouponService {
     }
 
     public boolean isCouponValid(String code, Long customerId, Long mealId) {
-        Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+        Coupon coupon = getCoupon(code, customerId);
 
         if (!coupon.getActive() || coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new CouponInvalidException(COUPON_INACTIVE);
@@ -75,16 +91,25 @@ public class CouponService {
 
     public double applyCoupon(String code, Long customerId, Long mealId, double originalPrice) {
         if (isCouponValid(code, customerId, mealId)) {
-            Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                    .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+            Coupon coupon = getCoupon(code, customerId);
             double discountAmount = originalPrice * (coupon.getDiscountPercentage() / 100);
             return originalPrice - discountAmount;
         }
         return originalPrice;
     }
 
+    private Coupon getCoupon(String code, Long customerId) {
+        return couponRepository.findByCode(code)
+                .filter(coupon -> coupon.getCustomer().getId().equals(customerId) || coupon.isAvailableToAllCustomers())
+                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+    }
+
     public List<Coupon> getCouponsForCustomer(Long customerId) {
-        return couponRepository.findByCustomerId(customerId);
+        List<Coupon> couponsAvailableByCustomer = couponRepository.findByCustomerId(customerId);
+        List<Coupon> couponsAvailableToAll = couponRepository.findByAvailableToAllCustomers(true);
+        return Stream.of(couponsAvailableByCustomer, couponsAvailableToAll)
+                .flatMap(List::stream)
+                .toList();
     }
 
     public List<Coupon> getCouponsForMeal(Long mealId) {
