@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
+    public static final String USER_WITH_THIS_EMAIL_EXISTS = "Użytkownik o podanym adresie email już istnieje";
+    public static final String WRONG_CREDENTIALS = "Złe dane logowania";
     private final AuthenticationManager authenticationManager;
     private final CustomerUserDetailsService customerService;
     private final PasswordEncoder passwordEncoder;
@@ -27,7 +29,7 @@ public class AuthService {
 
     public RegisterResponseDTO registerUser(RegisterUserCommand registerUserCommand) {
         if (customerService.getCustomerByEmail(registerUserCommand.getEmail()).isPresent()) {
-            throw new ResourceConflictException("Użytownik o podanym adresie email już istnieje");
+            throw new ResourceConflictException(USER_WITH_THIS_EMAIL_EXISTS);
         }
 
         Customer customer = createCustomerObject(registerUserCommand);
@@ -50,7 +52,7 @@ public class AuthService {
 
             return buildLoginResponse(customer, token, isAdmin);
         } else {
-            throw new BadCredentialsException("Złe dane logowania");
+            throw new BadCredentialsException(WRONG_CREDENTIALS);
         }
     }
 

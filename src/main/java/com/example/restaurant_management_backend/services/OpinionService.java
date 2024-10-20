@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OpinionService {
     public static final String NOT_FOUND_OPINIONS = "Nie znaleziono opinii";
-    public static final String DISH_NOT_FOUND = "Nie znaleziono dania";
     public static final String CLIENT_NOT_FOUND = "Nie znaleziono klienta";
     public static final String OPINION_ALREADY_EXISTS = "Opinia dla tego dania już istnieje";
 

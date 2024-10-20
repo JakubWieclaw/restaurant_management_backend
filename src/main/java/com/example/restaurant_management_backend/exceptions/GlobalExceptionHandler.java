@@ -202,4 +202,10 @@ public class GlobalExceptionHandler {
         logger.error("Invalid coupon", ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidReservationException.class)
+    public ResponseEntity<String> handleInvalidReservation(InvalidReservationException ex) {
+        logger.error("Invalid reservation", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
