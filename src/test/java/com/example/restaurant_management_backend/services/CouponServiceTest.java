@@ -64,6 +64,7 @@ public class CouponServiceTest {
         when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(mealRepository.findById(2L)).thenReturn(Optional.of(meal));
         when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.empty());
+        when(couponRepository.findByCode("POZNAN20")).thenReturn(Optional.empty());
         when(couponRepository.save(any(Coupon.class))).thenReturn(coupon);
 
         Coupon createdCoupon = couponService.createCoupon("POZNAN20", 20.0, 1L, 2L, LocalDateTime.now().plusDays(1));
@@ -117,7 +118,7 @@ public class CouponServiceTest {
 
     @Test
     void testIsCouponValidSuccess() {
-        when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.of(coupon));
+        when(couponRepository.findByCode("POZNAN20")).thenReturn(Optional.of(coupon));
 
         boolean isValid = couponService.isCouponValid("POZNAN20", 1L, 2L);
 
@@ -127,7 +128,7 @@ public class CouponServiceTest {
     @Test
     void testIsCouponInvalidExpired() {
         coupon.setExpiryDate(LocalDateTime.now().minusDays(1));
-        when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.of(coupon));
+        when(couponRepository.findByCode("POZNAN20")).thenReturn(Optional.of(coupon));
 
         CouponInvalidException thrown = assertThrows(CouponInvalidException.class, () ->
                 couponService.isCouponValid("POZNAN20", 1L, 2L));
@@ -137,7 +138,7 @@ public class CouponServiceTest {
 
     @Test
     void testApplyCouponSuccess() {
-        when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.of(coupon));
+        when(couponRepository.findByCode("POZNAN20")).thenReturn(Optional.of(coupon));
 
         double discountedPrice = couponService.applyCoupon("POZNAN20", 1L, 2L, 100.0);
 
