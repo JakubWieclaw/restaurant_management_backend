@@ -106,10 +106,14 @@ public class CouponService {
 
     public List<Coupon> getCouponsForCustomer(Long customerId) {
         List<Coupon> couponsAvailableByCustomer = couponRepository.findByCustomerId(customerId);
-        List<Coupon> couponsAvailableToAll = couponRepository.findByAvailableToAllCustomers(true);
+        List<Coupon> couponsAvailableToAll = getCouponsAvailableToAll();
         return Stream.of(couponsAvailableByCustomer, couponsAvailableToAll)
                 .flatMap(List::stream)
                 .toList();
+    }
+
+    public List<Coupon> getCouponsAvailableToAll() {
+        return couponRepository.findByAvailableToAllCustomers(true);
     }
 
     public List<Coupon> getCouponsForMeal(Long mealId) {

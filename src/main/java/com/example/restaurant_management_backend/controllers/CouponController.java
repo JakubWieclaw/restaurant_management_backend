@@ -67,11 +67,17 @@ public class CouponController {
         return new ResponseEntity<>(coupons, HttpStatus.OK);
     }
 
-    // Endpoint to get all coupons for a specific meal
     @Operation(summary = "Get all coupons for a meal")
     @GetMapping("/meal/{mealId}")
     public ResponseEntity<List<Coupon>> getCouponsForMeal(@PathVariable Long mealId) {
         List<Coupon> coupons = couponService.getCouponsForMeal(mealId);
+        return new ResponseEntity<>(coupons, HttpStatus.OK);
+    }
+
+    @Operation(summary = "Get all coupons for all customers")
+    @GetMapping("/all")
+    public ResponseEntity<List<Coupon>> getCouponsForAllCustomers() {
+        List<Coupon> coupons = couponService.getCouponsAvailableToAll();
         return new ResponseEntity<>(coupons, HttpStatus.OK);
     }
 }
