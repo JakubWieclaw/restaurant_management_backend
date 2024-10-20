@@ -18,9 +18,13 @@ public class ContactFormService {
         customerCRUDService.validateEmail(contactFormCommand.getEmail());
         try {
             emailService.sendContactFormEmail(contactFormCommand);
-            emailService.sentEmailConfirmingContactFormWasSent(contactFormCommand.getEmail(), contactFormCommand.getName(), contactFormCommand.getMessage());
         } catch (Exception e) {
             throw new IllegalArgumentException("Nie udało się wysłać wiadomości");
+        }
+        try {
+            emailService.sentEmailConfirmingContactFormWasSent(contactFormCommand.getEmail(), contactFormCommand.getName(), contactFormCommand.getMessage());
+        } catch (Exception e) {
+            throw new IllegalStateException("Nie udało się wysłać wiadomości potwierdzającej do klienta", e);
         }
     }
 
