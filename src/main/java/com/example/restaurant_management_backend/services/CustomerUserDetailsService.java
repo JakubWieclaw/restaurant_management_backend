@@ -3,19 +3,15 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
-import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -27,8 +23,6 @@ import java.util.List;
 public class CustomerUserDetailsService implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -75,23 +69,6 @@ public class CustomerUserDetailsService implements UserDetailsService {
     }
 
     public Customer save(Customer customer) {
-        return customerRepository.save(customer);
-    }
-
-    public void deleteCustomerById(Long id) {
-        if (!customerRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono klienta o id " + id);
-        }
-        customerRepository.deleteById(id);
-    }
-
-    public Customer updateCustomer(Long id, RegisterUserCommand registerUserCommand) {
-        Customer customer = getCustomerByIdOrThrowException(id);
-        customer.setName(registerUserCommand.getName());
-        customer.setSurname(registerUserCommand.getSurname());
-        customer.setEmail(registerUserCommand.getEmail());
-        customer.setPhone(registerUserCommand.getPhone());
-        customer.setPasswordHash(passwordEncoder.encode(registerUserCommand.getPassword()));
         return customerRepository.save(customer);
     }
 }
