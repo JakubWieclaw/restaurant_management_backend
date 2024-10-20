@@ -17,7 +17,6 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "meal")
 @Schema(description = "Model of a meal")
 public class Meal {
     @Id
