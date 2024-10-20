@@ -130,7 +130,8 @@ class TableReservationServiceTest {
 
     @Test
     void makeReservation_successWithNoConflicts() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        // LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = LocalDate.now().plusDays(1); // Use a date in the future
         LocalTime startTime = LocalTime.of(14, 0);
         LocalTime endTime = LocalTime.of(16, 0);
         int numberOfPeople = 2;
