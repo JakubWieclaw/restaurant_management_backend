@@ -141,7 +141,6 @@ public class OrderService {
         existingOrder.setDeliveryDistance(orderAddCommand.getDeliveryDistance());
         existingOrder.setOrderPrice(newOrderPrice);
         existingOrder.setDeliveryPrice(newDeliveryPrice);
-        existingOrder.setDateTime(LocalDateTime.now());
 
         return orderRepository.save(existingOrder);
     }
