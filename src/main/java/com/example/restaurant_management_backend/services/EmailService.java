@@ -7,6 +7,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.example.restaurant_management_backend.jpa.model.command.ContactFormCommand;
+
 @Service
 @AllArgsConstructor
 public class EmailService {
@@ -47,6 +49,44 @@ public class EmailService {
 
         helper.setTo(to);
         helper.setSubject("Potwierdzenie rejestracji");
+        helper.setText(htmlContent, true);  // Set the second parameter to true for HTML
+
+        mailSender.send(mimeMessage);
+    }
+
+    public void sendContactFormEmail(ContactFormCommand contactFormCommand) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333;\">" +
+                "<h2 style=\"color: #0056b3;\">Formularz kontaktowy</h2>" +
+                "<p>Imię: " + contactFormCommand.getName() + "</p>" +
+                "<p>Email: " + contactFormCommand.getEmail() + "</p>" +
+                "<p>Treść wiadomości:</p>" + "<p>" + contactFormCommand.getMessage() + "</p>" +
+                "</div>";
+
+        // send email to the restaurant's email address
+        helper.setSubject("Formularz kontaktowy");
+        helper.setText(htmlContent, true);  // Set the second parameter to true for HTML
+        helper.setTo("restaurantmanagerbot@gmail.com");
+
+        mailSender.send(mimeMessage);
+    }
+    public void sentEmailConfirmingContactFormWasSent(String to, String name, String message) throws MessagingException {
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
+
+        String htmlContent = "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333;\">" +
+                "<h2 style=\"color: #0056b3;\">Potwierdzenie wysłania formularza kontaktowego</h2>" +
+                "<p>Witaj, " + name + "</p>" +
+                "<p>Twoja wiadomość została pomyślnie wysłana do naszego zespołu.</p>" +
+                "<p>Treść wiadomości:</p>" + "<p>" + message + "</p>" +
+                "<p>Postaramy się odpowiedzieć na nią tak szybko, jak to możliwe.</p>" +
+                "<p>Dziękujemy, <br>Zespół zarządzania restauracją</p>" +
+                "</div>";
+
+        helper.setTo(to);
+        helper.setSubject("Potwierdzenie wysłania formularza kontaktowego");
         helper.setText(htmlContent, true);  // Set the second parameter to true for HTML
 
         mailSender.send(mimeMessage);
