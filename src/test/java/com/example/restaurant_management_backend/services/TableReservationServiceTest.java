@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +50,7 @@ class TableReservationServiceTest {
 
     @Test
     void checkPossibleHoursForDay() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = ZonedDateTime.now().plusDays(1).toLocalDate();
         int reservationDuration = 120;
         int minutesToAdd = 15;
         when(tableService.countTablesWithGreaterOrEqualCapacity(4)).thenReturn(0);
@@ -87,7 +88,7 @@ class TableReservationServiceTest {
 
     @Test
     void makeReservation_noAvailableTables_throwsException() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = ZonedDateTime.now().plusDays(1).toLocalDate();
         LocalTime startTime = LocalTime.of(12, 0);
         LocalTime endTime = LocalTime.of(14, 0);
         int numberOfPeople = 4;
@@ -101,7 +102,7 @@ class TableReservationServiceTest {
 
     @Test
     void makeReservation_inThePast_throwsException() {
-        LocalDate pastDate = LocalDate.of(2020, 10, 18);
+        LocalDate pastDate = ZonedDateTime.now().minusDays(1).toLocalDate();
         LocalTime startTime = LocalTime.of(12, 0);
         LocalTime endTime = LocalTime.of(14, 0);
 
@@ -112,7 +113,7 @@ class TableReservationServiceTest {
 
     @Test
     void makeReservation_withOverlappingReservation_throwsException() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = ZonedDateTime.now().plusDays(1).toLocalDate();
         LocalTime newStartTime = LocalTime.of(12, 0);
         LocalTime newEndTime = LocalTime.of(14, 0);
         int numberOfPeople = 3;
@@ -130,7 +131,7 @@ class TableReservationServiceTest {
 
     @Test
     void makeReservation_successWithNoConflicts() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = ZonedDateTime.now().plusDays(1).toLocalDate();
         LocalTime startTime = LocalTime.of(14, 0);
         LocalTime endTime = LocalTime.of(16, 0);
         int numberOfPeople = 2;
@@ -145,7 +146,7 @@ class TableReservationServiceTest {
 
     @Test
     void checkPossibleHoursForDay_withExactCapacityMatch() {
-        LocalDate date = LocalDate.of(2024, 10, 18);
+        LocalDate date = ZonedDateTime.now().plusDays(1).toLocalDate();
         int reservationDuration = 120;
         int minutesToAdd = 15;
         int numberOfPeople = 2;
