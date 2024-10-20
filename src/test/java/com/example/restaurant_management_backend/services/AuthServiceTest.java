@@ -69,7 +69,7 @@ public class AuthServiceTest {
                 .surname(command.getSurname())
                 .email(command.getEmail())
                 .phone(command.getPhone())
-                .password("encodedPassword")
+                .passwordHash("encodedPassword")
                 .privilege(new Privilege("USER_PRIVILEGE"))
                 .build();
         when(customerService.save(any(Customer.class))).thenReturn(savedCustomer);

@@ -2,10 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.GlobalExceptionHandler;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
-import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.model.MealQuantity;
-import com.example.restaurant_management_backend.jpa.model.Order;
-import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
+import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
@@ -20,6 +17,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderService {
 
+    public static final String NOT_FOUND_ORDER = "Nie znaleziono zamówienia";
+    public static final String INVALID_ID = "Niepoprawne ID klienta";
     private final MealService mealService;
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
@@ -49,8 +48,8 @@ public class OrderService {
      */
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
-        if (!order.isPresent()) {
-            throw new NotFoundException("Nie znaleziono zamówienia");
+        if (order.isEmpty()) {
+            throw new NotFoundException(NOT_FOUND_ORDER);
         }
         return order;
     }
@@ -71,7 +70,7 @@ public class OrderService {
      */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
-            throw new IllegalArgumentException("Niepoprawne ID klienta");
+            throw new IllegalArgumentException(INVALID_ID);
         }
         if (!customerRepository.existsById(customerId)) {
             throw new NotFoundException("Klient o identyfikatorze " + customerId + " nie istnieje");
@@ -127,7 +126,7 @@ public class OrderService {
      */
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
         Order existingOrder = orderRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
         validateOrderAddCommand(orderAddCommand);
         double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
@@ -163,7 +162,7 @@ public class OrderService {
      */
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono zamówienia");
+            throw new NotFoundException(NOT_FOUND_ORDER);
         }
         orderRepository.deleteById(id);
     }
@@ -178,6 +177,17 @@ public class OrderService {
         final var mealIds = orderAddCommand.getMealIds();
         if (mealIds == null || mealIds.isEmpty()) {
             throw new IllegalArgumentException("Lista posiłków nie może być pusta");
+        }
+
+        // 0.01 is used t oavoid issues regarding double precision
+        // If deliverydistance is greater than 0 and order type is NA_MIEJSCU, throw an exception
+        if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.NA_MIEJSCU)) {
+            throw new IllegalArgumentException("Zamówenie na miejscu nie może mieć odległości dostawy większej niż 0");
+        }
+
+        // If deliverydistance is 0 and order type is DOSTAWA, throw an exception
+        if (orderAddCommand.getDeliveryDistance() < 0.01 && orderAddCommand.getType().equals(OrderType.DOSTAWA)) {
+            throw new IllegalArgumentException("Zamówienie na dostawę musi mieć odległość dostawy większą niż 0");
         }
 
         for (int i = 0; i < mealIds.size(); i++) {
@@ -252,6 +262,8 @@ public class OrderService {
         double deliveryPrice = 0;
         if (deliveryDistance > 0) {
             final var deliveryPrices = configService.getDeliveryPrices();
+            // Sort delivery prices by maximum range
+            deliveryPrices.sort((a, b) -> (int) (a.getMaximumRange() - b.getMaximumRange()));
             for (var deliveryPriceEntry : deliveryPrices) {
                 final var maxRange = deliveryPriceEntry.getMaximumRange();
                 if (maxRange >= deliveryDistance) {
