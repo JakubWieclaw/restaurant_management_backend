@@ -16,7 +16,7 @@ public class MailConfig {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(465); // Use port 465 for SSL
         mailSender.setUsername("restaurantmanagerbot@gmail.com");
-        mailSender.setPassword("fbfuwezoztbaxbqt");
+        mailSender.setPassword("ekwyxebdalwvziow");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
