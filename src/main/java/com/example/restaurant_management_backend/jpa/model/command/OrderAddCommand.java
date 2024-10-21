@@ -22,7 +22,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @PositiveOrZero(message = "Identifikator klienta musi być dodatni, lub zero dla niezalogowanego klienta")
     private Long customerId;
 
-    @NotNull(message = "Typ zamówienia musi być jedną z wartości: DOSTAWA, NA_MIEJSCU")
+    @NotNull(message = "Typ zamówienia musi być jedną z wartości: DOSTAWA, NA_MIEJSCU, DO_STOLIKA")
     private OrderType type;
 
     @NotNull(message = "Status musi mieć jedną z wartości: OCZEKUJACE, W_TRAKCIE_REALIZACJI, GOTOWE, W_DOSTRACZENIU, DOSTARCZONE, ODRZUCONE")
@@ -36,13 +36,10 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
     private double deliveryDistance;
 
-    public OrderAddCommand(List<MealQuantity> mealIds,
-                           Long customerId,
-                           OrderType type,
-                           OrderStatus status,
-                           List<UnwantedIngredient> unwantedIngredients,
-                           String deliveryAddress,
-                           double deliveryDistance) {
+    // In case of DO_STOLIKA type
+    private String tableId;
+
+    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
@@ -50,6 +47,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
+        this.tableId = tableId;
         validateSelf();
     }
 }
