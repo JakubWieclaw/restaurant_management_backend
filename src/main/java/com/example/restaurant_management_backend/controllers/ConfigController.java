@@ -12,8 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,7 +26,6 @@ import java.util.List;
 public class ConfigController {
 
     private final ConfigService configService;
-    private static final Logger logger = LoggerFactory.getLogger(ConfigController.class);
 
     @Operation(summary = "Initialize the system with configuration")
     @ApiResponses(value = {
@@ -38,8 +35,7 @@ public class ConfigController {
     @PostMapping("/initialize-system")
     public ResponseEntity<Void> initializeSystem(@Valid @RequestBody ConfigAddCommand configAddCommand) {
         configService.initialize(configAddCommand);
-        logger.info("System initialized");
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).build(); // Return 201 Created
     }
 
     @Operation(summary = "Get system configuration")
@@ -51,7 +47,6 @@ public class ConfigController {
     @GetMapping
     public ResponseEntity<Config> getConfig() {
         Config config = configService.getConfig();
-        logger.info("Getting system configuration");
         return ResponseEntity.ok(config);
     }
 
@@ -63,7 +58,6 @@ public class ConfigController {
     @DeleteMapping
     public ResponseEntity<Void> removeConfigs() {
         configService.removeAll();
-        logger.info("Configuration removed");
         return ResponseEntity.noContent().build();
     }
 
@@ -76,7 +70,6 @@ public class ConfigController {
     @GetMapping("/delivery-prices")
     public ResponseEntity<List<DeliveryPricing>> getDeliveryPrices() {
         List<DeliveryPricing> deliveryPrices = configService.getDeliveryPrices();
-        logger.info("Getting delivery prices configuration");
         return ResponseEntity.ok(deliveryPrices);
     }
 
@@ -89,7 +82,6 @@ public class ConfigController {
     @GetMapping("/opening-hours")
     public ResponseEntity<List<OpeningHour>> getOpeningHours() {
         List<OpeningHour> openingHours = configService.getOpeningHours();
-        logger.info("Getting opening hours configuration");
         return ResponseEntity.ok(openingHours);
     }
 }

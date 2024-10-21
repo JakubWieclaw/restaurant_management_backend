@@ -1,6 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
-import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
+import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDay;
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
@@ -50,11 +50,12 @@ public class TableReservationService {
         return possibleReservationStartHour;
     }
 
-    public List<PossibleReservationHoursForDayDTO> checkPossibleHoursForDays(List<LocalDate> days, int reservationDuration, int minutesToAdd, int numberOfPeople) {
-        final var possibleReservationHours = new ArrayList<PossibleReservationHoursForDayDTO>();
+    public List<PossibleReservationHoursForDay> checkPossibleHoursForDays(List<LocalDate> days, int reservationDuration, int minutesToAdd, int numberOfPeople) {
+        final var possibleReservationHours = new ArrayList<PossibleReservationHoursForDay>();
         for (LocalDate day : days) {
-            List<LocalTime> possibleHours = checkPossibleHoursForDay(day, reservationDuration, minutesToAdd, numberOfPeople);
-            final var reservation = new PossibleReservationHoursForDayDTO(day, possibleHours);
+            final var reservation = new PossibleReservationHoursForDay();
+            reservation.setDate(day);
+            reservation.setPossibleStartTimes(checkPossibleHoursForDay(day, reservationDuration, minutesToAdd, numberOfPeople));
             possibleReservationHours.add(reservation);
         }
         return possibleReservationHours;
@@ -69,7 +70,6 @@ public class TableReservationService {
 
         List<TableReservation> reservationsInConflict = getReservationsInConflict(startTime, endTime, tableReservationList);
         if (reservationsInConflict.size() >= tables) {
-            // Bajer: Return the first possible time
             throw new InvalidReservationException(NO_TABLE_FOUND_FOR_THIS_TIME);
         }
 
