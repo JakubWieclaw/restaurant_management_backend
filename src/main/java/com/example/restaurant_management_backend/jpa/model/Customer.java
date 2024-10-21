@@ -25,6 +25,7 @@ public class Customer {
     private String surname;
 
     @NotBlank(message = "Email nie może być pusty")
+    @Column(unique = true, nullable = false)
     private String email;
 
     @NotBlank(message = "Numer telefonu nie może być pusty")
@@ -32,7 +33,7 @@ public class Customer {
 
     @JsonIgnore
     @NotBlank(message = "Hasło nie może być puste")
-    private String password;
+    private String passwordHash;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "privilege_id", referencedColumnName = "id")

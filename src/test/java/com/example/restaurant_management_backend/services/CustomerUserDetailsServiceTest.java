@@ -44,7 +44,7 @@ class CustomerUserDetailsServiceTest {
         // Then
         assertNotNull(userDetails);
         assertEquals(email, userDetails.getUsername());
-        assertEquals(customer.getPassword(), userDetails.getPassword());
+        assertEquals(customer.getPasswordHash(), userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("USER_PRIVILEGE")));
     }
 
@@ -220,7 +220,7 @@ class CustomerUserDetailsServiceTest {
                 .name("Test")
                 .surname("User")
                 .email(email)
-                .password("password")
+                .passwordHash("password")
                 .privilege(privilege)
                 .build();
     }
