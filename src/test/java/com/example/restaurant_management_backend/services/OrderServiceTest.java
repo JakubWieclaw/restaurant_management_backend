@@ -1,13 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
-import com.example.restaurant_management_backend.jpa.model.DeliveryPricing;
-import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.model.MealQuantity;
-import com.example.restaurant_management_backend.jpa.model.Order;
-import com.example.restaurant_management_backend.jpa.model.OrderStatus;
-import com.example.restaurant_management_backend.jpa.model.OrderType;
-import com.example.restaurant_management_backend.jpa.model.UnitType;
+import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
@@ -116,7 +110,7 @@ public class OrderServiceTest {
 
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L, OrderType.DOSTAWA,
-                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0);
+                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null);
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
         when(mealService.mealExists(1L)).thenReturn(true);
