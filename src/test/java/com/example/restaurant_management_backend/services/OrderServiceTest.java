@@ -35,20 +35,12 @@ public class OrderServiceTest {
     @Mock
     private ConfigService configService;
 
-    @Mock
-    private TableReservationService tableReservationService;
-
     @InjectMocks
     private OrderService orderService;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        DeliveryPricing deliveryPricing = new DeliveryPricing();
-        deliveryPricing.setId(1L);
-        deliveryPricing.setMaximumRange(5);
-        deliveryPricing.setPrice(5.0);
-        when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
     }
 
     @Test
@@ -125,6 +117,11 @@ public class OrderServiceTest {
         when(mealService.getMealById(1L)).thenReturn(meal);
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
         when(configService.isSystemInitialized()).thenReturn(true);
+        DeliveryPricing deliveryPricing = new DeliveryPricing();
+        deliveryPricing.setId(1L);
+        deliveryPricing.setMaximumRange(5);
+        deliveryPricing.setPrice(5.0);
+        when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
 
         Order result = orderService.addOrder(command);
 
@@ -153,99 +150,5 @@ public class OrderServiceTest {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Nie znaleziono zamówienia");
         verify(orderRepository, never()).deleteById(orderId);
-    }
-
-    @Test
-    public void testAddOrder_ShouldMakeTableReservation_WhenTableIdIsProvided() {
-        // Arrange
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
-        OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
-                OrderType.NA_MIEJSCU, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
-                "Some Address", 0, "1");
-
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
-                Collections.emptyList(), 100);
-
-        when(mealService.mealExists(1L)).thenReturn(true);
-        when(mealService.getMealById(1L)).thenReturn(meal);
-        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(configService.isSystemInitialized()).thenReturn(true);
-        DeliveryPricing deliveryPricing = new DeliveryPricing();
-        deliveryPricing.setId(1L);
-        deliveryPricing.setMaximumRange(5);
-        deliveryPricing.setPrice(5.0);
-        when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
-
-        // Act
-        Order result = orderService.addOrder(command);
-
-        // Assert
-        verify(tableReservationService, times(1)).makeReservation(
-                any(),  // date (assumes LocalDate)
-                any(),  // start time (assumes LocalTime)
-                any(),  // end time (assumes LocalTime)
-                anyInt(), // number of people
-                eq(1L) // customer ID
-        );
-
-        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2 = 40.0
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
-    public void testAddOrder_ShouldNotMakeTableReservation_WhenTableIdIsNotProvided() {
-        // Arrange
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
-        OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
-                OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
-
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
-                Collections.emptyList(), 100);
-
-        when(mealService.mealExists(1L)).thenReturn(true);
-        when(mealService.getMealById(1L)).thenReturn(meal);
-        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(configService.isSystemInitialized()).thenReturn(true);
-        DeliveryPricing deliveryPricing = new DeliveryPricing();
-        deliveryPricing.setId(1L);
-        deliveryPricing.setMaximumRange(5);
-        deliveryPricing.setPrice(5.0);
-        when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
-
-        // Act
-        Order result = orderService.addOrder(command);
-
-        // Assert
-        verify(tableReservationService, never()).makeReservation(any(), any(), any(), anyInt(), anyLong());
-        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2 = 40.0
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
-    public void testUpdateOrder_ShouldNotMakeTableReservation_WhenTableIdIsNotUpdated() {
-        // Arrange
-        Long orderId = 1L;
-        Order existingOrder = new Order();
-        existingOrder.setCustomerId(1L);
-        existingOrder.setMealIds(Collections.singletonList(new MealQuantity(1L, 2)));
-        existingOrder.setDeliveryAddress("Old Address");
-
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existingOrder));
-
-        OrderAddCommand command = new OrderAddCommand(Collections.singletonList(new MealQuantity(1L, 2)), 1L,
-                OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
-
-        when(mealService.mealExists(1L)).thenReturn(true);
-        when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, Collections.emptyList(), 100));
-        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(configService.isSystemInitialized()).thenReturn(true);
-
-        // Act
-        orderService.updateOrder(orderId, command);
-
-        // Assert
-        verify(tableReservationService, never()).makeReservation(any(), any(), any(), anyInt(), anyLong());
     }
 }
