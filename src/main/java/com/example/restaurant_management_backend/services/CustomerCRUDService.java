@@ -8,6 +8,7 @@ import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 
+
 import lombok.RequiredArgsConstructor;
 
 import org.xbill.DNS.Lookup;

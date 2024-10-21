@@ -24,12 +24,28 @@ public class StatsController {
     private static final Logger logger = LoggerFactory.getLogger(StatsController.class);
     private final StatsService statsService;
 
-    @Operation(summary = "Get n most popular meals")
-    @GetMapping("/popular/{n}")
-    public ResponseEntity<?> getMostPopularMeals(@PathVariable int n) {
-        final var popularMeals = statsService.getNMostPopularMeals(n);
+    @Operation(summary = "Get n most or less popular meals")
+    @GetMapping("/popular/{mostLeast}/{n}")
+    public ResponseEntity<?> getMostPopularMeals(@PathVariable String mostLeast, @PathVariable int n) {
+        final var popularMeals = statsService.getNMostPopularMeals(mostLeast, n);
         logger.info("Getting {} most popular meals", n);
         return ResponseEntity.ok(popularMeals);
+    }
+
+    @Operation(summary = "Get amout of orders by day and hour")
+    @GetMapping("/orders-by-day-hour")
+    public ResponseEntity<?> getOrdersByDayAndHour() {
+        final var ordersByDayAndHour = statsService.getAmountOfOrdersByDayAndHour();
+        logger.info("Getting amount of orders by day and hour");
+        return ResponseEntity.ok(ordersByDayAndHour);
+    }
+
+    @Operation(summary = "Get earnings by year-month")
+    @GetMapping("/earnings-by-year-month")
+    public ResponseEntity<?> getEarningsByYearMonth() {
+        final var earningsByYearMonth = statsService.getEarningsByYearMonth();
+        logger.info("Getting earnings by year-month");
+        return ResponseEntity.ok(earningsByYearMonth);
     }
 
 }

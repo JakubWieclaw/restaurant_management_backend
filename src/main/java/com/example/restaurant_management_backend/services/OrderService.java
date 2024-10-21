@@ -97,7 +97,7 @@ public class OrderService {
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
-        if (request.getTableId() != null) {
+        if (request.getTableId() != null && request.getType() == OrderType.NA_MIEJSCU) {
             tableReservationService.makeReservation(
                     now.toLocalDate(), // date
                     now.toLocalTime(), // start time of reservation
