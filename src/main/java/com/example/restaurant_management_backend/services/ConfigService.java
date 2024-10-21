@@ -26,7 +26,7 @@ public class ConfigService {
     private final OpeningHourRepository openingHourRepository;
     private final ConfigMapper configMapper;
 
-    private boolean isSystemInitialized() {
+    public boolean isSystemInitialized() {
         return configRepository.count() > 0;
     }
 

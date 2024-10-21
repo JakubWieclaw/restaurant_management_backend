@@ -4,7 +4,9 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +33,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND_CUSTOMER_WITH_EMAIL + email));
         Set<GrantedAuthority> authorities = convertPrivilegesToAuthorities(customer.getPrivilege());
 
-        return new org.springframework.security.core.userdetails.User(customer.getEmail(), customer.getPassword(), authorities);
+        return new org.springframework.security.core.userdetails.User(customer.getEmail(), customer.getPasswordHash(), authorities);
     }
 
     private Set<GrantedAuthority> convertPrivilegesToAuthorities(Privilege privilege) {

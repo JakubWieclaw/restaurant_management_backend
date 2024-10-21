@@ -86,7 +86,7 @@ class PasswordResetServiceTest {
 
         // Then
         verify(passwordEncoder, times(1)).encode(newPassword);
-        assertEquals("encodedPassword", customer.getPassword());
+        assertEquals("encodedPassword", customer.getPasswordHash());
         assertNull(customer.getResetToken());
         assertNull(customer.getResetTokenExpiry());
         verify(customerService, times(1)).save(customer);
@@ -153,7 +153,7 @@ class PasswordResetServiceTest {
                 .name("John")
                 .surname("Doe")
                 .email(email)
-                .password("oldPassword")
+                .passwordHash("oldPassword")
                 .resetToken(null)
                 .resetTokenExpiry(null)
                 .build();
