@@ -1,9 +1,9 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +12,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class CouponAddCommand extends SelfValidating<CouponAddCommand> {
+public class CouponAddCommand {
 
     @NotBlank(message = "Kod kuponu nie może być pusty")
     private String code;
@@ -29,13 +30,4 @@ public class CouponAddCommand extends SelfValidating<CouponAddCommand> {
 
     @Future(message = "Data wygaśnięcia musi być w przyszłości")
     private LocalDateTime expiryDate;
-
-    public CouponAddCommand(String code, Double discountPercentage, Long customerId, Long mealId, LocalDateTime expiryDate) {
-        this.code = code;
-        this.discountPercentage = discountPercentage;
-        this.customerId = customerId;
-        this.mealId = mealId;
-        this.expiryDate = expiryDate;
-        this.validateSelf();
-    }
 }
