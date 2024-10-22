@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
+import com.example.restaurant_management_backend.jpa.model.Opinion;
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.exceptions.IllegalStateException;
 
@@ -22,6 +24,8 @@ public class StatsService {
     private final MealService mealService;
 
     private final OrderService orderService;
+
+    private final OpinionService opinionService;
 
     private static final String NO_ORDERS_FOUND = "Nie znaleziono żadnych zamówień";
 
@@ -147,6 +151,67 @@ public class StatsService {
         }
 
         return earningsByYearMonth;
+    }
+
+    public LinkedHashMap<Long, Double> getNBestOrWorstRatedMeals(String mostLeast, int n) {
+        if (!mostLeast.equals("best") && !mostLeast.equals("worst")) {
+            throw new IllegalArgumentException("bestWorst musi mieć wartość 'best' or 'worst'");
+        }
+
+        if (n <= 0) {
+            throw new IllegalArgumentException("n musi być większe od 0");
+        }
+
+        if (n > mealService.getAllMeals().size()) {
+            throw new IllegalArgumentException("n musi być mniejsze lub równe liczbie wszystkich posiłków");
+        }
+
+        // get all meals from the database
+
+        List<Meal> meals = mealService.getAllMeals();
+
+        if (meals.isEmpty()) {
+            throw new IllegalStateException("Nie znaleziono żadnych posiłków");
+        }
+
+        // for every meal in meals use getOpinionsForMeal to count the average rating
+        // for each meal
+        // sort the list of meals by their average rating
+        // return the first n meals from the list
+
+        // Create a dictionary to store the average rating of each meal
+        final var result = new HashMap<Long, Double>();
+
+        for (Meal meal : meals) {
+            final var mealId = meal.getId();
+            final var opinions = opinionService.getOpinionsForMeal(mealId);
+            if (opinions.isEmpty()) {
+                continue;
+            } else {
+                double average = 0;
+                for (var opinion : opinions) {
+                    average += opinion.rating();
+                }
+                average /= opinions.size();
+                result.put(mealId, average);
+            }
+        }
+
+        // Sort the map by values (either ascending or descending) and collect the first
+
+        LinkedHashMap<Long, Double> sortedMeals = result.entrySet().stream()
+        .sorted((mostLeast.equals("best"))
+                ? Map.Entry.<Long, Double>comparingByValue().reversed()  // Sort descending for "best"
+                : Map.Entry.comparingByValue())  // Sort ascending for "worst"
+        .limit(n)
+        .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (e1, e2) -> e1,  // Merge function, not needed but required
+                LinkedHashMap::new  // Ensure insertion order is maintained
+        ));
+
+        return sortedMeals;
     }
 
     private String intDayToString(int day) {
