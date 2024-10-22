@@ -2,49 +2,55 @@ package com.example.restaurant_management_backend.jpa.model.command;
 
 import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.UnitType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.ElementCollection;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;
-import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
-@NotNull
 public class MealAddCommand extends SelfValidating<MealAddCommand> {
 
+    @Schema(description = "Name of the meal", example = "Spaghetti carbonara")
     @NotBlank(message = "Nazwa nie może być pusta")
-    private String name;
+    private final String name;
 
-    @NotNull(message = "Cena jest wymagana")
+    @Schema(description = "Price of the meal", example = "45.99")
     @Positive(message = "Cena musi być dodatnia")
-    private Double price;
+    private final Double price;
 
-    private String photographUrl; // Optional field
+    @Schema(description = "URL to the photo of the meal")
+    private final String photographUrl; // Optional field
 
+    @Schema(description = "Ingredients used for the meal", example = """
+            ["pasta","cheese"]
+            """)
     @ElementCollection
-    private List<String> ingredients = new ArrayList<>(); // Default empty list
+    private final List<String> ingredients; // Default empty list
 
+    @Schema(description = "Weight or volume of the meal", example = "2.99")
     @Positive(message = "Waga/objętość nie może być ujemna")
-    private Double weightOrVolume; // Optional field
+    private final Double weightOrVolume; // Optional field
 
-    @Valid
-    private UnitType unitType; // Mandatory if weightOrVolume is provided
+    @Schema(description = "Weight or volume", example = "GRAMY")
+    private final UnitType unitType; // Mandatory if weightOrVolume is provided
 
+    @Schema(description = "Category of the meal", example = "Dania główne")
     @NotNull(message = "Kategoria jest wymagana")
-    private Long categoryId;
+    private final Long categoryId;
 
+    @Schema(description = "Possible allergens for the meal", example = """
+            ["gluten","lactose"]
+            """)
     @ElementCollection
-    private List<String> allergens = new ArrayList<>(); // List of allergens
+    private final List<String> allergens; // List of allergens
 
+    @Schema(description = "Calories for the meal in kcal", example = "865")
     @Positive(message = "Kalorie muszą być dodatnie")
-    @Valid
-    private int calories; // Amount of calories
+    private final int calories; // Amount of calories
 
     public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
