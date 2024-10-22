@@ -23,14 +23,14 @@ public abstract class RegisterCommand extends SelfValidating<RegisterCommand> {
     @NotBlank(message = "Email nie może być pusty")
     @Email(message = "Niepoprawny adres email")
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", 
-             message = "Niepoprawny adres email — użyj poprawnego formatu")
+             message = "Niepoprawny adres email")
     private String email;
 
     @NotBlank(message = "Numer telefonu nie może być pusty")
     @Size(min = 9, max = 15, message = "Numer telefonu musi mieć od 9 do 15 znaków")
     private String phone;
 
-    @NotBlank(message = "Hasło nie może być puste")
+    // @NotBlank(message = "Hasło nie może być puste") - password can be empty for update purpouses, added check on registration that throws exception
     @Size(min = 8, max = 50, message = "Hasło musi mieć od 8 do 50 znaków")
     private String password;
 

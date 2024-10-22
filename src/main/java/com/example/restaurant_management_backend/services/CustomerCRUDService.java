@@ -7,7 +7,6 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
-import com.example.restaurant_management_backend.security.EmailValidator;
 
 
 import lombok.RequiredArgsConstructor;
@@ -19,11 +18,11 @@ public class CustomerCRUDService {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailValidator emailValidator = new EmailValidator();
+    private final EmailService emailService;
 
 
     public void validateEmail(String email) {
-        if (!emailValidator.isValidEmail(email)) {
+        if (!emailService.validateEmailDomain(email)) {
             throw new IllegalArgumentException("Niepoprawna domena bądź nazwa użytkownika adresu email");
         }
     }
@@ -48,23 +47,11 @@ public class CustomerCRUDService {
         customer.setSurname(registerCustomerCommand.getSurname());
         customer.setEmail(registerCustomerCommand.getEmail());
         customer.setPhone(registerCustomerCommand.getPhone());
-        customer.setPasswordHash(passwordEncoder.encode(registerCustomerCommand.getPassword()));
+        // if new password is provided, encode it
+        if (registerCustomerCommand.getPassword() != null) {
+            customer.setPasswordHash(passwordEncoder.encode(registerCustomerCommand.getPassword()));
+        }
         return customerRepository.save(customer);
     }
-
-    // private boolean validateEmailBody(String email) {
-    //     String domain = email.substring(email.indexOf('@') + 1);
-    //     try {
-    //         Lookup lookup = new Lookup(domain, Type.MX);
-    //         Record[] records = lookup.run();
-    //         if (records!= null && records.length > 0) {
-    //             MXRecord mxRecord = (MXRecord) records[0];
-    //             return true; // Domain has a valid MX record
-    //         }
-    //     } catch (TextParseException e) {
-    //         throw new NotFoundException("Nie znaleziono domeny email");
-    //     }
-    //     return false; // Domain does not have a valid MX record
-    // }
 
 }

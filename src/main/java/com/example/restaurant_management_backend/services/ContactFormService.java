@@ -10,12 +10,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ContactFormService {
 
-    private final CustomerCRUDService customerCRUDService;
-
     private final EmailService emailService;
 
     public void sendContactForm(ContactFormCommand contactFormCommand) {
-        customerCRUDService.validateEmail(contactFormCommand.getEmail());
+        emailService.validateEmailDomain(contactFormCommand.getEmail());
         try {
             emailService.sendContactFormEmail(contactFormCommand);
         } catch (Exception e) {

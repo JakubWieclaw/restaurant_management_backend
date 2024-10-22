@@ -29,6 +29,11 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     public RegisterResponseDTO registerUser(RegisterCommand registerCommand) {
+        // if password is not provided, throw exception
+        if (registerCommand.getPassword() == null) {
+            throw new IllegalArgumentException("Hasło nie może być puste");
+        }
+
         if (customerService.getCustomerByEmail(registerCommand.getEmail()).isPresent()) {
             throw new ResourceConflictException(USER_WITH_THIS_EMAIL_EXISTS);
         }
