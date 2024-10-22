@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,9 +14,10 @@ import java.util.List;
 
 
 @Entity(name = "orders")
-@Getter(AccessLevel.PUBLIC)
-@Setter(AccessLevel.PUBLIC)
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Order {
 
     @Id
@@ -31,7 +32,7 @@ public class Order {
     @PositiveOrZero(message = "Cena nie może być ujemna")
     private double orderPrice;
 
-    @PositiveOrZero(message = "Identifikator klienta musi być null, dodatni, lub zero")
+    @PositiveOrZero(message = "Identyfikator klienta musi być null, dodatni, lub zero")
     private Long customerId;
 
     @NotNull(message = "Typ zamówienia nie może być pusty")
@@ -56,18 +57,5 @@ public class Order {
     @PositiveOrZero(message = "Cena dostawy nie może być ujemna")
     private double deliveryPrice;
 
-    public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,
-                 OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
-                 String deliveryAddress, double deliveryDistance) {
-        this.mealIds = mealIds;
-        this.orderPrice = orderPrice;
-        this.deliveryPrice = deliveryPrice;
-        this.customerId = customerId;
-        this.type = type;
-        this.status = status;
-        this.dateTime = dateTime;
-        this.unwantedIngredients = unwantedIngredients;
-        this.deliveryAddress = deliveryAddress;
-        this.deliveryDistance = deliveryDistance;
-    }
+    private String PayUOrderId;
 }
