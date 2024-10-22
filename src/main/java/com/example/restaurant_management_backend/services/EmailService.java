@@ -2,11 +2,18 @@ package com.example.restaurant_management_backend.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.MXRecord;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.TextParseException;
+import org.xbill.DNS.Type;
 import lombok.AllArgsConstructor;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.command.ContactFormCommand;
 
 @Service
@@ -14,6 +21,21 @@ import com.example.restaurant_management_backend.jpa.model.command.ContactFormCo
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    public boolean validateEmailDomain(String email) {
+        String domain = email.substring(email.indexOf('@') + 1);
+        try {
+            Lookup lookup = new Lookup(domain, Type.MX);
+            Record[] records = lookup.run();
+            if (records!= null && records.length > 0) {
+                MXRecord mxRecord = (MXRecord) records[0];
+                return true; // Domain has a valid MX record
+            }
+        } catch (TextParseException e) {
+            throw new NotFoundException("Nie znaleziono domeny email");
+        }
+        return false; // Domain does not have a valid MX record
+    }
 
     public void sendPasswordResetEmail(String to, String resetLink) throws MessagingException {
         MimeMessage mimeMessage = mailSender.createMimeMessage();

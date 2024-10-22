@@ -49,7 +49,7 @@ public class AuthServiceTest {
     @Test
     public void registerUser_whenEmailExists_shouldThrowResourceConflictException() {
         // Given
-        RegisterUserCommand command = new RegisterUserCommand("John", "Doe", "john.doe@example.com", "123456", "555-1234", false);
+        RegisterUserCommand command = new RegisterUserCommand("John", "Doe", "john.doe@example.com", "123456789", "555-1234", false);
         when(customerService.getCustomerByEmail(command.getEmail())).thenReturn(Optional.of(new Customer()));
 
         // When / Then
@@ -60,7 +60,7 @@ public class AuthServiceTest {
     @Test
     public void registerUser_whenEmailDoesNotExist_shouldReturnRegisterResponseDTO() {
         // Given
-        RegisterUserCommand command = new RegisterUserCommand("John", "Doe", "john.doe@example.com", "123456", "555-1234", false);
+        RegisterUserCommand command = new RegisterUserCommand("John", "Doe", "john.doe@example.com", "123456789", "555-1234", false);
         when(customerService.getCustomerByEmail(command.getEmail())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(command.getPassword())).thenReturn("encodedPassword");
         Customer savedCustomer = Customer.builder()

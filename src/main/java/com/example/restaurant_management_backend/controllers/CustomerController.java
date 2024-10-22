@@ -58,25 +58,20 @@ public class CustomerController {
     public ResponseEntity<?> deleteCustomerById(@PathVariable Long id) {
         customerCRUDService.deleteCustomerById(id);
         logger.info("Deleting customer with id: {}", id);
-        return ResponseEntity.ok("Customer deleted successfully");
+        return ResponseEntity.ok("Usunięto klienta o id " + id);
     }
 
     @Operation(summary = "Register new customer (non admin)")
     @PostMapping("/add")
     public ResponseEntity<?> registerCustomer(@RequestBody RegisterCustomerCommand registerCustomerCommand) {
         customerCRUDService.validateEmail(registerCustomerCommand.getEmail());
-        final var registerUserCommand = new RegisterUserCommand(registerCustomerCommand.getName(),
-                registerCustomerCommand.getSurname(), registerCustomerCommand.getEmail(),
-                registerCustomerCommand.getPhone(), registerCustomerCommand.getPassword(), false);
-        final var customer = authService.registerUser(registerUserCommand);
+        final var customer = authService.registerUser(registerCustomerCommand);
         try {
-            emailService.sendRegistrationConfirmationEmail(registerUserCommand.getEmail(),
-                    registerUserCommand.getName());
-        } catch (MessagingException e) {
-            // Return response saying that account was created but email was not sent
+            emailService.sendRegistrationConfirmationEmail(registerCustomerCommand.getEmail(),
+                    registerCustomerCommand.getName());
+        } catch (Exception e) {
             return ResponseEntity.ok(customer + "\nUtworzono konto, ale nie udało się wysłać emaila potwierdzającego");
         }
-        ;
         logger.info("Adding new customer");
         return ResponseEntity.ok(customer);
     }
@@ -85,10 +80,7 @@ public class CustomerController {
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateCustomer(@PathVariable Long id,
             @RequestBody RegisterCustomerCommand registerCustomerCommand) {
-        final var registerUserCommand = new RegisterUserCommand(registerCustomerCommand.getName(),
-                registerCustomerCommand.getSurname(), registerCustomerCommand.getEmail(),
-                registerCustomerCommand.getPhone(), registerCustomerCommand.getPassword(), false);
-        final var customer = customerCRUDService.updateCustomer(id, registerUserCommand);
+        final var customer = customerCRUDService.updateCustomer(id, registerCustomerCommand);
         logger.info("Updating customer with id: {}", id);
         return ResponseEntity.ok(customer);
     }

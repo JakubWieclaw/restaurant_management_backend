@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
-import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
+import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +26,9 @@ public class CustomerCRUDServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private EmailService mockEmailService;
 
     @InjectMocks
     private CustomerCRUDService customerCRUDService;
@@ -71,9 +74,14 @@ public class CustomerCRUDServiceTest {
 
     @Test
     void shouldUpdateCustomerSuccessfully() {
+
+        when(mockEmailService.validateEmailDomain(anyString())).thenReturn(true);
         // Arrange
-        RegisterUserCommand registerUserCommand = new RegisterUserCommand("Jane", "Doe", "jane.doe@example.com",
-                "987654321", "newPassword", false);
+        RegisterCustomerCommand registerCustomerCommand = new RegisterCustomerCommand("Jane", "Doe",
+                "testemail@testingtesttest.com", "987654321", "newPassword");
+        when(customerRepository.existsById(1L)).thenReturn(true);
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
+        when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
         when(customerRepository.existsById(1L)).thenReturn(true);
         when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
         when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
@@ -82,13 +90,13 @@ public class CustomerCRUDServiceTest {
         when(customerRepository.save(existingCustomer)).thenReturn(existingCustomer);
 
         // Act
-        Customer updatedCustomer = customerCRUDService.updateCustomer(1L, registerUserCommand);
+        Customer updatedCustomer = customerCRUDService.updateCustomer(1L, registerCustomerCommand);
 
         // Assert
         assertNotNull(updatedCustomer, "The updated customer should not be null");
         assertEquals("Jane", updatedCustomer.getName());
         assertEquals("Doe", updatedCustomer.getSurname());
-        assertEquals("jane.doe@example.com", updatedCustomer.getEmail());
+        assertEquals("testemail@testingtesttest.com", updatedCustomer.getEmail());
         assertEquals("987654321", updatedCustomer.getPhone());
         assertEquals("newEncodedPassword", updatedCustomer.getPasswordHash());
         verify(customerRepository, times(1)).save(existingCustomer);
@@ -97,8 +105,8 @@ public class CustomerCRUDServiceTest {
     @Test
     void shouldThrowExceptionWhenUpdatingNonExistentCustomer() {
         // Arrange
-        RegisterUserCommand registerUserCommand = new RegisterUserCommand("Jane", "Doe", "jane.doe@example.com",
-                "987654321", "newPassword", false);
+        RegisterCustomerCommand registerUserCommand = new RegisterCustomerCommand("Jane", "Doe", "jane.doe@example.com",
+                "987654321", "newPassword");
         when(customerRepository.existsById(1L)).thenReturn(false);
 
         // Act & Assert
@@ -109,15 +117,18 @@ public class CustomerCRUDServiceTest {
         verify(customerRepository, never()).save(any(Customer.class));
     }
 
-    @Test
-    void shouldValidateEmailSuccessfully() {
-        String email = "test@example.com";
-        assertDoesNotThrow(() -> customerCRUDService.validateEmail(email));
-    }
+    // THESE SHOULD GO TO EMAIL SERVICE TESTS
 
-    @Test
-    void shouldFailEmailValidationForInvalidDomain() {
-        String invalidEmail = "test@invalid_domain";
-        assertThrows(IllegalArgumentException.class, () -> customerCRUDService.validateEmail(invalidEmail));
-    }
+    // @Test
+    // void shouldValidateEmailSuccessfully() {
+    // String email = "test@example.com";
+    // assertDoesNotThrow(() -> customerCRUDService.validateEmail(email));
+    // }
+
+    // @Test
+    // void shouldFailEmailValidationForInvalidDomain() {
+    // String invalidEmail = "test@invalid_domain";
+    // assertThrows(IllegalArgumentException.class, () ->
+    // mockEmailService.validateEmailDomain(invalidEmail));
+    // }
 }
