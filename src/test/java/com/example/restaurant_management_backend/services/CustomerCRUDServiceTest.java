@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
+import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,9 +72,14 @@ public class CustomerCRUDServiceTest {
 
     @Test
     void shouldUpdateCustomerSuccessfully() {
+
+        // mock email validation
+        doNothing().when(customerCRUDService).validateEmail(any(String.class));
         // Arrange
-        RegisterUserCommand registerUserCommand = new RegisterUserCommand("Jane", "Doe", "jane.doe@example.com",
-                "987654321", "newPassword", false);
+        RegisterCustomerCommand registerCustomerCommand = new RegisterCustomerCommand("Jane", "Doe", "testemail@testingtesttest.com", "987654321", "newPassword");
+        when(customerRepository.existsById(1L)).thenReturn(true);
+        when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
+        when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
         when(customerRepository.existsById(1L)).thenReturn(true);
         when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
         when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
@@ -82,7 +88,7 @@ public class CustomerCRUDServiceTest {
         when(customerRepository.save(existingCustomer)).thenReturn(existingCustomer);
 
         // Act
-        Customer updatedCustomer = customerCRUDService.updateCustomer(1L, registerUserCommand);
+        Customer updatedCustomer = customerCRUDService.updateCustomer(1L, registerCustomerCommand);
 
         // Assert
         assertNotNull(updatedCustomer, "The updated customer should not be null");
@@ -97,8 +103,8 @@ public class CustomerCRUDServiceTest {
     @Test
     void shouldThrowExceptionWhenUpdatingNonExistentCustomer() {
         // Arrange
-        RegisterUserCommand registerUserCommand = new RegisterUserCommand("Jane", "Doe", "jane.doe@example.com",
-                "987654321", "newPassword", false);
+        RegisterCustomerCommand registerUserCommand = new RegisterCustomerCommand("Jane", "Doe", "jane.doe@example.com",
+                "987654321", "newPassword");
         when(customerRepository.existsById(1L)).thenReturn(false);
 
         // Act & Assert

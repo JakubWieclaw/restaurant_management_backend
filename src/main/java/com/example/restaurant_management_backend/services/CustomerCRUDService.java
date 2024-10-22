@@ -7,14 +7,9 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
+import com.example.restaurant_management_backend.security.EmailValidator;
 
 import lombok.RequiredArgsConstructor;
-
-import org.xbill.DNS.Lookup;
-import org.xbill.DNS.MXRecord;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.TextParseException;
-import org.xbill.DNS.Type;
 
 
 @RequiredArgsConstructor
@@ -23,11 +18,12 @@ public class CustomerCRUDService {
 
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailValidator emailValidator = new EmailValidator();
 
 
     public void validateEmail(String email) {
-        if (!validateEmailBody(email)) {
-            throw new IllegalArgumentException("Niepoprawna domena adresu email");
+        if (!emailValidator.isValidEmail(email)) {
+            throw new IllegalArgumentException("Niepoprawna domena bądź nazwa użytkownika adresu email");
         }
     }
 
@@ -55,19 +51,19 @@ public class CustomerCRUDService {
         return customerRepository.save(customer);
     }
 
-    private boolean validateEmailBody(String email) {
-        String domain = email.substring(email.indexOf('@') + 1);
-        try {
-            Lookup lookup = new Lookup(domain, Type.MX);
-            Record[] records = lookup.run();
-            if (records!= null && records.length > 0) {
-                MXRecord mxRecord = (MXRecord) records[0];
-                return true; // Domain has a valid MX record
-            }
-        } catch (TextParseException e) {
-            throw new NotFoundException("Nie znaleziono domeny email");
-        }
-        return false; // Domain does not have a valid MX record
-    }
+    // private boolean validateEmailBody(String email) {
+    //     String domain = email.substring(email.indexOf('@') + 1);
+    //     try {
+    //         Lookup lookup = new Lookup(domain, Type.MX);
+    //         Record[] records = lookup.run();
+    //         if (records!= null && records.length > 0) {
+    //             MXRecord mxRecord = (MXRecord) records[0];
+    //             return true; // Domain has a valid MX record
+    //         }
+    //     } catch (TextParseException e) {
+    //         throw new NotFoundException("Nie znaleziono domeny email");
+    //     }
+    //     return false; // Domain does not have a valid MX record
+    // }
 
 }
