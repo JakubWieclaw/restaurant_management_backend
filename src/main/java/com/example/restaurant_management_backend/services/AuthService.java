@@ -5,6 +5,7 @@ import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.command.RegisterCommand;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
 
-    public RegisterResponseDTO registerUser(RegisterUserCommand registerUserCommand) {
-        if (customerService.getCustomerByEmail(registerUserCommand.getEmail()).isPresent()) {
+    public RegisterResponseDTO registerUser(RegisterCommand registerCommand) {
+        if (customerService.getCustomerByEmail(registerCommand.getEmail()).isPresent()) {
             throw new ResourceConflictException(USER_WITH_THIS_EMAIL_EXISTS);
         }
 
-        Customer customer = createCustomerObject(registerUserCommand);
-        Privilege privilege = new Privilege(registerUserCommand.isAdmin() ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
+        Customer customer = createCustomerObject(registerCommand);
+        Privilege privilege = new Privilege(registerCommand.isAdmin() ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
         customer.setPrivilege(privilege);
         Customer savedCustomer = customerService.save(customer);
 
@@ -56,13 +57,13 @@ public class AuthService {
         }
     }
 
-    private Customer createCustomerObject(RegisterUserCommand registerUserCommand) {
+    private Customer createCustomerObject(RegisterCommand registerCommand) {
         return Customer.builder()
-                .name(registerUserCommand.getName())
-                .surname(registerUserCommand.getSurname())
-                .email(registerUserCommand.getEmail())
-                .phone(registerUserCommand.getPhone())
-                .passwordHash(passwordEncoder.encode(registerUserCommand.getPassword()))
+                .name(registerCommand.getName())
+                .surname(registerCommand.getSurname())
+                .email(registerCommand.getEmail())
+                .phone(registerCommand.getPhone())
+                .passwordHash(passwordEncoder.encode(registerCommand.getPassword()))
                 .build();
     }
 
@@ -72,8 +73,7 @@ public class AuthService {
                 customer.getName(),
                 customer.getSurname(),
                 customer.getEmail(),
-                customer.getPhone()
-        );
+                customer.getPhone());
     }
 
     private LoginResponseDTO buildLoginResponse(Customer customer, String token, boolean isAdmin) {
@@ -83,7 +83,6 @@ public class AuthService {
                 customer.getName(),
                 customer.getSurname(),
                 customer.getEmail(),
-                isAdmin
-        );
+                isAdmin);
     }
 }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
-import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
+import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -38,20 +38,20 @@ public class CustomerCRUDService {
     customerRepository.deleteById(id);
     }
 
-    public Customer updateCustomer(Long id, RegisterUserCommand registerUserCommand) {
+    public Customer updateCustomer(Long id, RegisterCustomerCommand registerCustomerCommand) {
         if (!customerRepository.existsById(id)) {
             throw new NotFoundException("Nie znaleziono klienta o id " + id);
         }
         // validate email domain if it is changed
-        if (!customerRepository.findById(id).get().getEmail().equals(registerUserCommand.getEmail())) {
-            validateEmail(registerUserCommand.getEmail());
+        if (!customerRepository.findById(id).get().getEmail().equals(registerCustomerCommand.getEmail())) {
+            validateEmail(registerCustomerCommand.getEmail());
         }
         Customer customer = customerRepository.findById(id).get();
-        customer.setName(registerUserCommand.getName());
-        customer.setSurname(registerUserCommand.getSurname());
-        customer.setEmail(registerUserCommand.getEmail());
-        customer.setPhone(registerUserCommand.getPhone());
-        customer.setPasswordHash(passwordEncoder.encode(registerUserCommand.getPassword()));
+        customer.setName(registerCustomerCommand.getName());
+        customer.setSurname(registerCustomerCommand.getSurname());
+        customer.setEmail(registerCustomerCommand.getEmail());
+        customer.setPhone(registerCustomerCommand.getPhone());
+        customer.setPasswordHash(passwordEncoder.encode(registerCustomerCommand.getPassword()));
         return customerRepository.save(customer);
     }
 
