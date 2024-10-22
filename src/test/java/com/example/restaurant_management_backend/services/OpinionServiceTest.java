@@ -203,12 +203,7 @@ class OpinionServiceTest {
 
     // Helper method to create a mock OpinionAddCommand
     private OpinionAddCommand createMockOpinionAddCommand(Long customerId, Long mealId) {
-        return OpinionAddCommand.builder()
-                .customerId(customerId)
-                .mealId(mealId)
-                .rating(5)
-                .comment("Great meal!")
-                .build();
+        return new OpinionAddCommand(customerId, mealId, 5, "Great meal!");
     }
 
     // Helper method to create a mock Opinion

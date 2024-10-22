@@ -70,13 +70,16 @@ jobs:
           docker tag postgres:13 ${{ secrets.DOCKER_USERNAME }}/postgres:latest
 
       - name: Docker login
+        if: github.ref == 'refs/heads/main'  # This condition ensures Docker login only happens on the main branch
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
         run: echo "$DOCKER_TOKEN" | docker login -u "$DOCKER_USERNAME" --password-stdin
 
       - name: Docker push for Spring Boot app
+        if: github.ref == 'refs/heads/main'  # Only push when on the main branch
         run: docker push ${{ secrets.DOCKER_USERNAME }}/spring_boot_app:latest
 
       - name: Docker push for PostgreSQL
+        if: github.ref == 'refs/heads/main'  # Only push when on the main branch
         run: docker push ${{ secrets.DOCKER_USERNAME }}/postgres:latest

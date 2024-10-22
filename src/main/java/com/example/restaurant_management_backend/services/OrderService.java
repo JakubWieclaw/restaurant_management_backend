@@ -23,6 +23,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final ConfigService configService;
+    private final TableReservationService tableReservationService;
 
     /**
      * Retrieves all orders from the repository.
@@ -85,27 +86,38 @@ public class OrderService {
      * a new order object, and saves it to the repository.
      * </p>
      *
-     * @param orderAddCommand the data required to add a new order
+     * @param request the data required to add a new order
      * @return the newly created and saved order
      * @throws IllegalArgumentException if the order data is invalid
      * @throws NotFoundException        if a referenced meal does not exist
      */
-    public Order addOrder(OrderAddCommand orderAddCommand) {
-        validateOrderAddCommand(orderAddCommand);
-        double orderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
-        double deliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
+    public Order addOrder(OrderAddCommand request) {
+        validateOrderAddCommand(request);
+        double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
+        double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
+        LocalDateTime now = LocalDateTime.now();
+
+        if (request.getTableId() != null && request.getType() == OrderType.NA_MIEJSCU) {
+            tableReservationService.makeReservation(
+                    now.toLocalDate(), // date
+                    now.toLocalTime(), // start time of reservation
+                    now.toLocalTime().plusMinutes(120), // end time of reservation
+                    4, // number of people
+                    request.getCustomerId() // customer id
+            );
+        }
 
         Order order = new Order(
-                orderAddCommand.getMealIds(),
+                request.getMealIds(),
                 orderPrice,
                 deliveryPrice,
-                orderAddCommand.getCustomerId(),
-                orderAddCommand.getType(),
-                orderAddCommand.getStatus(),
-                LocalDateTime.now(),
-                orderAddCommand.getUnwantedIngredients(),
-                orderAddCommand.getDeliveryAddress(),
-                orderAddCommand.getDeliveryDistance());
+                request.getCustomerId(),
+                request.getType(),
+                request.getStatus(),
+                now,
+                request.getUnwantedIngredients(),
+                request.getDeliveryAddress(),
+                request.getDeliveryDistance());
         return orderRepository.save(order);
     }
 

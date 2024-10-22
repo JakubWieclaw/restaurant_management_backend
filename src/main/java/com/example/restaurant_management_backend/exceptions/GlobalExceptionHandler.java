@@ -208,4 +208,11 @@ public class GlobalExceptionHandler {
         logger.error("Invalid reservation", ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
+        // logger.warn("Confirmation email failed to send, but the primary request was successful", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.ACCEPTED);
+    }
+    
 }

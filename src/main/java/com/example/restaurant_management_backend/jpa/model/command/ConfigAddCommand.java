@@ -11,6 +11,7 @@ import java.util.List;
 
 @Getter
 public class ConfigAddCommand extends SelfValidating<ConfigAddCommand> {
+
     @Schema(description = "Name of the restaurant", example = "Restauracja pod niebem")
     @NotBlank(message = "Nazwa restauracji nie może być pusta")
     private final String restaurantName;
