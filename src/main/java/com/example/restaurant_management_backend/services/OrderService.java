@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,7 +95,7 @@ public class OrderService {
      */
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
-        double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
+        double orderPrice = calculateOrderPrice(request.getMealIds());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
@@ -110,14 +112,14 @@ public class OrderService {
         Order order = new Order(
                 request.getMealIds(),
                 orderPrice,
-                deliveryPrice,
                 request.getCustomerId(),
                 request.getType(),
                 request.getStatus(),
                 now,
                 request.getUnwantedIngredients(),
                 request.getDeliveryAddress(),
-                request.getDeliveryDistance());
+                request.getDeliveryDistance(),
+                deliveryPrice);
         return orderRepository.save(order);
     }
 
@@ -141,7 +143,7 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
         validateOrderAddCommand(orderAddCommand);
-        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds());
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
@@ -201,9 +203,7 @@ public class OrderService {
             throw new IllegalArgumentException("Zamówienie na dostawę musi mieć odległość dostawy większą niż 0");
         }
 
-        for (int i = 0; i < mealIds.size(); i++) {
-            final var mealQuantity = mealIds.get(i);
-
+        for (final MealQuantity mealQuantity : mealIds) {
             // getMealID provides integer, cast it to Long
             final var mealId = mealQuantity.getMealId();
             final var quantity = mealQuantity.getQuantity();
@@ -227,8 +227,7 @@ public class OrderService {
         // Validate unwanted ingredients for the meal at index i
         List<UnwantedIngredient> unwantedIngredients = orderAddCommand.getUnwantedIngredients();
         if (unwantedIngredients != null) {
-            for (int i = 0; i < unwantedIngredients.size(); i++) {
-                final var unwantedIngredient = unwantedIngredients.get(i);
+            for (final UnwantedIngredient unwantedIngredient : unwantedIngredients) {
                 final var mealIndex = unwantedIngredient.getMealIndex();
                 final var ingredients = unwantedIngredient.getIngredients();
 
@@ -249,7 +248,7 @@ public class OrderService {
                 final var meal = mealService.getMealById(mealQuanity.getMealId());
 
                 // check if all ingredients are present in the meal
-                if (!meal.getIngredients().containsAll(ingredients)) {
+                if (!new HashSet<>(meal.getIngredients()).containsAll(ingredients)) {
                     throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex
                             + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
                 }
@@ -258,7 +257,7 @@ public class OrderService {
         }
     }
 
-    private double calculateOrderPrice(List<MealQuantity> mealQuantities, double deliveryDistance) {
+    private double calculateOrderPrice(List<MealQuantity> mealQuantities) {
         return mealQuantities.stream()
                 .mapToDouble(mealQuantity -> {
                     Long mealId = mealQuantity.getMealId();
@@ -274,7 +273,7 @@ public class OrderService {
         if (deliveryDistance > 0) {
             final var deliveryPrices = configService.getDeliveryPrices();
             // Sort delivery prices by maximum range
-            deliveryPrices.sort((a, b) -> (int) (a.getMaximumRange() - b.getMaximumRange()));
+            deliveryPrices.sort(Comparator.comparingInt(DeliveryPricing::getMaximumRange));
             for (var deliveryPriceEntry : deliveryPrices) {
                 final var maxRange = deliveryPriceEntry.getMaximumRange();
                 if (maxRange >= deliveryDistance) {
