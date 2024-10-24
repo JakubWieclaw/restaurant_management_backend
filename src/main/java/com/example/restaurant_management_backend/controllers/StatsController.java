@@ -24,7 +24,7 @@ public class StatsController {
     private static final Logger logger = LoggerFactory.getLogger(StatsController.class);
     private final StatsService statsService;
 
-    @Operation(summary = "Get n most or less popular meals")
+    @Operation(summary = "Get n most or least popular meals")
     @GetMapping("/popular/{mostLeast}/{n}")
     public ResponseEntity<?> getMostPopularMeals(@PathVariable String mostLeast, @PathVariable int n) {
         final var popularMeals = statsService.getNMostPopularMeals(mostLeast, n);
@@ -46,6 +46,14 @@ public class StatsController {
         final var earningsByYearMonth = statsService.getEarningsByYearMonth();
         logger.info("Getting earnings by year-month");
         return ResponseEntity.ok(earningsByYearMonth);
+    }
+
+    @Operation(summary = "Get n beast or worst rated meals")
+    @GetMapping("/rated/{bestWorst}/{n}")
+    public ResponseEntity<?> getBestWorstRatedMeals(@PathVariable String bestWorst, @PathVariable int n) {
+        final var bestWorstRatedMeals = statsService.getNBestOrWorstRatedMeals(bestWorst, n);
+        logger.info("Getting {} best or worst rated meals", n);
+        return ResponseEntity.ok(bestWorstRatedMeals);
     }
 
 }
