@@ -7,6 +7,7 @@ import lombok.Getter;
 
 @Getter
 public class TableAddCommand extends SelfValidating<TableAddCommand> {
+
     @NotNull(message = "Id stolika nie może być puste")
     private final String id;
 
