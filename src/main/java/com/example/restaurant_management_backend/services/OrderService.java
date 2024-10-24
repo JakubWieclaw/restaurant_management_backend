@@ -203,7 +203,6 @@ public class OrderService {
         }
 
         // If order type is DO_STOLIKA and delivery distance is greater than 0, throw an
-        // exception
         if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.DO_STOLIKA)) {
             throw new IllegalArgumentException("Zamówienie DO_STOLIKA nie może mieć odległości dostawy większej niż 0");
         }

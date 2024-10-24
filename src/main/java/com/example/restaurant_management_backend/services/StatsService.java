@@ -1,6 +1,5 @@
 package com.example.restaurant_management_backend.services;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
-import com.example.restaurant_management_backend.jpa.model.Opinion;
 import com.example.restaurant_management_backend.jpa.model.Order;
 import com.example.restaurant_management_backend.exceptions.IllegalStateException;
 
