@@ -153,7 +153,7 @@ public class StatsService {
         return earningsByYearMonth;
     }
 
-    public LinkedHashMap<Long, Double> getNBestOrWorstRatedMeals(String mostLeast, int n) {
+    public LinkedHashMap<String, Double> getNBestOrWorstRatedMeals(String mostLeast, int n) {
         if (!mostLeast.equals("best") && !mostLeast.equals("worst")) {
             throw new IllegalArgumentException("bestWorst musi mieć wartość 'best' or 'worst'");
         }
@@ -180,10 +180,11 @@ public class StatsService {
         // return the first n meals from the list
 
         // Create a dictionary to store the average rating of each meal
-        final var result = new HashMap<Long, Double>();
+        final var result = new HashMap<String, Double>();
 
         for (Meal meal : meals) {
             final var mealId = meal.getId();
+            final var mealName = meal.getName();
             final var opinions = opinionService.getOpinionsForMeal(mealId);
             if (opinions.isEmpty()) {
                 continue;
@@ -193,15 +194,15 @@ public class StatsService {
                     average += opinion.rating();
                 }
                 average /= opinions.size();
-                result.put(mealId, average);
+                result.put(mealName, average);
             }
         }
 
         // Sort the map by values (either ascending or descending) and collect the first
 
-        LinkedHashMap<Long, Double> sortedMeals = result.entrySet().stream()
+        LinkedHashMap<String, Double> sortedMeals = result.entrySet().stream()
         .sorted((mostLeast.equals("best"))
-                ? Map.Entry.<Long, Double>comparingByValue().reversed()  // Sort descending for "best"
+                ? Map.Entry.<String, Double>comparingByValue().reversed()  // Sort descending for "best"
                 : Map.Entry.comparingByValue())  // Sort ascending for "worst"
         .limit(n)
         .collect(Collectors.toMap(
