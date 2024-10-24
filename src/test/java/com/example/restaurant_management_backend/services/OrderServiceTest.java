@@ -118,7 +118,7 @@ public class OrderServiceTest {
 
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L, OrderType.DOSTAWA,
-                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null);
+                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null, null, null);
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -161,7 +161,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
                 OrderType.NA_MIEJSCU, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
-                "Some Address", 0, "1");
+                "Some Address", 0, "1", 4, 120);
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -198,7 +198,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
+                "Some Address", 5.0, null, null, null);
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -235,7 +235,7 @@ public class OrderServiceTest {
 
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(new MealQuantity(1L, 2)), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
+                "Some Address", 5.0, null, null, null);
 
         when(mealService.mealExists(1L)).thenReturn(true);
         when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, Collections.emptyList(), 100));

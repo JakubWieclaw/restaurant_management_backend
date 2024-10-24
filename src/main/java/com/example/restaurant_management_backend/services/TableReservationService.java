@@ -37,7 +37,7 @@ public class TableReservationService {
         OpeningHour openingHour = hoursForSpecificDay.get();
         LocalTime possibleStartTime = openingHour.getOpeningTime();
         LocalTime closingTime = openingHour.getClosingTime();
-        List<TableReservation> tableReservations = getTableReservations(day);
+        List<TableReservation> tableReservations = getTableReservationsForDay(day);
         int tables = tableService.countTablesWithGreaterOrEqualCapacity(numberOfPeople);
         while (ChronoUnit.MINUTES.between(possibleStartTime, closingTime) >= reservationDuration) {
             LocalTime possibleEndTime = ChronoUnit.MINUTES.addTo(possibleStartTime, reservationDuration);
@@ -60,12 +60,12 @@ public class TableReservationService {
         return possibleReservationHours;
     }
 
-    public void makeReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId) {
+    public TableReservation makeReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId) {
         if (day.isBefore(ZonedDateTime.now().toLocalDate())) {
             throw new InvalidReservationException(CANNOT_MAKE_RESERVATION_IN_PAST);
         }
         int tables = tableService.countTablesWithGreaterOrEqualCapacity(numberOfPeople);
-        final var tableReservationList = getTableReservations(day);
+        final var tableReservationList = getTableReservationsForDay(day);
 
         List<TableReservation> reservationsInConflict = getReservationsInConflict(startTime, endTime, tableReservationList);
         if (reservationsInConflict.size() >= tables) {
@@ -82,11 +82,15 @@ public class TableReservationService {
         tableReservation.setDay(day);
         tableReservation.setDuration(ChronoUnit.MINUTES.between(startTime, endTime));
 
-        tableReservationRepository.save(tableReservation);
+        return tableReservationRepository.save(tableReservation);
     }
 
-    private List<TableReservation> getTableReservations(LocalDate day) {
+    public List<TableReservation> getTableReservationsForDay(LocalDate day) {
         return tableReservationRepository.findAllByDay(day);
+    }
+
+    public List<TableReservation> getAllTableReservations() {
+        return tableReservationRepository.findAll();
     }
 
     private List<TableReservation> getReservationsInConflict(LocalTime startTime, LocalTime endTime, List<TableReservation> tableReservations) {

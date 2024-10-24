@@ -17,29 +17,31 @@ import java.util.List;
 public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
 
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
-    private List<MealQuantity> mealIds;
+    private final List<MealQuantity> mealIds;
 
     @PositiveOrZero(message = "Identifikator klienta musi być dodatni, lub zero dla niezalogowanego klienta")
-    private Long customerId;
+    private final Long customerId;
 
     @NotNull(message = "Typ zamówienia musi być jedną z wartości: DOSTAWA, NA_MIEJSCU, DO_STOLIKA")
-    private OrderType type;
+    private final OrderType type;
 
     @NotNull(message = "Status musi mieć jedną z wartości: OCZEKUJACE, W_TRAKCIE_REALIZACJI, GOTOWE, W_DOSTRACZENIU, DOSTARCZONE, ODRZUCONE")
-    private OrderStatus status;
+    private final OrderStatus status;
 
-    private List<UnwantedIngredient> unwantedIngredients;
+    private final List<UnwantedIngredient> unwantedIngredients;
 
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
-    private String deliveryAddress;
+    private final String deliveryAddress;
 
     @PositiveOrZero(message = "Odległość dostawy nie może być ujemna")
-    private double deliveryDistance;
+    private final double deliveryDistance;
 
-    // In case of DO_STOLIKA type
-    private String tableId;
+    // Reservation
+    private final String tableId;
+    private final Integer people;
+    private final Integer minutesForReservation; // default 2 hours
 
-    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId) {
+    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
@@ -47,7 +49,10 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
+        // Reservation
         this.tableId = tableId;
+        this.people = people;
+        this.minutesForReservation = minutesForReservation;
         validateSelf();
     }
 }

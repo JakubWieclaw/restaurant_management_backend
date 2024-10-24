@@ -101,8 +101,8 @@ public class OrderService {
             tableReservationService.makeReservation(
                     now.toLocalDate(), // date
                     now.toLocalTime(), // start time of reservation
-                    now.toLocalTime().plusMinutes(120), // end time of reservation
-                    4, // number of people
+                    now.toLocalTime().plusMinutes(120), // end time of reservation default 120 minutes
+                    request.getPeople(), // number of people
                     request.getCustomerId() // customer id
             );
         }
