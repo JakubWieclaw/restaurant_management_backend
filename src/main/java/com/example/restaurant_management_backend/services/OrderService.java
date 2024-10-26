@@ -190,15 +190,39 @@ public class OrderService {
             throw new IllegalArgumentException("Lista posiłków nie może być pusta");
         }
 
-        // 0.01 is used t oavoid issues regarding double precision
-        // If deliverydistance is greater than 0 and order type is NA_MIEJSCU, throw an exception
+        // 0.01 is used to avoid issues regarding double precision
+        // If delivery distance is greater than 0 and order type is NA_MIEJSCU, throw an
+        // exception
         if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.NA_MIEJSCU)) {
             throw new IllegalArgumentException("Zamówenie na miejscu nie może mieć odległości dostawy większej niż 0");
         }
 
-        // If deliverydistance is 0 and order type is DOSTAWA, throw an exception
+        // If delivery distance is 0 and order type is DOSTAWA, throw an exception
         if (orderAddCommand.getDeliveryDistance() < 0.01 && orderAddCommand.getType().equals(OrderType.DOSTAWA)) {
             throw new IllegalArgumentException("Zamówienie na dostawę musi mieć odległość dostawy większą niż 0");
+        }
+
+        // If order type is DO_STOLIKA and delivery distance is greater than 0, throw an
+        if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.DO_STOLIKA)) {
+            throw new IllegalArgumentException("Zamówienie DO_STOLIKA nie może mieć odległości dostawy większej niż 0");
+        }
+
+        // If order type is DO_STOLIKA and table ID is missing, throw an exception
+        if (orderAddCommand.getType().equals(OrderType.DO_STOLIKA)
+                && (orderAddCommand.getTableId() == null || orderAddCommand.getTableId().isEmpty())) {
+            throw new IllegalArgumentException("Zamówienie DO_STOLIKA wymaga podania identyfikatora stolika");
+        }
+
+        // Validate tableId should not be provided if the order type is not DO_STOLIKA
+        if (!orderAddCommand.getType().equals(OrderType.DO_STOLIKA) && orderAddCommand.getTableId() != null) {
+            throw new IllegalArgumentException(
+                    "Identyfikator stolika może być podany tylko dla zamówienia typu DO_STOLIKA");
+        }
+
+        // Validate deliveryAddress: it should be empty if the order is not for delivery
+        if (!orderAddCommand.getType().equals(OrderType.DOSTAWA) && orderAddCommand.getDeliveryAddress() != null
+                && !orderAddCommand.getDeliveryAddress().isEmpty()) {
+            throw new IllegalArgumentException("Adres dostawy może być podany tylko dla zamówienia typu DOSTAWA");
         }
 
         for (int i = 0; i < mealIds.size(); i++) {
@@ -224,7 +248,7 @@ public class OrderService {
             }
         }
 
-        // Validate unwanted ingredients for the meal at index i
+        // Validate unwanted ingredients for the meal
         List<UnwantedIngredient> unwantedIngredients = orderAddCommand.getUnwantedIngredients();
         if (unwantedIngredients != null) {
             for (int i = 0; i < unwantedIngredients.size(); i++) {
@@ -243,17 +267,17 @@ public class OrderService {
                     throw new IllegalArgumentException("Lista niechcianych składników nie może być pusta");
                 }
 
-                // iterate through mealIds (onlty through indexes mentioned in
-                // unwantedIngredients) and check if given meal consists of unwanted ingredients
-                final var mealQuanity = mealIds.get(mealIndex);
-                final var meal = mealService.getMealById(mealQuanity.getMealId());
+                // iterate through mealIds (only through indexes mentioned in
+                // unwantedIngredients)
+                // and check if given meal consists of unwanted ingredients
+                final var mealQuantity = mealIds.get(mealIndex);
+                final var meal = mealService.getMealById(mealQuantity.getMealId());
 
                 // check if all ingredients are present in the meal
                 if (!meal.getIngredients().containsAll(ingredients)) {
                     throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex
                             + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
                 }
-
             }
         }
     }

@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
-import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.services.AuthService;
 import com.example.restaurant_management_backend.services.CustomerCRUDService;
 import com.example.restaurant_management_backend.services.CustomerUserDetailsService;
@@ -15,7 +14,6 @@ import com.example.restaurant_management_backend.services.EmailService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 
 import io.swagger.v3.oas.annotations.media.Content;

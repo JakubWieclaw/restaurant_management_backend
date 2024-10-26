@@ -6,7 +6,6 @@ import com.example.restaurant_management_backend.exceptions.ResourceConflictExce
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCommand;
-import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
