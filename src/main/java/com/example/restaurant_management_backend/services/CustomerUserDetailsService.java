@@ -4,9 +4,7 @@ import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -73,5 +71,9 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     public Customer save(Customer customer) {
         return customerRepository.save(customer);
+    }
+
+    public int countAll() {
+        return customerRepository.countAll();
     }
 }
