@@ -1,6 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
-import com.example.restaurant_management_backend.exceptions.GlobalExceptionHandler;
+import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
@@ -25,28 +25,10 @@ public class OrderService {
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
 
-    /**
-     * Retrieves all orders from the repository.
-     *
-     * @return a list of all orders
-     */
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
 
-    /**
-     * Retrieves an order by its ID.
-     * <p>
-     * If the order does not exist, this method throws a {@link NotFoundException},
-     * which is handled by the {@link GlobalExceptionHandler} to return a 404
-     * response.
-     * </p>
-     *
-     * @param id the ID of the order to retrieve
-     * @return an {@link Optional} containing the order if found
-     * @throws NotFoundException if the order with the specified ID does not exist
-     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
-     */
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isEmpty()) {
@@ -55,20 +37,6 @@ public class OrderService {
         return order;
     }
 
-    /**
-     * Retrieves all orders for a specific customer.
-     * <p>
-     * This method checks if the customer ID is valid and exists in the repository.
-     * If the customer ID is null, negative, or does not exist, it throws an
-     * exception.
-     * </p>
-     *
-     * @param customerId the ID of the customer
-     * @return a list of orders associated with the specified customer
-     * @throws IllegalArgumentException if the customer ID is invalid
-     * @throws NotFoundException        if the customer with the specified ID does
-     *                                  not exist
-     */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
             throw new IllegalArgumentException(INVALID_ID);
@@ -79,32 +47,25 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
-    /**
-     * Adds a new order to the repository.
-     * <p>
-     * This method validates the order details, calculates the total price, creates
-     * a new order object, and saves it to the repository.
-     * </p>
-     *
-     * @param request the data required to add a new order
-     * @return the newly created and saved order
-     * @throws IllegalArgumentException if the order data is invalid
-     * @throws NotFoundException        if a referenced meal does not exist
-     */
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
-        if (request.getTableId() != null && request.getType() == OrderType.NA_MIEJSCU) {
-            tableReservationService.makeReservation(
+        TableReservation tableReservation = null;
+        if (request.getType().equals(OrderType.DO_STOLIKA)) {
+            tableReservation = tableReservationService.findOrCreateReservation(
                     now.toLocalDate(), // date
                     now.toLocalTime(), // start time of reservation
-                    now.toLocalTime().plusMinutes(120), // end time of reservation
-                    4, // number of people
-                    request.getCustomerId() // customer id
+                    now.toLocalTime().plusMinutes(request.getMinutesForReservation()), // end time of reservation
+                    request.getPeople(), // number of people
+                    request.getCustomerId(), // customer id
+                    request.getTableId() // table id
             );
+            if (tableReservation == null) {
+                throw new InvalidReservationException("Nie udało się utworzyć rezerwacji stolika");
+            }
         }
 
         Order order = new Order(
@@ -117,25 +78,11 @@ public class OrderService {
                 now,
                 request.getUnwantedIngredients(),
                 request.getDeliveryAddress(),
-                request.getDeliveryDistance());
+                request.getDeliveryDistance(),
+                tableReservation);
         return orderRepository.save(order);
     }
 
-    /**
-     * Updates an existing order with new details.
-     * <p>
-     * This method ensures the order exists, validates the new order data,
-     * recalculates
-     * the total price, and updates the order with the new information.
-     * </p>
-     *
-     * @param id              the ID of the order to be updated
-     * @param orderAddCommand the new order data to update
-     * @return the updated order
-     * @throws NotFoundException        if the order with the specified ID does not
-     *                                  exist
-     * @throws IllegalArgumentException if the new order data is invalid
-     */
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
@@ -157,20 +104,6 @@ public class OrderService {
         return orderRepository.save(existingOrder);
     }
 
-    /**
-     * Deletes an order by its ID.
-     * <p>
-     * This method checks if an order with the given ID exists in the repository.
-     * If the order does not exist, it throws a {@link NotFoundException}.
-     * The {@link NotFoundException} is handled by the
-     * {@link GlobalExceptionHandler},
-     * which returns a response with a 404 status code to the client.
-     * </p>
-     *
-     * @param id the ID of the order to be deleted
-     * @throws NotFoundException if the order with the specified ID does not exist
-     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
-     */
     public void deleteOrder(Long id) {
         if (!orderRepository.existsById(id)) {
             throw new NotFoundException(NOT_FOUND_ORDER);
@@ -217,6 +150,16 @@ public class OrderService {
         if (!orderAddCommand.getType().equals(OrderType.DO_STOLIKA) && orderAddCommand.getTableId() != null) {
             throw new IllegalArgumentException(
                     "Identyfikator stolika może być podany tylko dla zamówienia typu DO_STOLIKA");
+        }
+
+        if (!orderAddCommand.getType().equals(OrderType.DO_STOLIKA) && orderAddCommand.getMinutesForReservation() != null) {
+            throw new IllegalArgumentException(
+                    "Należy podać liczbę minut preznaczoną na rezerwację stolika. Może się zdarzyć, że podany stolik jest zajęty w tym czasie");
+        }
+
+        if (!orderAddCommand.getType().equals(OrderType.DO_STOLIKA) && orderAddCommand.getPeople() != null) {
+            throw new IllegalArgumentException(
+                    "Należy podać liczbę osób na rezerwacji stolika. Może się zdarzyć, że podany stolik jest za mały dla podanej liczby osób");
         }
 
         // Validate deliveryAddress: it should be empty if the order is not for delivery
@@ -313,4 +256,12 @@ public class OrderService {
         return deliveryPrice;
     }
 
+    public Order addOrderToReservation(Long orderId, Long reservationId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        TableReservation reservation = tableReservationService.getTableReservationById(reservationId);
+
+        order.setTableReservation(reservation); // Link order to reservation
+        return orderRepository.save(order); // Save updated order
+    }
 }

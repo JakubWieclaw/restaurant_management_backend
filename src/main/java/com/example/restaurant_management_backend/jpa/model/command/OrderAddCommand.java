@@ -51,7 +51,13 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @Schema(description = "If type DO_STOLIKA then add table id")
     private final String tableId;
 
-    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId) {
+    @Schema(description = "Number of people on the reservation")
+    private final Integer people;
+
+    @Schema(description = "Duration of the reservation in minutes, default = 120")
+    private final Integer minutesForReservation;
+
+    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
@@ -60,6 +66,8 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
         this.tableId = tableId;
+        this.people = people;
+        this.minutesForReservation = minutesForReservation;
         validateSelf();
     }
 }

@@ -9,5 +9,10 @@ import java.util.List;
 
 @Repository
 public interface TableReservationRepository extends JpaRepository<TableReservation, Long> {
+
     List<TableReservation> findAllByDay(LocalDate day);
+
+    List<TableReservation> findAllByCustomerId(Long customerId);
+
+    List<TableReservation> findAllByTableIdAndDay(String tableId, LocalDate day);
 }

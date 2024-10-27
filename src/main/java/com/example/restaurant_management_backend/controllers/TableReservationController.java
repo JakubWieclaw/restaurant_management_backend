@@ -1,7 +1,7 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
-import com.example.restaurant_management_backend.jpa.model.command.CheckReservationTimesCommand;
+import com.example.restaurant_management_backend.jpa.model.TableReservation;
 import com.example.restaurant_management_backend.jpa.model.command.MakeReservationCommand;
 import com.example.restaurant_management_backend.services.TableReservationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,62 +10,101 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/table-reservation")
+@RequestMapping("/api/reservations")
 @RequiredArgsConstructor
-@Validated
 public class TableReservationController {
-
-    private final TableReservationService tableReservationService;
     private static final Logger logger = LoggerFactory.getLogger(TableReservationController.class);
+    private final TableReservationService tableReservationService;
 
-    @Operation(summary = "Get available hours for a single day")
-    @PostMapping("/available-hours/day")
-    public ResponseEntity<List<LocalTime>> getAvailableHoursForDay(@RequestBody @Valid CheckReservationTimesCommand request) {
-        List<LocalTime> availableHours = tableReservationService.checkPossibleHoursForDay(
-                request.getDays().getFirst(), // Use the first day from the list (for single day queries)
-                request.getDuration(),
-                request.getMinutesToAdd(),
-                request.getPeople()
-        );
-        logger.info("Getting available hours for day: {}", request.getDays().getFirst());
-        return ResponseEntity.ok(availableHours);
+    @Operation(summary = "Get all reservations")
+    @GetMapping
+    public ResponseEntity<List<TableReservation>> getAllReservations() {
+        logger.info("Fetching all reservations");
+        List<TableReservation> reservations = tableReservationService.getAllTableReservations();
+        logger.info("Fetched {} reservations", reservations.size());
+        return ResponseEntity.ok(reservations);
+    }
+
+    @Operation(summary = "Get reservations for a specific day")
+    @GetMapping("/day/{day}")
+    public ResponseEntity<List<TableReservation>> getReservationsForDay(@PathVariable LocalDate day) {
+        logger.info("Fetching reservations for day: {}", day);
+        List<TableReservation> reservations = tableReservationService.getTableReservationsForDay(day);
+        logger.info("Fetched {} reservations for day {}", reservations.size(), day);
+        return ResponseEntity.ok(reservations);
+    }
+
+    @Operation(summary = "Get reservations for a specific customer")
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<TableReservation>> getReservationsForCustomer(@PathVariable Long customerId) {
+        logger.info("Fetching reservations for customer ID: {}", customerId);
+        List<TableReservation> reservations = tableReservationService.getTableReservationsForCustomer(customerId);
+        logger.info("Fetched {} reservations for customer ID {}", reservations.size(), customerId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    @Operation(summary = "Get reservations for a specific table on a given day")
+    @GetMapping("/table/{tableId}/day/{day}")
+    public ResponseEntity<List<TableReservation>> getReservationsForTableOnDay(@PathVariable String tableId, @PathVariable LocalDate day) {
+        logger.info("Fetching reservations for table ID: {} on day: {}", tableId, day);
+        List<TableReservation> reservations = tableReservationService.getReservationsForTableOnDay(tableId, day);
+        logger.info("Fetched {} reservations for table ID {} on day {}", reservations.size(), tableId, day);
+        return ResponseEntity.ok(reservations);
+    }
+
+    @Operation(summary = "Get available hours for a specific day")
+    @GetMapping("/available-hours/{day}")
+    public ResponseEntity<List<LocalTime>> getPossibleHoursForDay(
+            @PathVariable LocalDate day,
+            @RequestParam int reservationDuration,
+            @RequestParam int minutesToAdd,
+            @RequestParam int numberOfPeople
+    ) {
+        logger.info("Fetching possible reservation hours for day: {} with duration: {}, interval: {}, people: {}",
+                day, reservationDuration, minutesToAdd, numberOfPeople);
+        List<LocalTime> possibleHours = tableReservationService.checkPossibleHoursForDay(day, reservationDuration, minutesToAdd, numberOfPeople);
+        logger.info("Fetched {} possible hours for day {}", possibleHours.size(), day);
+        return ResponseEntity.ok(possibleHours);
     }
 
     @Operation(summary = "Get available hours for multiple days")
-    @PostMapping("/available-hours/days")
-    public ResponseEntity<List<PossibleReservationHoursForDayDTO>> getAvailableHoursForDays(@RequestBody @Valid CheckReservationTimesCommand request) {
-        List<PossibleReservationHoursForDayDTO> availableHoursForDays = tableReservationService.checkPossibleHoursForDays(
-                request.getDays(),
-                request.getDuration(),
-                request.getMinutesToAdd(),
-                request.getPeople()
-        );
-        logger.info("Getting available hours for days: {}", request.getDays());
-        return ResponseEntity.ok(availableHoursForDays);
+    @GetMapping("/available-hours")
+    public ResponseEntity<List<PossibleReservationHoursForDayDTO>> getPossibleHoursForDays(
+            @RequestParam List<LocalDate> days,
+            @RequestParam int reservationDuration,
+            @RequestParam int minutesToAdd,
+            @RequestParam int numberOfPeople
+    ) {
+        logger.info("Fetching possible reservation hours for days: {}, duration: {}, interval: {}, people: {}",
+                days, reservationDuration, minutesToAdd, numberOfPeople);
+        List<PossibleReservationHoursForDayDTO> possibleHours = tableReservationService.checkPossibleHoursForDays(days, reservationDuration, minutesToAdd, numberOfPeople);
+        logger.info("Fetched possible hours for {} days", days.size());
+        return ResponseEntity.ok(possibleHours);
     }
 
-    @Operation(summary = "Make reservation")
-    @PostMapping("/make")
-    public ResponseEntity<Void> makeReservation(@RequestBody @Valid MakeReservationCommand request) {
-        tableReservationService.makeReservation(
-                request.getDay(),
-                request.getStartTime(),
-                request.getEndTime(),
-                request.getNumberOfPeople(),
-                request.getCustomerId()
-        );
-        logger.info("Made reservation for day: {}, start time: {}, end time: {}, number of people: {}, customer id: {}",
+    @Operation(summary = "Create a new reservation")
+    @PostMapping
+    public ResponseEntity<TableReservation> createReservation(@RequestBody @Valid MakeReservationCommand request) {
+        logger.info("Creating reservation for day: {}, start time: {}, end time: {}, people: {}, customer ID: {}",
                 request.getDay(), request.getStartTime(), request.getEndTime(), request.getNumberOfPeople(), request.getCustomerId());
-        return ResponseEntity.noContent().build();
+        TableReservation reservation = tableReservationService.makeReservation(request);
+        logger.info("Created reservation with ID {}", reservation.getId());
+        return ResponseEntity.ok(reservation);
+    }
+
+    @Operation(summary = "Get a reservation by ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<TableReservation> getReservationById(@PathVariable Long id) {
+        logger.info("Fetching reservation by ID: {}", id);
+        TableReservation reservation = tableReservationService.getTableReservationById(id);
+        logger.info("Fetched reservation with ID {}", id);
+        return ResponseEntity.ok(reservation);
     }
 }

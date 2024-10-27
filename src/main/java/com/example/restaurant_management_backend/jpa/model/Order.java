@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -56,9 +57,14 @@ public class Order {
     @PositiveOrZero(message = "Cena dostawy nie może być ujemna")
     private double deliveryPrice;
 
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    @JsonBackReference
+    private TableReservation tableReservation;
+
     public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,
                  OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
-                 String deliveryAddress, double deliveryDistance) {
+                 String deliveryAddress, double deliveryDistance, TableReservation tableReservation) {
         this.mealIds = mealIds;
         this.orderPrice = orderPrice;
         this.deliveryPrice = deliveryPrice;
@@ -69,5 +75,6 @@ public class Order {
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
+        this.tableReservation = tableReservation;
     }
 }

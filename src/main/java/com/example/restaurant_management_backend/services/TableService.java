@@ -19,6 +19,10 @@ public class TableService {
         return tableRepository.countAllByCapacityGreaterThanEqual(numberOfPeople);
     }
 
+    public List<Table> findTablesWithGreaterOrEqualCapacity(int numberOfPeople) {
+        return tableRepository.findAllByCapacityGreaterThanEqual(numberOfPeople);
+    }
+
     public Table save(String id, int capacity) {
         Table table = new Table(id, capacity);
         return tableRepository.save(table);

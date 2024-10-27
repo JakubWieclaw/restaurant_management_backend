@@ -2,6 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
+import com.example.restaurant_management_backend.jpa.model.Table;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
 import com.example.restaurant_management_backend.jpa.repositories.TableReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,7 +137,7 @@ class TableReservationServiceTest {
         LocalTime endTime = LocalTime.of(16, 0);
         int numberOfPeople = 2;
 
-        when(tableService.countTablesWithGreaterOrEqualCapacity(numberOfPeople)).thenReturn(2); // Enough tables
+        when(tableService.findTablesWithGreaterOrEqualCapacity(numberOfPeople)).thenReturn(List.of(new Table("1", 4), new Table("2", 4))); // Enough tables
         when(tableReservationRepository.findAllByDay(date)).thenReturn(Collections.emptyList()); // No existing reservations
 
         tableReservationService.makeReservation(date, startTime, endTime, numberOfPeople, 1L);
