@@ -97,8 +97,9 @@ public class OrderService {
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
+        TableReservation tableReservation = null;
         if (request.getTableId() != null && request.getType() == OrderType.NA_MIEJSCU) {
-            tableReservationService.makeReservation(
+            tableReservation = tableReservationService.makeReservation(
                     now.toLocalDate(), // date
                     now.toLocalTime(), // start time of reservation
                     now.toLocalTime().plusMinutes(120), // end time of reservation
@@ -117,7 +118,8 @@ public class OrderService {
                 now,
                 request.getUnwantedIngredients(),
                 request.getDeliveryAddress(),
-                request.getDeliveryDistance());
+                request.getDeliveryDistance(),
+                tableReservation);
         return orderRepository.save(order);
     }
 
