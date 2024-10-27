@@ -2,6 +2,7 @@ package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
 import com.example.restaurant_management_backend.jpa.repositories.TableReservationRepository;
@@ -89,6 +90,20 @@ public class TableReservationService {
         return tableReservationRepository.findAllByDay(day);
     }
 
+    public TableReservation findOrCreateReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId) {
+        // Check if a suitable reservation already exists
+        List<TableReservation> existingReservations = getTableReservationsForDay(day);
+        for (TableReservation reservation : existingReservations) {
+            if (reservation.getStartTime().equals(startTime) && reservation.getEndTime().equals(endTime) &&
+                    reservation.getPeople() == numberOfPeople && reservation.getCustomerId().equals(customerId)) {
+                return reservation; // Return existing reservation if found
+            }
+        }
+
+        // No existing reservation found, so create a new one
+        return makeReservation(day, startTime, endTime, numberOfPeople, customerId);
+    }
+
     public List<TableReservation> getAllTableReservations() {
         return tableReservationRepository.findAll();
     }
@@ -104,5 +119,10 @@ public class TableReservationService {
     public boolean isTimeBetween(LocalTime localTime, LocalTime localTime1, LocalTime localTime2) {
         return (localTime.equals(localTime1) || localTime.isAfter(localTime1)) &&
                 (localTime.equals(localTime2) || localTime.isBefore(localTime2));
+    }
+
+    public TableReservation getTableReservationById(Long id) {
+        return tableReservationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono rezerwacji o podanym id " + id));
     }
 }

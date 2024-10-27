@@ -25,28 +25,10 @@ public class OrderService {
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
 
-    /**
-     * Retrieves all orders from the repository.
-     *
-     * @return a list of all orders
-     */
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
 
-    /**
-     * Retrieves an order by its ID.
-     * <p>
-     * If the order does not exist, this method throws a {@link NotFoundException},
-     * which is handled by the {@link GlobalExceptionHandler} to return a 404
-     * response.
-     * </p>
-     *
-     * @param id the ID of the order to retrieve
-     * @return an {@link Optional} containing the order if found
-     * @throws NotFoundException if the order with the specified ID does not exist
-     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
-     */
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isEmpty()) {
@@ -55,20 +37,6 @@ public class OrderService {
         return order;
     }
 
-    /**
-     * Retrieves all orders for a specific customer.
-     * <p>
-     * This method checks if the customer ID is valid and exists in the repository.
-     * If the customer ID is null, negative, or does not exist, it throws an
-     * exception.
-     * </p>
-     *
-     * @param customerId the ID of the customer
-     * @return a list of orders associated with the specified customer
-     * @throws IllegalArgumentException if the customer ID is invalid
-     * @throws NotFoundException        if the customer with the specified ID does
-     *                                  not exist
-     */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
             throw new IllegalArgumentException(INVALID_ID);
@@ -79,31 +47,22 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
-    /**
-     * Adds a new order to the repository.
-     * <p>
-     * This method validates the order details, calculates the total price, creates
-     * a new order object, and saves it to the repository.
-     * </p>
-     *
-     * @param request the data required to add a new order
-     * @return the newly created and saved order
-     * @throws IllegalArgumentException if the order data is invalid
-     * @throws NotFoundException        if a referenced meal does not exist
-     */
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
-        if (request.getTableId() != null) {
-            tableReservationService.makeReservation(
+        // Find or create TableReservation if a table ID is provided in the request
+        TableReservation tableReservation = null;
+        if (request.getTableId() != null && request.getPeople() != null) {
+            int minutes = request.getMinutesForReservation() == null ? 120 : request.getMinutesForReservation();
+            tableReservation = tableReservationService.findOrCreateReservation(
                     now.toLocalDate(), // date
-                    now.toLocalTime(), // start time of reservation
-                    now.toLocalTime().plusMinutes(120), // end time of reservation default 120 minutes
+                    now.toLocalTime(), // start time
+                    now.toLocalTime().plusMinutes(minutes), // end time
                     request.getPeople(), // number of people
-                    request.getCustomerId() // customer id
+                    request.getCustomerId() // customer ID
             );
         }
 
@@ -117,7 +76,8 @@ public class OrderService {
                 now,
                 request.getUnwantedIngredients(),
                 request.getDeliveryAddress(),
-                request.getDeliveryDistance());
+                request.getDeliveryDistance(),
+                tableReservation);
         return orderRepository.save(order);
     }
 
@@ -289,4 +249,12 @@ public class OrderService {
         return deliveryPrice;
     }
 
+    public Order addOrderToReservation(Long orderId, Long reservationId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order not found"));
+        TableReservation reservation = tableReservationService.getTableReservationById(reservationId);
+
+        order.setTableReservation(reservation); // Link order to reservation
+        return orderRepository.save(order); // Save updated order
+    }
 }

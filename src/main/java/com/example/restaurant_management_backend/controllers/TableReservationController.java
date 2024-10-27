@@ -77,8 +77,8 @@ public class TableReservationController {
     }
 
     @Operation(summary = "Get reservations for a specific day")
-    @GetMapping("/reservations")
-    public ResponseEntity<List<TableReservation>> getReservations(@RequestParam("day") LocalDate day) {
+    @GetMapping("/reservations-for-day")
+    public ResponseEntity<List<TableReservation>> getReservationsForSpecificDay(@RequestParam("day") LocalDate day) {
         List<TableReservation> reservations = tableReservationService.getTableReservationsForDay(day);
         logger.info("Getting reservations for a day {}", day);
         return ResponseEntity.ok(reservations);
