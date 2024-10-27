@@ -1,6 +1,5 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -59,7 +58,6 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "reservation_id")
-    @JsonBackReference
     private TableReservation tableReservation;
 
     public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,

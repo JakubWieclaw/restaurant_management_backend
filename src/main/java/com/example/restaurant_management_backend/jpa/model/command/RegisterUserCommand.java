@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class RegisterUserCommand extends RegisterCommand {
 
-    public RegisterUserCommand(String name, String surname, String email, String phone, String password, boolean admin) {
-        super(name, surname, email, phone, password, admin);
+    public RegisterUserCommand(String name, String surname, String email, String phone, String password) {
+        super(name, surname, email, phone, password);
     }
 }

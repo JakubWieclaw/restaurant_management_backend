@@ -1,6 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -39,6 +39,6 @@ public class TableReservation {
     private Long customerId;
 
     @OneToMany(mappedBy = "tableReservation", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonIgnoreProperties("tableReservation")
     private List<Order> orders;
 }
