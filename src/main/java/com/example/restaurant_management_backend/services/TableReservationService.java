@@ -91,7 +91,7 @@ public class TableReservationService {
         checkIfReservationIsNotInPast(day);
 
         var tables = tableService.findTablesWithGreaterOrEqualCapacity(numberOfPeople);
-        var conflictingReservations = tableReservationRepository.findByDayAndStartTimeBeforeAndEndTimeAfter(day, startTime, endTime);
+        var conflictingReservations = getReservationsInConflict(startTime, endTime, getTableReservationsForDay(day));
 
         Table table = getTableIfFree(conflictingReservations, tables, requestedTableId);
 
@@ -108,8 +108,8 @@ public class TableReservationService {
         // Check if a suitable reservation already exists
         List<TableReservation> existingReservations = getTableReservationsForDay(day);
         for (TableReservation reservation : existingReservations) {
-            if (reservation.getStartTime().equals(startTime) && reservation.getEndTime().equals(endTime) &&
-                    reservation.getPeople() == numberOfPeople && reservation.getCustomerId().equals(customerId)) {
+            if (reservation.getPeople() == numberOfPeople && reservation.getCustomerId().equals(customerId) && reservation.getTableId().equals(requestedTableId) &&
+                    startTime.isBefore(reservation.getEndTime()) && endTime.isAfter(reservation.getStartTime())) {
                 return reservation; // Return existing reservation if found
             }
         }
