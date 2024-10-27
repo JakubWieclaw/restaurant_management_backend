@@ -11,6 +11,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -118,7 +120,7 @@ public class OrderServiceTest {
 
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L, OrderType.DOSTAWA,
-                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null);
+                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null, null, null);
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -161,7 +163,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
                 OrderType.DO_STOLIKA, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
-                null, 0, "1");
+                null, 0, "1", 4, 120);
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -170,6 +172,13 @@ public class OrderServiceTest {
         when(mealService.getMealById(1L)).thenReturn(meal);
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
         when(configService.isSystemInitialized()).thenReturn(true);
+
+        TableReservation tableReservation = new TableReservation();
+        tableReservation.setDay(LocalDate.now());
+        tableReservation.setStartTime(LocalTime.of(12, 0, 0));
+        tableReservation.setEndTime(LocalTime.of(14, 0, 0));
+        when(tableReservationService.findOrCreateReservation(any(), any(), any(), anyInt(), anyLong(), any())).thenReturn(tableReservation);
+
         DeliveryPricing deliveryPricing = new DeliveryPricing();
         deliveryPricing.setId(1L);
         deliveryPricing.setMaximumRange(5);
@@ -198,7 +207,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
+                "Some Address", 5.0, null, null, null);
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -235,7 +244,7 @@ public class OrderServiceTest {
 
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(new MealQuantity(1L, 2)), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null);
+                "Some Address", 5.0, null, null, null);
 
         when(mealService.mealExists(1L)).thenReturn(true);
         when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, Collections.emptyList(), 100));

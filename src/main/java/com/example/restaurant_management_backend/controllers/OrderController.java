@@ -77,7 +77,7 @@ public class OrderController {
 
     @Operation(summary = "Add order to reservation")
     @PostMapping("/add-to-reservation")
-    public ResponseEntity<> addOrderToReservation(@RequestParam("reservationId") Long reservationId, @RequestParam("orderId") Long orderId) {
+    public ResponseEntity<Order> addOrderToReservation(@RequestParam("reservationId") Long reservationId, @RequestParam("orderId") Long orderId) {
         Order createdOrder = orderService.addOrderToReservation(orderId, reservationId);
         logger.info("Added new order: {}", createdOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
