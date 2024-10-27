@@ -12,5 +12,5 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
     Optional<Customer> findByResetToken(String resetToken);
 
-    int countAll();
+    long count();
 }

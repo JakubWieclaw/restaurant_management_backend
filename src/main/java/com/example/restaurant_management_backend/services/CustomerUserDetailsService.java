@@ -73,7 +73,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
         return customerRepository.save(customer);
     }
 
-    public int countAll() {
-        return customerRepository.countAll();
+    public long countAll() {
+        return customerRepository.count();
     }
 }
