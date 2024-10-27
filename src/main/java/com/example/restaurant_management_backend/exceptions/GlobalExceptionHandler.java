@@ -211,8 +211,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
-        logger.warn("Confirmation email failed to send, but the primary request was successful", ex);
-        return new ResponseEntity<>("Your message was sent, but we couldn't send you a confirmation email at this time.", HttpStatus.ACCEPTED);
+        // logger.warn("Confirmation email failed to send, but the primary request was successful", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.ACCEPTED);
     }
     
 }

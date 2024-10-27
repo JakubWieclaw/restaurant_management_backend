@@ -28,9 +28,9 @@ public class OrderController {
     @Operation(summary = "Get all orders")
     @GetMapping("/all")
     public ResponseEntity<?> getAllOrders() {
-        orderService.getOrders();
+        final var orders = orderService.getOrders();
         logger.info("Getting all orders");
-        return ResponseEntity.ok(orderService.getOrders());
+        return ResponseEntity.ok(orders);
     }
 
     @Operation(summary = "Get order by id")

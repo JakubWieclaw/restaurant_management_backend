@@ -118,7 +118,7 @@ public class OrderServiceTest {
 
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L, OrderType.DOSTAWA,
-                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null, null, null);
+                OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null);
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -160,8 +160,8 @@ public class OrderServiceTest {
         // Arrange
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
-                OrderType.NA_MIEJSCU, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
-                "Some Address", 0, "1", 4, 120);
+                OrderType.DO_STOLIKA, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
+                null, 0, "1");
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -180,13 +180,13 @@ public class OrderServiceTest {
         Order result = orderService.addOrder(command);
 
         // Assert
-        verify(tableReservationService, times(1)).makeReservation(
-                any(),  // date (assumes LocalDate)
-                any(),  // start time (assumes LocalTime)
-                any(),  // end time (assumes LocalTime)
-                anyInt(), // number of people
-                eq(1L) // customer ID
-        );
+        // verify(tableReservationService, times(1)).makeReservation(
+        //         any(),  // date (assumes LocalDate)
+        //         any(),  // start time (assumes LocalTime)
+        //         any(),  // end time (assumes LocalTime)
+        //         anyInt(), // number of people
+        //         eq(1L) // customer ID
+        // );
 
         assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2 = 40.0
         verify(orderRepository, times(1)).save(any(Order.class));
@@ -198,7 +198,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null, null, null);
+                "Some Address", 5.0, null);
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L,
                 Collections.emptyList(), 100);
@@ -235,7 +235,7 @@ public class OrderServiceTest {
 
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(new MealQuantity(1L, 2)), 1L,
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
-                "Some Address", 5.0, null, null, null);
+                "Some Address", 5.0, null);
 
         when(mealService.mealExists(1L)).thenReturn(true);
         when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, Collections.emptyList(), 100));

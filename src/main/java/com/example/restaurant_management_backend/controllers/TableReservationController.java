@@ -1,7 +1,6 @@
 package com.example.restaurant_management_backend.controllers;
 
 import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
-import com.example.restaurant_management_backend.jpa.model.TableReservation;
 import com.example.restaurant_management_backend.jpa.model.command.CheckReservationTimesCommand;
 import com.example.restaurant_management_backend.jpa.model.command.MakeReservationCommand;
 import com.example.restaurant_management_backend.services.TableReservationService;
@@ -12,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -55,8 +56,8 @@ public class TableReservationController {
 
     @Operation(summary = "Make reservation")
     @PostMapping("/make")
-    public ResponseEntity<TableReservation> makeReservation(@RequestBody @Valid MakeReservationCommand request) {
-        TableReservation tableReservation = tableReservationService.makeReservation(
+    public ResponseEntity<Void> makeReservation(@RequestBody @Valid MakeReservationCommand request) {
+        tableReservationService.makeReservation(
                 request.getDay(),
                 request.getStartTime(),
                 request.getEndTime(),
@@ -65,22 +66,6 @@ public class TableReservationController {
         );
         logger.info("Made reservation for day: {}, start time: {}, end time: {}, number of people: {}, customer id: {}",
                 request.getDay(), request.getStartTime(), request.getEndTime(), request.getNumberOfPeople(), request.getCustomerId());
-        return ResponseEntity.ok(tableReservation);
-    }
-
-    @Operation(summary = "Get all reservations")
-    @GetMapping("/reservations")
-    public ResponseEntity<List<TableReservation>> getReservations() {
-        List<TableReservation> reservations = tableReservationService.getAllTableReservations();
-        logger.info("Getting all reservations");
-        return ResponseEntity.ok(reservations);
-    }
-
-    @Operation(summary = "Get reservations for a specific day")
-    @GetMapping("/reservations-for-day")
-    public ResponseEntity<List<TableReservation>> getReservationsForSpecificDay(@RequestParam("day") LocalDate day) {
-        List<TableReservation> reservations = tableReservationService.getTableReservationsForDay(day);
-        logger.info("Getting reservations for a day {}", day);
-        return ResponseEntity.ok(reservations);
+        return ResponseEntity.noContent().build();
     }
 }

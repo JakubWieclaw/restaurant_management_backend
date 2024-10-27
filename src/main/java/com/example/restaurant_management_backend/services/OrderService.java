@@ -25,10 +25,28 @@ public class OrderService {
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
 
+    /**
+     * Retrieves all orders from the repository.
+     *
+     * @return a list of all orders
+     */
     public List<Order> getOrders() {
         return orderRepository.findAll();
     }
 
+    /**
+     * Retrieves an order by its ID.
+     * <p>
+     * If the order does not exist, this method throws a {@link NotFoundException},
+     * which is handled by the {@link GlobalExceptionHandler} to return a 404
+     * response.
+     * </p>
+     *
+     * @param id the ID of the order to retrieve
+     * @return an {@link Optional} containing the order if found
+     * @throws NotFoundException if the order with the specified ID does not exist
+     * @see GlobalExceptionHandler#handleNotFoundException(NotFoundException)
+     */
     public Optional<Order> getOrderById(Long id) {
         Optional<Order> order = orderRepository.findById(id);
         if (order.isEmpty()) {
@@ -37,6 +55,20 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Retrieves all orders for a specific customer.
+     * <p>
+     * This method checks if the customer ID is valid and exists in the repository.
+     * If the customer ID is null, negative, or does not exist, it throws an
+     * exception.
+     * </p>
+     *
+     * @param customerId the ID of the customer
+     * @return a list of orders associated with the specified customer
+     * @throws IllegalArgumentException if the customer ID is invalid
+     * @throws NotFoundException        if the customer with the specified ID does
+     *                                  not exist
+     */
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
         if (customerId == null || customerId < 0) {
             throw new IllegalArgumentException(INVALID_ID);
@@ -47,22 +79,31 @@ public class OrderService {
         return orderRepository.findByCustomerId(customerId);
     }
 
+    /**
+     * Adds a new order to the repository.
+     * <p>
+     * This method validates the order details, calculates the total price, creates
+     * a new order object, and saves it to the repository.
+     * </p>
+     *
+     * @param request the data required to add a new order
+     * @return the newly created and saved order
+     * @throws IllegalArgumentException if the order data is invalid
+     * @throws NotFoundException        if a referenced meal does not exist
+     */
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
         LocalDateTime now = LocalDateTime.now();
 
-        // Find or create TableReservation if a table ID is provided in the request
-        TableReservation tableReservation = null;
-        if (request.getTableId() != null && request.getPeople() != null) {
-            int minutes = request.getMinutesForReservation() == null ? 120 : request.getMinutesForReservation();
-            tableReservation = tableReservationService.findOrCreateReservation(
+        if (request.getTableId() != null && request.getType() == OrderType.NA_MIEJSCU) {
+            tableReservationService.makeReservation(
                     now.toLocalDate(), // date
-                    now.toLocalTime(), // start time
-                    now.toLocalTime().plusMinutes(minutes), // end time
-                    request.getPeople(), // number of people
-                    request.getCustomerId() // customer ID
+                    now.toLocalTime(), // start time of reservation
+                    now.toLocalTime().plusMinutes(120), // end time of reservation
+                    4, // number of people
+                    request.getCustomerId() // customer id
             );
         }
 
@@ -76,8 +117,7 @@ public class OrderService {
                 now,
                 request.getUnwantedIngredients(),
                 request.getDeliveryAddress(),
-                request.getDeliveryDistance(),
-                tableReservation);
+                request.getDeliveryDistance());
         return orderRepository.save(order);
     }
 
@@ -150,15 +190,39 @@ public class OrderService {
             throw new IllegalArgumentException("Lista posiłków nie może być pusta");
         }
 
-        // 0.01 is used t oavoid issues regarding double precision
-        // If deliverydistance is greater than 0 and order type is NA_MIEJSCU, throw an exception
+        // 0.01 is used to avoid issues regarding double precision
+        // If delivery distance is greater than 0 and order type is NA_MIEJSCU, throw an
+        // exception
         if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.NA_MIEJSCU)) {
             throw new IllegalArgumentException("Zamówenie na miejscu nie może mieć odległości dostawy większej niż 0");
         }
 
-        // If deliverydistance is 0 and order type is DOSTAWA, throw an exception
+        // If delivery distance is 0 and order type is DOSTAWA, throw an exception
         if (orderAddCommand.getDeliveryDistance() < 0.01 && orderAddCommand.getType().equals(OrderType.DOSTAWA)) {
             throw new IllegalArgumentException("Zamówienie na dostawę musi mieć odległość dostawy większą niż 0");
+        }
+
+        // If order type is DO_STOLIKA and delivery distance is greater than 0, throw an
+        if (orderAddCommand.getDeliveryDistance() > 0.01 && orderAddCommand.getType().equals(OrderType.DO_STOLIKA)) {
+            throw new IllegalArgumentException("Zamówienie DO_STOLIKA nie może mieć odległości dostawy większej niż 0");
+        }
+
+        // If order type is DO_STOLIKA and table ID is missing, throw an exception
+        if (orderAddCommand.getType().equals(OrderType.DO_STOLIKA)
+                && (orderAddCommand.getTableId() == null || orderAddCommand.getTableId().isEmpty())) {
+            throw new IllegalArgumentException("Zamówienie DO_STOLIKA wymaga podania identyfikatora stolika");
+        }
+
+        // Validate tableId should not be provided if the order type is not DO_STOLIKA
+        if (!orderAddCommand.getType().equals(OrderType.DO_STOLIKA) && orderAddCommand.getTableId() != null) {
+            throw new IllegalArgumentException(
+                    "Identyfikator stolika może być podany tylko dla zamówienia typu DO_STOLIKA");
+        }
+
+        // Validate deliveryAddress: it should be empty if the order is not for delivery
+        if (!orderAddCommand.getType().equals(OrderType.DOSTAWA) && orderAddCommand.getDeliveryAddress() != null
+                && !orderAddCommand.getDeliveryAddress().isEmpty()) {
+            throw new IllegalArgumentException("Adres dostawy może być podany tylko dla zamówienia typu DOSTAWA");
         }
 
         for (int i = 0; i < mealIds.size(); i++) {
@@ -184,7 +248,7 @@ public class OrderService {
             }
         }
 
-        // Validate unwanted ingredients for the meal at index i
+        // Validate unwanted ingredients for the meal
         List<UnwantedIngredient> unwantedIngredients = orderAddCommand.getUnwantedIngredients();
         if (unwantedIngredients != null) {
             for (int i = 0; i < unwantedIngredients.size(); i++) {
@@ -203,17 +267,17 @@ public class OrderService {
                     throw new IllegalArgumentException("Lista niechcianych składników nie może być pusta");
                 }
 
-                // iterate through mealIds (onlty through indexes mentioned in
-                // unwantedIngredients) and check if given meal consists of unwanted ingredients
-                final var mealQuanity = mealIds.get(mealIndex);
-                final var meal = mealService.getMealById(mealQuanity.getMealId());
+                // iterate through mealIds (only through indexes mentioned in
+                // unwantedIngredients)
+                // and check if given meal consists of unwanted ingredients
+                final var mealQuantity = mealIds.get(mealIndex);
+                final var meal = mealService.getMealById(mealQuantity.getMealId());
 
                 // check if all ingredients are present in the meal
                 if (!meal.getIngredients().containsAll(ingredients)) {
                     throw new IllegalArgumentException("Posiłek o indeksie " + mealIndex
                             + " nie zawiera wszystkich podanych składników, które chcesz usunąć");
                 }
-
             }
         }
     }
@@ -249,12 +313,4 @@ public class OrderService {
         return deliveryPrice;
     }
 
-    public Order addOrderToReservation(Long orderId, Long reservationId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found"));
-        TableReservation reservation = tableReservationService.getTableReservationById(reservationId);
-
-        order.setTableReservation(reservation); // Link order to reservation
-        return orderRepository.save(order); // Save updated order
-    }
 }
