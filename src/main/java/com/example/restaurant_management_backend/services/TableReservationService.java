@@ -26,6 +26,7 @@ public class TableReservationService {
     public static final String CANNOT_MAKE_RESERVATION_IN_PAST = "Nie można dokonać rezerwacji w przeszłości";
     public static final String NO_TABLE_FOUND_FOR_THIS_TIME = "Brakuje stolika w podanym przedziale czasowym";
     public static final String TABLE_WITH_THIS_ID_IS_ALREADY_TAKEN = "Stolik o podanym id jest już zajęty";
+    public static final String TABLE_DOES_NOT_EXIST_OR_CAPACITY_IS_TOO_LOW = "Podany stolik nie istnieje bądź nie jest w stanie pomieścić podanej liczby osób";
     private final ConfigService configService;
     private final TableService tableService;
     private final TableReservationRepository tableReservationRepository;
@@ -93,7 +94,7 @@ public class TableReservationService {
         var tables = tableService.findTablesWithGreaterOrEqualCapacity(numberOfPeople);
         var conflictingReservations = getReservationsInConflict(startTime, endTime, getTableReservationsForDay(day));
 
-        Table table = getTableIfFree(conflictingReservations, tables, requestedTableId);
+        Table table = checkIfRequestedTableIsValid(conflictingReservations, tables, requestedTableId);
 
         return fillTableReservation(day, startTime, endTime, numberOfPeople, customerId, table);
     }
@@ -144,17 +145,16 @@ public class TableReservationService {
                 .orElseThrow(() -> new InvalidReservationException(NO_TABLE_FOUND_FOR_THIS_TIME));
     }
 
-    private Table getTableIfFree(List<TableReservation> reservationsInConflict, List<Table> tables, String requestedTableId) {
-        List<String> takenTables = reservationsInConflict.stream()
+    private Table checkIfRequestedTableIsValid(List<TableReservation> reservationsInConflict, List<Table> tables, String requestedTableId) {
+        List<String> idsOfTakenTables = reservationsInConflict.stream()
                 .map(TableReservation::getTableId)
                 .toList();
-        if (takenTables.contains(requestedTableId)) {
+        if (idsOfTakenTables.contains(requestedTableId)) {
             throw new InvalidReservationException(TABLE_WITH_THIS_ID_IS_ALREADY_TAKEN);
         }
         return tables.stream()
-                .filter(table -> !takenTables.contains(table.getId()))
-                .findFirst()
-                .orElseThrow(() -> new InvalidReservationException(NO_TABLE_FOUND_FOR_THIS_TIME));
+                .filter(table -> table.getId().equals(requestedTableId))
+                .findFirst().orElseThrow(() -> new InvalidReservationException(TABLE_DOES_NOT_EXIST_OR_CAPACITY_IS_TOO_LOW));
     }
 
     public TableReservation getTableReservationById(Long id) {
