@@ -107,4 +107,13 @@ public class TableReservationController {
         logger.info("Fetched reservation with ID {}", id);
         return ResponseEntity.ok(reservation);
     }
+
+    @Operation(summary = "Delete a reservation by ID")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReservationById(@PathVariable Long id) {
+        logger.info("Deleting reservation by ID: {}", id);
+        tableReservationService.deleteReservationById(id);
+        logger.info("Deleted reservation with ID {}", id);
+        return ResponseEntity.noContent().build();
+    }
 }

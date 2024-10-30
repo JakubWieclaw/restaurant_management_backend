@@ -188,4 +188,11 @@ public class TableReservationService {
     public List<TableReservation> getReservationsForTableOnDay(String tableId, LocalDate day) {
         return tableReservationRepository.findAllByTableIdAndDay(tableId, day);
     }
+
+    public void deleteReservationById(Long id) {
+        if (!tableReservationRepository.existsById(id)) {
+            throw new NotFoundException("Rezerwacja z " + id + " nie została odnaleziona.");
+        }
+        tableReservationRepository.deleteById(id);
+    }
 }
