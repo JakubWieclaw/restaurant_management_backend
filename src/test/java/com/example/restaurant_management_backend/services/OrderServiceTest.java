@@ -121,7 +121,7 @@ public class OrderServiceTest {
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
         OrderAddCommand command = new OrderAddCommand(Collections.singletonList(mealQuantity), 1L, OrderType.DOSTAWA,
                 OrderStatus.OCZEKUJĄCE, null, "Some Address", 5.0, null, null, null);
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, new Category(),
+        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, new Category(),
                 Collections.emptyList(), 100);
         when(mealService.mealExists(1L)).thenReturn(true);
         when(mealService.getMealById(1L)).thenReturn(meal);
@@ -165,7 +165,7 @@ public class OrderServiceTest {
                 OrderType.DO_STOLIKA, OrderStatus.OCZEKUJĄCE, Collections.emptyList(),
                 null, 0, "1", 4, 120);
 
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, new Category(),
+        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, new Category(),
                 Collections.emptyList(), 100);
 
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -209,7 +209,7 @@ public class OrderServiceTest {
                 OrderType.DOSTAWA, OrderStatus.OCZEKUJĄCE, null, // No table ID
                 "Some Address", 5.0, null, null, null);
 
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, new Category(),
+        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, new Category(),
                 Collections.emptyList(), 100);
 
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -247,7 +247,7 @@ public class OrderServiceTest {
                 "Some Address", 5.0, null, null, null);
 
         when(mealService.mealExists(1L)).thenReturn(true);
-        when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, new Category(), Collections.emptyList(), 100));
+        when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, new Category(), Collections.emptyList(), 100));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
         when(configService.isSystemInitialized()).thenReturn(true);
 

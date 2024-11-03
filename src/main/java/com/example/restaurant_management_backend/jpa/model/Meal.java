@@ -43,9 +43,12 @@ public class Meal {
     @Enumerated(EnumType.STRING)
     private UnitType unitType; // Unit type, mandatory if weightOrVolume is provided
 
+    @NotNull(message = "Category cannot be null")
+    private Long categoryId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    @NotNull(message = "Category cannot be null")
+
     private Category category;
 
     @ElementCollection
@@ -60,13 +63,14 @@ public class Meal {
         this.price = price;
     }
 
-    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Category category, List<String> allergens, int calories) {
+    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, Category category, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
         this.ingredients = ingredients;
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
+        this.categoryId = categoryId;
         this.category = category;
         this.allergens = allergens;
         this.calories = calories;

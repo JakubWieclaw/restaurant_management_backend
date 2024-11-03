@@ -173,6 +173,7 @@ public class TableReservationService {
         tableReservation.setEndTime(endTime);
         tableReservation.setStartTime(startTime);
         tableReservation.setPeople(numberOfPeople);
+        tableReservation.setCustomerId(customerId);
         tableReservation.setCustomer(customer);
         tableReservation.setDay(day);
         tableReservation.setDuration(ChronoUnit.MINUTES.between(startTime, endTime));

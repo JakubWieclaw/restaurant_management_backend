@@ -36,7 +36,7 @@ public class TableReservation {
 
     private long duration;
 
-    // private Long customerId;
+    private Long customerId;
 
     @OneToOne
     private Customer customer;

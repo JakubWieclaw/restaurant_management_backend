@@ -15,6 +15,7 @@ public class MealMapper {
                 mealAddCommand.getIngredients(),
                 mealAddCommand.getWeightOrVolume(),
                 mealAddCommand.getUnitType(),
+                mealAddCommand.getCategoryId(),
                 category,
                 mealAddCommand.getAllergens(),
                 mealAddCommand.getCalories()
