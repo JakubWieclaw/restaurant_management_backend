@@ -18,6 +18,7 @@ import com.example.restaurant_management_backend.jpa.repositories.CategoryReposi
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
 import com.example.restaurant_management_backend.mappers.MealMapper;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 
 import java.util.Collections;
@@ -54,7 +55,7 @@ public class MealServiceTest {
         meal.setIngredients(ingredientsList);
         meal.setWeightOrVolume(250.0);
         meal.setUnitType(UnitType.GRAMY);
-        meal.setCategoryId(1L);
+        meal.setCategory(new Category());
         meal.setAllergens(allergensList);
         meal.setCalories(350);
 
@@ -65,8 +66,9 @@ public class MealServiceTest {
 
     @Test
     void shouldAddMealSuccessfully() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(true);
-        when(mealMapper.toMeal(any(MealAddCommand.class))).thenReturn(meal);
+        // when(categoryRepository.existsById(anyLong())).thenReturn(true);
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(new Category()));
+        when(mealMapper.toMeal(any(MealAddCommand.class), any(Category.class))).thenReturn(meal);
         when(mealRepository.save(any(Meal.class))).thenReturn(meal);
 
         Meal savedMeal = mealService.addMeal(mealAddCommand);
@@ -78,7 +80,7 @@ public class MealServiceTest {
 
     @Test
     void shouldThrowExceptionWhenAddingMealWithInvalidCategory() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(false);
+        // when(categoryRepository.existsById(anyLong())).thenReturn(false);
 
         Exception exception = assertThrows(NotFoundException.class, () -> {
             mealService.addMeal(mealAddCommand);
@@ -91,7 +93,8 @@ public class MealServiceTest {
     @Test
     void shouldUpdateMealSuccessfully() {
         when(mealRepository.findById(anyLong())).thenReturn(Optional.of(meal));
-        when(categoryRepository.existsById(anyLong())).thenReturn(true);
+        // when(categoryRepository.existsById(anyLong())).thenReturn(true);
+        when(categoryRepository.findById(anyLong())).thenReturn(Optional.of(new Category()));
         when(mealRepository.save(any(Meal.class))).thenReturn(meal);
 
         Meal updatedMeal = mealService.updateMeal(1L, mealAddCommand);

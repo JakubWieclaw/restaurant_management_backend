@@ -1,6 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
@@ -36,15 +37,15 @@ public class MealService {
     }
 
     public Meal addMeal(MealAddCommand mealAddCommand) {
-        validateCategory(mealAddCommand.getCategoryId());
-        Meal meal = mealMapper.toMeal(mealAddCommand);
+        final var category = findCategory(mealAddCommand.getCategoryId());
+        Meal meal = mealMapper.toMeal(mealAddCommand, category);
         return mealRepository.save(meal);
     }
 
     public Meal updateMeal(Long id, MealAddCommand mealAddCommand) {
         Meal meal = getMealById(id);
-        validateCategory(mealAddCommand.getCategoryId());
-        mealMapper.updateMeal(meal, mealAddCommand);
+        final var category = findCategory(mealAddCommand.getCategoryId());
+        mealMapper.updateMeal(meal, mealAddCommand, category);
         return mealRepository.save(meal);
     }
 
@@ -70,6 +71,14 @@ public class MealService {
         Meal meal = getMealById(mealId);
         // Check if all ingredients are present in the meal
         return meal.getIngredients().containsAll(ingredients);
+    }
+
+    private Category findCategory(Long categoryId) {
+        final var category = categoryRepository.findById(categoryId);
+        if (category.isEmpty()) {
+            throw new NotFoundException(CATEGORY_WITH_ID + categoryId + DOES_NOT_EXIST);
+        }
+        return category.get();
     }
 
     private void validateCategory(Long categoryId) {
