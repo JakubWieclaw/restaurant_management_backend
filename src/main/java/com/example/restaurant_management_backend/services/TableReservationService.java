@@ -7,6 +7,7 @@ import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.Table;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
 import com.example.restaurant_management_backend.jpa.model.command.MakeReservationCommand;
+import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.TableReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class TableReservationService {
     private final ConfigService configService;
     private final TableService tableService;
     private final TableReservationRepository tableReservationRepository;
-
+    private final CustomerRepository customerRepository;
     public List<LocalTime> checkPossibleHoursForDay(LocalDate day, int reservationDuration, int minutesToAdd, int numberOfPeople) {
         List<LocalTime> possibleReservationStartHour = new ArrayList<>();
         List<OpeningHour> openingHours = configService.getOpeningHours();
@@ -109,7 +110,8 @@ public class TableReservationService {
         // Check if a suitable reservation already exists
         List<TableReservation> existingReservations = getTableReservationsForDay(day);
         for (TableReservation reservation : existingReservations) {
-            if (reservation.getPeople() == numberOfPeople && reservation.getCustomerId().equals(customerId) && reservation.getTableId().equals(requestedTableId) &&
+            final var customer = customerRepository.findById(customerId).orElseThrow(() -> new NotFoundException("Nie znaleziono klienta o podanym id " + customerId));
+            if (reservation.getPeople() == numberOfPeople && customer.getId().equals(customerId) && reservation.getTableId().equals(requestedTableId) &&
                     startTime.isBefore(reservation.getEndTime()) && endTime.isAfter(reservation.getStartTime())) {
                 return reservation; // Return existing reservation if found
             }
@@ -165,11 +167,13 @@ public class TableReservationService {
     private TableReservation fillTableReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId, Table tableForReservation) {
         TableReservation tableReservation = new TableReservation();
 
+        final var customer = customerRepository.findById(customerId).orElseThrow(() -> new NotFoundException("Nie znaleziono klienta o podanym id " + customerId));
+
         tableReservation.setTableId(tableForReservation.getId());
         tableReservation.setEndTime(endTime);
         tableReservation.setStartTime(startTime);
         tableReservation.setPeople(numberOfPeople);
-        tableReservation.setCustomerId(customerId);
+        tableReservation.setCustomer(customer);
         tableReservation.setDay(day);
         tableReservation.setDuration(ChronoUnit.MINUTES.between(startTime, endTime));
 

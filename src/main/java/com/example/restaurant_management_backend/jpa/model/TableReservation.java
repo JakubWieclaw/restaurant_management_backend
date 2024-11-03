@@ -36,7 +36,10 @@ public class TableReservation {
 
     private long duration;
 
-    private Long customerId;
+    // private Long customerId;
+
+    @OneToOne
+    private Customer customer;
 
     @OneToMany(mappedBy = "tableReservation", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("tableReservation")
