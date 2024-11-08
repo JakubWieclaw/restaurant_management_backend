@@ -47,6 +47,8 @@ public class Order {
     @CollectionTable(name = "unwanted_ingredients", joinColumns = @JoinColumn(name = "order_id"))
     private List<UnwantedIngredient> unwantedIngredients;
 
+    private String paymentIntentClientSecret;
+
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 

@@ -6,6 +6,9 @@ import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,8 +54,11 @@ public class OrderService {
 
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
+
+        // Calculate order and delivery prices
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
+
         LocalDateTime now = LocalDateTime.now();
         TableReservation tableReservation = null;
         if (request.getType().equals(OrderType.DO_STOLIKA)) {
@@ -69,6 +75,7 @@ public class OrderService {
             }
         }
 
+        // Create and save the order
         Order order = new Order(
                 request.getMealIds(),
                 orderPrice,
@@ -81,7 +88,31 @@ public class OrderService {
                 request.getDeliveryAddress(),
                 request.getDeliveryDistance(),
                 tableReservation);
-        return orderRepository.save(order);
+
+        order = orderRepository.save(order);
+
+        // Calculate the total amount in the smallest currency unit (e.g., cents)
+        var totalAmount = orderPrice * 100;
+
+        // Create a Stripe Payment Intent
+        try {
+            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                    .setAmount((long) totalAmount)
+                    .setCurrency("pln")
+                    .setAutomaticPaymentMethods(
+                            PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build())
+                    .build();
+
+            PaymentIntent paymentIntent = PaymentIntent.create(params);
+            order.setPaymentIntentClientSecret(paymentIntent.getClientSecret());
+
+            // Save order with the client secret for later retrieval
+            order = orderRepository.save(order);
+        } catch (StripeException e) {
+            throw new RuntimeException("Failed to create payment intent", e);
+        }
+
+        return order;
     }
 
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
