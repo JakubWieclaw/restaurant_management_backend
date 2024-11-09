@@ -6,7 +6,10 @@ import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
-import lombok.RequiredArgsConstructor;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class OrderService {
 
     public static final String NOT_FOUND_ORDER = "Nie znaleziono zamówienia";
@@ -26,6 +28,15 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
+
+    public OrderService(MealService mealService, OrderRepository orderRepository, CustomerRepository customerRepository, ConfigService configService, TableReservationService tableReservationService) {
+        this.mealService = mealService;
+        this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
+        this.configService = configService;
+        this.tableReservationService = tableReservationService;
+        Stripe.apiKey = "sk_test_51Q4Qqx6w25OikflfKXNobStEmR6z73dBnYZ0LSPh6fIvjJUwcUbHIE2nLSx9NNrZfRrPvivlvXp4eVOpAqiSO8SV00pmOtUcMF";
+    }
 
     public List<Order> getOrders() {
         return orderRepository.findAll();
@@ -51,8 +62,11 @@ public class OrderService {
 
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
+
+        // Calculate order and delivery prices
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
+
         LocalDateTime now = LocalDateTime.now();
         TableReservation tableReservation = null;
         if (request.getType().equals(OrderType.DO_STOLIKA)) {
@@ -69,6 +83,7 @@ public class OrderService {
             }
         }
 
+        // Create the Order object without saving it yet
         Order order = new Order(
                 request.getMealIds(),
                 orderPrice,
@@ -81,6 +96,26 @@ public class OrderService {
                 request.getDeliveryAddress(),
                 request.getDeliveryDistance(),
                 tableReservation);
+
+        // Calculate the total amount in the smallest currency unit (e.g., cents)
+        var totalAmount = orderPrice * 100;
+
+        // Create a Stripe Payment Intent
+        try {
+            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                    .setAmount((long) totalAmount)
+                    .setCurrency("pln")
+                    .setAutomaticPaymentMethods(
+                            PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build())
+                    .build();
+
+            PaymentIntent paymentIntent = PaymentIntent.create(params);
+            order.setPaymentIntentClientSecret(paymentIntent.getClientSecret());
+        } catch (StripeException e) {
+            throw new RuntimeException("Nie można utworzyć transakcji płatności", e);
+        }
+
+        // Save the Order with all details including the client secret
         return orderRepository.save(order);
     }
 
@@ -225,7 +260,7 @@ public class OrderService {
                     Meal meal = mealService.getMealById(mealId);
                     return meal.getPrice() * quantity;
                 })
-                .sum();
+                .sum() + Optional.of(deliveryDistance).orElse(0.0);
     }
 
     private double countDeliveryPrice(double deliveryDistance) {
