@@ -130,7 +130,7 @@ public class OrderServiceTest {
 
         Order result = orderService.addOrder(command);
 
-        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2 = 40.0
+        assertThat(result.getOrderPrice()).isEqualTo(45.0); // 20.0 * 2 + 5.0 = 45.0
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -227,7 +227,7 @@ public class OrderServiceTest {
 
         // Assert
         verify(tableReservationService, never()).makeReservation(any(), any(), any(), anyInt(), anyLong());
-        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2 = 40.0
+        assertThat(result.getOrderPrice()).isEqualTo(45.0); // 20.0 * 2 + 5.0 = 45.0
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
