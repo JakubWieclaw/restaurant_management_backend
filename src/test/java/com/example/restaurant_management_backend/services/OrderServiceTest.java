@@ -130,7 +130,8 @@ public class OrderServiceTest {
 
         Order result = orderService.addOrder(command);
 
-        assertThat(result.getOrderPrice()).isEqualTo(45.0); // 20.0 * 2 + 5.0 = 45.0
+        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2
+        assertThat(result.getDeliveryPrice()).isEqualTo(5.0);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 
@@ -216,18 +217,14 @@ public class OrderServiceTest {
         when(mealService.getMealById(1L)).thenReturn(meal);
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
         when(configService.isSystemInitialized()).thenReturn(true);
-        DeliveryPricing deliveryPricing = new DeliveryPricing();
-        deliveryPricing.setId(1L);
-        deliveryPricing.setMaximumRange(5);
-        deliveryPricing.setPrice(5.0);
-        when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
 
         // Act
         Order result = orderService.addOrder(command);
 
         // Assert
         verify(tableReservationService, never()).makeReservation(any(), any(), any(), anyInt(), anyLong());
-        assertThat(result.getOrderPrice()).isEqualTo(45.0); // 20.0 * 2 + 5.0 = 45.0
+        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2
+        assertThat(result.getDeliveryPrice()).isEqualTo(5.0);
         verify(orderRepository, times(1)).save(any(Order.class));
     }
 

@@ -64,7 +64,7 @@ public class OrderService {
         validateOrderAddCommand(request);
 
         // Calculate order and delivery prices
-        double orderPrice = calculateOrderPrice(request.getMealIds(), request.getDeliveryDistance());
+        double orderPrice = calculateOrderPrice(request.getMealIds());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
 
         LocalDateTime now = LocalDateTime.now();
@@ -98,7 +98,7 @@ public class OrderService {
                 tableReservation);
 
         // Calculate the total amount in the smallest currency unit (e.g., cents)
-        var totalAmount = orderPrice * 100;
+        var totalAmount = (orderPrice + deliveryPrice) * 100;
 
         // Create a Stripe Payment Intent
         try {
@@ -124,7 +124,7 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
         validateOrderAddCommand(orderAddCommand);
-        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getDeliveryDistance());
+        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds());
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
@@ -252,7 +252,7 @@ public class OrderService {
         return ingredients;
     }
 
-    private double calculateOrderPrice(List<MealQuantity> mealQuantities, double deliveryDistance) {
+    private double calculateOrderPrice(List<MealQuantity> mealQuantities) {
         return mealQuantities.stream()
                 .mapToDouble(mealQuantity -> {
                     Long mealId = mealQuantity.getMealId();
@@ -260,7 +260,7 @@ public class OrderService {
                     Meal meal = mealService.getMealById(mealId);
                     return meal.getPrice() * quantity;
                 })
-                .sum() + Optional.of(deliveryDistance).orElse(0.0);
+                .sum();
     }
 
     private double countDeliveryPrice(double deliveryDistance) {
