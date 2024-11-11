@@ -28,13 +28,15 @@ public class OrderService {
     private final CustomerRepository customerRepository;
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
+    private final CouponService couponService;
 
-    public OrderService(MealService mealService, OrderRepository orderRepository, CustomerRepository customerRepository, ConfigService configService, TableReservationService tableReservationService) {
+    public OrderService(MealService mealService, OrderRepository orderRepository, CustomerRepository customerRepository, ConfigService configService, TableReservationService tableReservationService, CouponService couponService) {
         this.mealService = mealService;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.configService = configService;
         this.tableReservationService = tableReservationService;
+        this.couponService = couponService;
         Stripe.apiKey = "sk_test_51Q4Qqx6w25OikflfKXNobStEmR6z73dBnYZ0LSPh6fIvjJUwcUbHIE2nLSx9NNrZfRrPvivlvXp4eVOpAqiSO8SV00pmOtUcMF";
     }
 
@@ -64,7 +66,7 @@ public class OrderService {
         validateOrderAddCommand(request);
 
         // Calculate order and delivery prices
-        double orderPrice = calculateOrderPrice(request.getMealIds());
+        double orderPrice = calculateOrderPrice(request.getMealIds(), request.getCouponCode(), request.getCustomerId());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
 
         LocalDateTime now = LocalDateTime.now();
@@ -124,7 +126,7 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
         validateOrderAddCommand(orderAddCommand);
-        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds());
+        double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getCouponCode(), orderAddCommand.getCustomerId());
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
@@ -252,13 +254,17 @@ public class OrderService {
         return ingredients;
     }
 
-    private double calculateOrderPrice(List<MealQuantity> mealQuantities) {
+    private double calculateOrderPrice(List<MealQuantity> mealQuantities, String couponCode, Long customerId) {
         return mealQuantities.stream()
                 .mapToDouble(mealQuantity -> {
                     Long mealId = mealQuantity.getMealId();
                     int quantity = mealQuantity.getQuantity();
                     Meal meal = mealService.getMealById(mealId);
-                    return meal.getPrice() * quantity;
+                    if (couponCode == null) {
+                        return meal.getPrice() * quantity;
+                    }
+                    double discountedPrice = couponService.applyCoupon(couponCode, customerId, mealId, meal.getPrice());
+                    return discountedPrice * quantity;
                 })
                 .sum();
     }
@@ -285,7 +291,7 @@ public class OrderService {
 
     public Order addOrderToReservation(Long orderId, Long reservationId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order not found"));
+                .orElseThrow(() -> new NotFoundException("Nie znaleziono zamówienia"));
         TableReservation reservation = tableReservationService.getTableReservationById(reservationId);
 
         order.setTableReservation(reservation); // Link order to reservation
