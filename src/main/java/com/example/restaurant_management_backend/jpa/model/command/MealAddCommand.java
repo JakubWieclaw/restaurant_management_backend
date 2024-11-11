@@ -31,6 +31,12 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
     @ElementCollection
     private final List<String> ingredients; // Default empty list
 
+    @Schema(description = "Ingredients that can be removed from the meal", example = """
+        ["cheese"]
+        """)
+    @ElementCollection
+    private final List<String> removableIngredientsList; // Default empty list
+
     @Schema(description = "Weight or volume of the meal", example = "2.99")
     @Positive(message = "Waga/objętość nie może być ujemna")
     private final Double weightOrVolume; // Optional field
@@ -52,11 +58,12 @@ public class MealAddCommand extends SelfValidating<MealAddCommand> {
     @Positive(message = "Kalorie muszą być dodatnie")
     private final int calories; // Amount of calories
 
-    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
+    public MealAddCommand(String name, Double price, String photographUrl, List<String> ingredients, List<String> removableIngredientsList, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
         this.ingredients = ingredients;
+        this.removableIngredientsList = removableIngredientsList;
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
         this.categoryId = categoryId;
