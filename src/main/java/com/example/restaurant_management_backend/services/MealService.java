@@ -94,5 +94,9 @@ public class MealService {
         if (!allIngredients.containsAll(removableIngredients)) {
             throw new NotFoundException("Nie wszystkie składniki możliwe do usunięcia są obecne w daniu");
         }
+        // if removable ingredients are the same as all ingredients, then the meal cannot be prepared
+        if (allIngredients.size() == removableIngredients.size()) {
+            throw new IllegalArgumentException("Nie można przygotować dania, jeśli wszystkie składniki są możliwe do usunięcia");
+        }
     }
 }
