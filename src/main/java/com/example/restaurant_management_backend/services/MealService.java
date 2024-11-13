@@ -37,6 +37,7 @@ public class MealService {
 
     public Meal addMeal(MealAddCommand mealAddCommand) {
         validateCategory(mealAddCommand.getCategoryId());
+        validateRemovableIngredients(mealAddCommand);
         Meal meal = mealMapper.toMeal(mealAddCommand);
         return mealRepository.save(meal);
     }
@@ -44,6 +45,7 @@ public class MealService {
     public Meal updateMeal(Long id, MealAddCommand mealAddCommand) {
         Meal meal = getMealById(id);
         validateCategory(mealAddCommand.getCategoryId());
+        validateRemovableIngredients(mealAddCommand);
         mealMapper.updateMeal(meal, mealAddCommand);
         return mealRepository.save(meal);
     }
@@ -80,5 +82,21 @@ public class MealService {
 
     public boolean mealExists(Long mealId) {
         return mealRepository.existsById(mealId);
-    }   
+    }
+    
+    private void validateRemovableIngredients(MealAddCommand mealAddCommand) {
+        if (mealAddCommand.getRemovableIngredientsList() == null || mealAddCommand.getRemovableIngredientsList().isEmpty()) {
+            return;
+        }
+        final var allIngredients = mealAddCommand.getIngredients();
+        final var removableIngredients = mealAddCommand.getRemovableIngredientsList();
+        // Check if all removable ingredients are present in the meal
+        if (!allIngredients.containsAll(removableIngredients)) {
+            throw new NotFoundException("Nie wszystkie składniki możliwe do usunięcia są obecne w daniu");
+        }
+        // if removable ingredients are the same as all ingredients, then the meal cannot be prepared
+        if (allIngredients.size() == removableIngredients.size()) {
+            throw new IllegalArgumentException("Nie można przygotować dania, jeśli wszystkie składniki są możliwe do usunięcia");
+        }
+    }
 }

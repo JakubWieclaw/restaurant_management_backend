@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-@ExtendWith(MockitoExtension.class) 
+@ExtendWith(MockitoExtension.class)
 public class MealServiceTest {
 
     @Mock
@@ -45,6 +45,7 @@ public class MealServiceTest {
     @BeforeEach
     void setUp() {
         final var ingredientsList = List.of("Tomato", "Cheese");
+        final var removableIngredientsList = List.of("Cheese");
         final var allergensList = List.of("Gluten");
 
         meal = new Meal();
@@ -52,15 +53,16 @@ public class MealServiceTest {
         meal.setPrice(12.5);
         meal.setPhotographUrl(null);
         meal.setIngredients(ingredientsList);
+        meal.setRemovableIngredList(removableIngredientsList);
         meal.setWeightOrVolume(250.0);
         meal.setUnitType(UnitType.GRAMY);
         meal.setCategoryId(1L);
         meal.setAllergens(allergensList);
         meal.setCalories(350);
 
-
         mealAddCommand = new MealAddCommand("Pasta", 12.5, "http://image.url",
-                ingredientsList, 250.0, UnitType.GRAMY, 1L, allergensList, 350);
+                ingredientsList, removableIngredientsList,
+                250.0, UnitType.GRAMY, 1L, allergensList, 350);
     }
 
     @Test
@@ -165,4 +167,52 @@ public class MealServiceTest {
 
         assertTrue(exception.getMessage().contains("Kategoria o id"));
     }
+
+    @Test
+    public void testAddMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() throws Exception {
+        Exception exception = assertThrows(NotFoundException.class, () -> {
+            when(categoryRepository.existsById(anyLong())).thenReturn(true);
+
+            final var mealAddCommand = new MealAddCommand(
+                    "Pasta",
+                    12.5,
+                    null,
+                    List.of("Pasta"),
+                    List.of("Cheese"),
+                    250.0,
+                    UnitType.GRAMY,
+                    1L,
+                    Collections.emptyList(),
+                    350);
+            mealService.addMeal(mealAddCommand);
+        });
+
+        assertEquals("Nie wszystkie składniki możliwe do usunięcia są obecne w daniu", exception.getMessage());
+    }
+
+
+    @Test
+    public void testUpdateMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() throws Exception {
+        Exception exception = assertThrows(NotFoundException.class, () -> {
+            when(categoryRepository.existsById(anyLong())).thenReturn(true);
+            when(mealRepository.findById(anyLong())).thenReturn(Optional.of(meal));
+            // when(mealService.getMealById(anyLong())).thenReturn(new Meal());
+
+            final var mealAddCommand = new MealAddCommand(
+                    "Pasta",
+                    12.5,
+                    null,
+                    List.of("Pasta"),
+                    List.of("Cheese"),
+                    250.0,
+                    UnitType.GRAMY,
+                    1L,
+                    Collections.emptyList(),
+                    350);
+            mealService.updateMeal(1L, mealAddCommand);
+        });
+
+        assertEquals("Nie wszystkie składniki możliwe do usunięcia są obecne w daniu", exception.getMessage());
+    }
+
 }

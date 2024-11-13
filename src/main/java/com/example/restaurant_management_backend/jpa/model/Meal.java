@@ -36,6 +36,9 @@ public class Meal {
     @ElementCollection
     private List<String> ingredients = new ArrayList<>(); // List of ingredients
 
+    @ElementCollection
+    private List<String> removableIngredList = new ArrayList<>(); // List of ingredients that can be removed
+
     @Positive(message = "Waga/objętość nie może być ujemna")
     @Valid
     private Double weightOrVolume; // Weight or volume
@@ -58,11 +61,12 @@ public class Meal {
         this.price = price;
     }
 
-    public Meal(String name, double price, String photographUrl, List<String> ingredients, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
+    public Meal(String name, double price, String photographUrl, List<String> ingredients, List<String> removableIngredList, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
         this.ingredients = ingredients;
+        this.removableIngredList = removableIngredList;
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
         this.categoryId = categoryId;
