@@ -54,10 +54,13 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @Schema(description = "Number of people on the reservation")
     private final Integer people;
 
-    @Schema(description = "Duration of the reservation in minutes, default = 120")
+    @Schema(description = "Duration of the reservation in minutes", example = "120")
     private final Integer minutesForReservation;
 
-    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation) {
+    @Schema(description = "Coupon id for the order. Empty if not used")
+    private final String couponCode;
+
+    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation, String couponCode) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
@@ -68,6 +71,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
         this.tableId = tableId;
         this.people = people;
         this.minutesForReservation = minutesForReservation;
+        this.couponCode = couponCode;
         validateSelf();
     }
 }

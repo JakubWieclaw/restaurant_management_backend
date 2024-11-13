@@ -112,7 +112,7 @@ public class CouponServiceTest {
         NotFoundException thrown = assertThrows(NotFoundException.class, () ->
                 couponService.deactivateCoupon(3L));
 
-        assertEquals("Nie znaleziono kuponu", thrown.getMessage());
+        assertEquals("Nie znaleziono kuponu o kodzie 3", thrown.getMessage());
     }
 
     @Test
