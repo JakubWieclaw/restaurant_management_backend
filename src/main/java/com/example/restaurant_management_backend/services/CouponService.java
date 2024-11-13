@@ -59,8 +59,7 @@ public class CouponService {
     }
 
     public boolean isCouponValid(String code, Long customerId, Long mealId) {
-        Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+        Coupon coupon = getCoupon(code, customerId);
 
         if (!coupon.getActive() || coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new CouponInvalidException(COUPON_INACTIVE);
@@ -75,12 +74,16 @@ public class CouponService {
 
     public double applyCoupon(String code, Long customerId, Long mealId, double originalPrice) {
         if (isCouponValid(code, customerId, mealId)) {
-            Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                    .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+            Coupon coupon = getCoupon(code, customerId);
             double discountAmount = originalPrice * (coupon.getDiscountPercentage() / 100);
             return originalPrice - discountAmount;
         }
         return originalPrice;
+    }
+
+    public Coupon getCoupon(String code, Long customerId) {
+        return couponRepository.findByCodeAndCustomerId(code, customerId)
+                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
     }
 
     public List<Coupon> getCouponsForCustomer(Long customerId) {
