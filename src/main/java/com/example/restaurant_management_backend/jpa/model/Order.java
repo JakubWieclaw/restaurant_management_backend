@@ -47,6 +47,8 @@ public class Order {
     @CollectionTable(name = "unwanted_ingredients", joinColumns = @JoinColumn(name = "order_id"))
     private List<UnwantedIngredient> unwantedIngredients;
 
+    private String paymentIntentClientSecret;
+
     @Size(max = 150, message = "Adres dostawy nie może być dłuższy niż 150 znaków")
     private String deliveryAddress;
 
@@ -56,9 +58,13 @@ public class Order {
     @PositiveOrZero(message = "Cena dostawy nie może być ujemna")
     private double deliveryPrice;
 
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    private TableReservation tableReservation;
+
     public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,
                  OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
-                 String deliveryAddress, double deliveryDistance) {
+                 String deliveryAddress, double deliveryDistance, TableReservation tableReservation) {
         this.mealIds = mealIds;
         this.orderPrice = orderPrice;
         this.deliveryPrice = deliveryPrice;
@@ -69,5 +75,6 @@ public class Order {
         this.unwantedIngredients = unwantedIngredients;
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
+        this.tableReservation = tableReservation;
     }
 }

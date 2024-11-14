@@ -1,9 +1,7 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -22,14 +21,24 @@ public class TableReservation {
     private Long id;
 
     private String tableId;
+
     @NotNull
     private int people;
+
     @NotNull
     private LocalDate day;
+
     @NotNull
     private LocalTime startTime;
+
     @NotNull
     private LocalTime endTime;
+
     private long duration;
+
     private Long customerId;
+
+    @OneToMany(mappedBy = "tableReservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("tableReservation")
+    private List<Order> orders;
 }

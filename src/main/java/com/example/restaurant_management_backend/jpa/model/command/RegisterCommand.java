@@ -1,7 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
 import com.example.restaurant_management_backend.common.SelfValidating;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -34,15 +33,12 @@ public abstract class RegisterCommand extends SelfValidating<RegisterCommand> {
     @Size(min = 8, max = 50, message = "Hasło musi mieć od 8 do 50 znaków")
     private String password;
 
-    private boolean admin;
-
-    public RegisterCommand(String name, String surname, String email, String phone, String password, boolean admin) {
+    public RegisterCommand(String name, String surname, String email, String phone, String password) {
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.phone = phone;
         this.password = password;
-        this.admin = admin;
         this.validateSelf();
     }
 }

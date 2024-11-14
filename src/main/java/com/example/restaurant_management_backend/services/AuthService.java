@@ -38,7 +38,7 @@ public class AuthService {
         }
 
         Customer customer = createCustomerObject(registerCommand);
-        Privilege privilege = new Privilege(registerCommand.isAdmin() ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
+        Privilege privilege = new Privilege(customerService.countAll() == 0 ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
         customer.setPrivilege(privilege);
         Customer savedCustomer = customerService.save(customer);
 

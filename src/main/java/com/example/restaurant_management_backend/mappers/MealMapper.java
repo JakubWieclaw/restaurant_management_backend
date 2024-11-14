@@ -12,6 +12,7 @@ public class MealMapper {
                 mealAddCommand.getPrice(),
                 mealAddCommand.getPhotographUrl(),
                 mealAddCommand.getIngredients(),
+                mealAddCommand.getRemovableIngredientsList(),
                 mealAddCommand.getWeightOrVolume(),
                 mealAddCommand.getUnitType(),
                 mealAddCommand.getCategoryId(),

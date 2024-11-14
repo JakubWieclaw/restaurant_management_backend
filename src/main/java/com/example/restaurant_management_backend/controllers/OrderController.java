@@ -74,4 +74,12 @@ public class OrderController {
         logger.info("Deleted order with id: {}", id);
         return ResponseEntity.ok("Usunięto zamówienie");
     }
+
+    @Operation(summary = "Add order to reservation")
+    @PostMapping("/add-to-reservation")
+    public ResponseEntity<Order> addOrderToReservation(@RequestParam("reservationId") Long reservationId, @RequestParam("orderId") Long orderId) {
+        Order createdOrder = orderService.addOrderToReservation(orderId, reservationId);
+        logger.info("Added new order: {}", createdOrder);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
+    }
 }

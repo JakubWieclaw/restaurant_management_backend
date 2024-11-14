@@ -12,6 +12,8 @@ import com.example.restaurant_management_backend.jpa.repositories.MealRepository
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class CouponService {
 
     public static final String CLIENT_NOT_FOUND = "Nie znaleziono klienta";
     public static final String MEAL_NOT_FOUND = "Nie znaleziono posiłku";
-    public static final String COUPON_NOT_FOUND = "Nie znaleziono kuponu";
+    public static final String COUPON_NOT_FOUND_WITH_CODE = "Nie znaleziono kuponu o kodzie ";
     public static final String COUPON_INACTIVE = "Kupon jest nieaktywny lub wygasł";
     public static final String COUPON_NOT_VALID_FOR_THIS_MEAL = "Kupon nie jest ważny dla tego posiłku";
     private final CouponRepository couponRepository;
@@ -53,14 +55,13 @@ public class CouponService {
 
     public void deactivateCoupon(Long couponId) {
         Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND_WITH_CODE + couponId));
         coupon.setActive(false);
         couponRepository.save(coupon);
     }
 
     public boolean isCouponValid(String code, Long customerId, Long mealId) {
-        Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+        Coupon coupon = getCoupon(code, customerId);
 
         if (!coupon.getActive() || coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new CouponInvalidException(COUPON_INACTIVE);
@@ -75,12 +76,20 @@ public class CouponService {
 
     public double applyCoupon(String code, Long customerId, Long mealId, double originalPrice) {
         if (isCouponValid(code, customerId, mealId)) {
-            Coupon coupon = couponRepository.findByCodeAndCustomerId(code, customerId)
-                    .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND));
+            Coupon coupon = getCoupon(code, customerId);
             double discountAmount = originalPrice * (coupon.getDiscountPercentage() / 100);
-            return originalPrice - discountAmount;
+            double finalPrice = originalPrice - discountAmount;
+
+            // Format the result to 2 decimal places using BigDecimal
+            BigDecimal formattedPrice = new BigDecimal(finalPrice).setScale(2, RoundingMode.HALF_UP);
+            return formattedPrice.doubleValue();
         }
-        return originalPrice;
+        return originalPrice; // Return original price if coupon is not valid
+    }
+
+    public Coupon getCoupon(String code, Long customerId) {
+        return couponRepository.findByCodeAndCustomerId(code, customerId)
+                .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND_WITH_CODE + code));
     }
 
     public List<Coupon> getCouponsForCustomer(Long customerId) {
