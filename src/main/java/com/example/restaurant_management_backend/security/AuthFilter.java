@@ -40,7 +40,7 @@ public class AuthFilter extends OncePerRequestFilter {
         Bucket bucket = bucketCache.computeIfAbsent(clientIp, this::createNewBucket);
         if (!bucket.tryConsume(1)) {
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            response.getWriter().write("Za dużo żądań - limit to 5 żądań na sekundę");
+            response.getWriter().write("Za dużo żądań - limit to 50 żądań na sekundę");
             return;
         }
 
@@ -65,7 +65,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
     private Bucket createNewBucket(String ip) {
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(5, Refill.intervally(5, Duration.ofSeconds(1))))
+                .addLimit(Bandwidth.simple(50, Duration.ofSeconds(1)))
                 .build();
     }
 }
