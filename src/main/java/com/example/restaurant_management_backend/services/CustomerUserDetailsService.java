@@ -35,7 +35,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
     }
 
     private Set<GrantedAuthority> convertPrivilegesToAuthorities(Privilege privilege) {
-        return Set.of(new SimpleGrantedAuthority(privilege.getPrivilegeName()));
+        return Set.of(new SimpleGrantedAuthority(privilege.getPrivilegeName().name()));
     }
 
     public Optional<Customer> getCustomerById(Long id) {

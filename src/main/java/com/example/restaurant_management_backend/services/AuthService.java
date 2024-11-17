@@ -5,6 +5,7 @@ import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCommand;
 import com.example.restaurant_management_backend.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class AuthService {
         }
 
         Customer customer = createCustomerObject(registerCommand);
-        Privilege privilege = new Privilege(customerService.countAll() == 0 ? "ADMIN_PRIVILEGE" : "USER_PRIVILEGE");
+        Privilege privilege = new Privilege(customerService.countAll() == 0 ? PrivilegeName.ADMIN_PRIVILEGE : PrivilegeName.USER_PRIVILEGE);
         customer.setPrivilege(privilege);
         Customer savedCustomer = customerService.save(customer);
 
@@ -53,7 +54,7 @@ public class AuthService {
         if (authenticationResponse.isAuthenticated()) {
             String token = jwtUtils.generateToken(authenticationResponse.getName());
             Customer customer = customerService.getCustomerByEmailOrThrowException(email);
-            boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
+            boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals(PrivilegeName.ADMIN_PRIVILEGE);
 
             return buildLoginResponse(customer, token, isAdmin);
         } else {
