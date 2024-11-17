@@ -34,7 +34,7 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
+                        .requestMatchers( // endpoints available without authentication
                                 "/swagger-ui/**", // swagger - to be removed in the end
                                 "/v3/api-docs/**", // swagger
                                 "/swagger-resources/**", // swagger
@@ -47,8 +47,6 @@ public class SecurityConfig {
                                 "/api/contact-form/send",
                                 "api/categories/all",
                                 "api/categories/get/**",
-                                // "api/coupons/validate",
-                                // "api/coupons/apply",
                                 "api/customer/add",
                                 "api/meals/all",
                                 "api/meals/get**", // no slash in the end is intentional
@@ -60,6 +58,37 @@ public class SecurityConfig {
                                 
                                 "/error")
                         .permitAll()
+
+                        .requestMatchers( // endpoints available only for authenticated users
+                            "api/customer/delete/**",
+                            "api/customer/update/**",
+                            "api/coupos/deactivate/**",
+                            "api/coupons/validate",
+                            "api/coupons/apply",
+                            "api/coupons/customer/**",
+                            "api/opinions/add",
+                            "api/opinions/customer/**",
+                            "api/opinions/update",
+                            "api/orders/customer/**",
+                            "api/orders/delete/**",
+                            "api/orders/update/**",
+                            "api/orders/add-to-reservation",
+                            "api/qr/table/**",
+                            "api/tables/all",
+                            "api/tables/**",
+                            "api/reservations",
+                            "api/reservations/day/**",
+                            "api/reservations/customer/**",
+                            "api/reservations/table/**",
+                            "api/reservations/table/**/day/**",
+                            "api/reservations/available-hours/**",
+                            "api/reservations/available-hours/",
+                            "api/reservations/**"
+                        ).hasAuthority("USER_PRIVILEGE")
+
+                        .requestMatchers( // admin can access all endpoints
+                            "/**"
+                        ).hasAuthority("ADMIN_PRIVILEGE")
 
                         .anyRequest().authenticated()
                 )
