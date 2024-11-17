@@ -5,9 +5,15 @@ import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.UserToken;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCommand;
 import com.example.restaurant_management_backend.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.UUID;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +32,7 @@ public class AuthService {
     private final CustomerUserDetailsService customerService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final TokenService tokenService;
 
     public RegisterResponseDTO registerUser(RegisterCommand registerCommand) {
         // if password is not provided, throw exception
@@ -51,11 +58,19 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
 
         if (authenticationResponse.isAuthenticated()) {
-            String token = jwtUtils.generateToken(authenticationResponse.getName());
+            UUID uuid = UUID.randomUUID();
+            String tokenString = Base64.getEncoder().encodeToString(uuid.toString().getBytes());
+            
             Customer customer = customerService.getCustomerByEmailOrThrowException(email);
-            boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
+            UserToken token = new UserToken();
+            token.setTokenHash(passwordEncoder.encode(tokenString));
+            token.setCreationDate(java.time.LocalDateTime.now());
+            token.setExpiryDate(java.time.LocalDateTime.now().plusHours(12)); // Token valid for 12 hours
+            token.setCustomer(customer);
+            tokenService.addToken(token);
+            // boolean isAdmin = customer.getPrivilege().getPrivilegeName().equals("ADMIN_PRIVILEGE");
 
-            return buildLoginResponse(customer, token, isAdmin);
+            return buildLoginResponse(tokenString, token.getExpiryDate(), token.getCreationDate(), customer.getId());
         } else {
             throw new BadCredentialsException(WRONG_CREDENTIALS);
         }
@@ -80,13 +95,12 @@ public class AuthService {
                 customer.getPhone());
     }
 
-    private LoginResponseDTO buildLoginResponse(Customer customer, String token, boolean isAdmin) {
+    private LoginResponseDTO buildLoginResponse(String tokenString, LocalDateTime expiryDate, LocalDateTime creationDate, Long customerId) {
         return new LoginResponseDTO(
-                token,
-                customer.getId(),
-                customer.getName(),
-                customer.getSurname(),
-                customer.getEmail(),
-                isAdmin);
+                tokenString,
+                expiryDate,
+                creationDate,
+                customerId
+        );
     }
 }
