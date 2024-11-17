@@ -22,13 +22,18 @@ public class UserToken {
     @NotNull
     private String tokenHash;
 
+    // add token hash salt
+    @Column(unique=true)
+    @NotNull
+    private String salt;
+
     @NotNull
     private LocalDateTime expiryDate;
 
     @NotNull
     private LocalDateTime creationDate;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 }

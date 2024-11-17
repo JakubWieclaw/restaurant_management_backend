@@ -32,7 +32,7 @@ public class AuthService {
     private final CustomerUserDetailsService customerService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final TokenService tokenService;
+    private final UserTokenService tokenService;
 
     public RegisterResponseDTO registerUser(RegisterCommand registerCommand) {
         // if password is not provided, throw exception
@@ -63,7 +63,13 @@ public class AuthService {
             
             Customer customer = customerService.getCustomerByEmailOrThrowException(email);
             UserToken token = new UserToken();
-            token.setTokenHash(passwordEncoder.encode(tokenString));
+            // TODO: set tokenHash aand salt in token
+            // Generate salt
+            String salt = generateSalt();
+            String saltedTokenString = tokenString + salt;
+            String tokenHash = passwordEncoder.encode(saltedTokenString);
+            token.setTokenHash(tokenHash);
+            token.setSalt(salt);
             token.setCreationDate(java.time.LocalDateTime.now());
             token.setExpiryDate(java.time.LocalDateTime.now().plusHours(12)); // Token valid for 12 hours
             token.setCustomer(customer);
@@ -74,6 +80,10 @@ public class AuthService {
         } else {
             throw new BadCredentialsException(WRONG_CREDENTIALS);
         }
+    }
+
+    private String generateSalt() {
+        return UUID.randomUUID().toString();
     }
 
     private Customer createCustomerObject(RegisterCommand registerCommand) {

@@ -214,5 +214,11 @@ public class GlobalExceptionHandler {
         // logger.warn("Confirmation email failed to send, but the primary request was successful", ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.ACCEPTED);
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<String> handleUnauthorizedException(UnauthorizedException ex) {
+        logger.error("Unauthorized access", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
     
 }

@@ -3,6 +3,8 @@ package com.example.restaurant_management_backend.controllers;
 import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.model.command.CategoryAddCommand;
 import com.example.restaurant_management_backend.services.CategoryService;
+import com.example.restaurant_management_backend.services.UserTokenService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final UserTokenService userTokenService;
     private static final Logger logger = LoggerFactory.getLogger(CategoryController.class);
 
     @Operation(summary = "Get all categories")
@@ -39,7 +42,10 @@ public class CategoryController {
 
     @Operation(summary = "Add a category")
     @PostMapping("/add")
-    public ResponseEntity<Category> addCategory(@RequestBody @Valid CategoryAddCommand categoryAddCommand) {
+    public ResponseEntity<Category> addCategory(@RequestBody @Valid CategoryAddCommand categoryAddCommand, @RequestParam String tokenString) {
+        final var token = userTokenService.getUserTokenByTokenString(tokenString);
+        final var customer = userTokenService.getUserByToken(tokenString);
+        userTokenService.checkAccess(token, customer, "ADMIN_PRIVILEGE", null);
         logger.info("Adding a category");
         return ResponseEntity.ok(categoryService.addCategory(categoryAddCommand));
     }
