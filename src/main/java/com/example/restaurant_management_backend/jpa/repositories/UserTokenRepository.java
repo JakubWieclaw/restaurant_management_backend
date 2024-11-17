@@ -17,6 +17,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
 
     UserToken findByTokenHash(String tokenHash);
 
-    @Query("SELECT ut FROM UserToken ut WHERE ut.salt = :salt")
-    List<UserToken> findTokensBySalt(@Param("salt") String salt);
+    // @Query("SELECT ut FROM UserToken ut WHERE ut.salt = :salt")
+    // List<UserToken> findTokensBySalt(@Param("salt") String salt);
 }

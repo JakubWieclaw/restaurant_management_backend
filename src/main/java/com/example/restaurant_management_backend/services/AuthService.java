@@ -58,18 +58,16 @@ public class AuthService {
         SecurityContextHolder.getContext().setAuthentication(authenticationResponse);
 
         if (authenticationResponse.isAuthenticated()) {
-            UUID uuid = UUID.randomUUID();
-            String tokenString = Base64.getEncoder().encodeToString(uuid.toString().getBytes());
+            UUID uuid1 = UUID.randomUUID();
+            UUID uuid2 = UUID.randomUUID();
+            // String uuidString = uuid1.toString() + uuid2.toString();
+            String tokenString = uuid1.toString() + uuid2.toString();
             
             Customer customer = customerService.getCustomerByEmailOrThrowException(email);
             UserToken token = new UserToken();
             // TODO: set tokenHash aand salt in token
-            // Generate salt
-            String salt = generateSalt();
-            String saltedTokenString = tokenString + salt;
-            String tokenHash = passwordEncoder.encode(saltedTokenString);
+            String tokenHash = passwordEncoder.encode(tokenString);
             token.setTokenHash(tokenHash);
-            token.setSalt(salt);
             token.setCreationDate(java.time.LocalDateTime.now());
             token.setExpiryDate(java.time.LocalDateTime.now().plusHours(12)); // Token valid for 12 hours
             token.setCustomer(customer);

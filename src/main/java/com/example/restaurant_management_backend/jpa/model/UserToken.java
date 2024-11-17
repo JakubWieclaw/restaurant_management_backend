@@ -23,9 +23,9 @@ public class UserToken {
     private String tokenHash;
 
     // add token hash salt
-    @Column(unique=true)
-    @NotNull
-    private String salt;
+    // @Column(unique=true)
+    // @NotNull
+    // private String salt;
 
     @NotNull
     private LocalDateTime expiryDate;
