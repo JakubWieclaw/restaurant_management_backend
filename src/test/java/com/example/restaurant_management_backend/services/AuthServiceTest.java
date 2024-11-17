@@ -5,6 +5,7 @@ import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
 import com.example.restaurant_management_backend.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +71,7 @@ public class AuthServiceTest {
                 .email(command.getEmail())
                 .phone(command.getPhone())
                 .passwordHash("encodedPassword")
-                .privilege(new Privilege("USER_PRIVILEGE"))
+                .privilege(new Privilege(PrivilegeName.USER_PRIVILEGE))
                 .build();
         when(customerService.save(any(Customer.class))).thenReturn(savedCustomer);
 
@@ -97,7 +98,7 @@ public class AuthServiceTest {
                 .name("John")
                 .surname("Doe")
                 .email(email)
-                .privilege(new Privilege("USER_PRIVILEGE"))
+                .privilege(new Privilege(PrivilegeName.USER_PRIVILEGE))
                 .build();
 
         when(authentication.isAuthenticated()).thenReturn(true);

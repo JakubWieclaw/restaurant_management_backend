@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -214,7 +215,7 @@ class CustomerUserDetailsServiceTest {
 
     // Helper method to create a mock customer
     private Customer createMockCustomer(String email) {
-        Privilege privilege = new Privilege("USER_PRIVILEGE");
+        Privilege privilege = new Privilege(PrivilegeName.USER_PRIVILEGE);
         return Customer.builder()
                 .id(1L)
                 .name("Test")
