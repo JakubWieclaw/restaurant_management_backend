@@ -80,7 +80,7 @@ public class SecurityConfig {
                             "api/reservations/day/**",
                             "api/reservations/customer/**",
                             "api/reservations/table/**",
-                            "api/reservations/table/**/day/**",
+                            "api/reservations/table/**",
                             "api/reservations/available-hours/**",
                             "api/reservations/available-hours/",
                             "api/reservations/**"

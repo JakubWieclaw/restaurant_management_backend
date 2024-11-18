@@ -43,7 +43,8 @@ public class JwtUtils {
                     .getBody();
         } catch (Exception e) {
             // Token is invalid or expired, return null
-            return null;
+            throw new IllegalStateException("Nieprawidłowy token");
+            // return null;
         }
     }
 
