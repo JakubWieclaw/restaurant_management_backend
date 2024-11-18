@@ -55,43 +55,43 @@ public class SecurityConfig {
                                 "api/opinions/meal/**",
                                 "api/orders/add",
                                 "api/photos/download",
-                                
+
                                 "/error")
                         .permitAll()
 
                         .requestMatchers( // endpoints available only for authenticated users
-                            "api/customer/delete/**",
-                            "api/customer/update/**",
-                            "api/coupos/deactivate/**",
-                            "api/coupons/validate",
-                            "api/coupons/apply",
-                            "api/coupons/customer/**",
-                            "api/opinions/add",
-                            "api/opinions/customer/**",
-                            "api/opinions/update",
-                            "api/orders/customer/**",
-                            "api/orders/delete/**",
-                            "api/orders/update/**",
-                            "api/orders/add-to-reservation",
-                            "api/qr/table/**",
-                            "api/tables/all",
-                            "api/tables/**",
-                            "api/reservations",
-                            "api/reservations/day/**",
-                            "api/reservations/customer/**",
-                            "api/reservations/table/**",
-                            "api/reservations/table/**",
-                            "api/reservations/available-hours/**",
-                            "api/reservations/available-hours/",
-                            "api/reservations/**"
-                        ).hasAuthority("USER_PRIVILEGE")
+                                "api/customer/delete/**",
+                                "api/customer/update/**",
+                                "api/coupos/deactivate/**",
+                                "api/coupons/validate",
+                                "api/coupons/apply",
+                                "api/coupons/customer/**",
+                                "api/customer/get/**",
+                                "api/opinions/add",
+                                "api/opinions/customer/**",
+                                "api/opinions/update",
+                                "api/orders/customer/**",
+                                "api/orders/delete/**",
+                                "api/orders/update/**",
+                                "api/orders/add-to-reservation",
+                                "api/qr/table/**",
+                                "api/tables/all",
+                                "api/tables/**",
+                                "api/reservations",
+                                "api/reservations/day/**",
+                                "api/reservations/customer/**",
+                                "api/reservations/table/**",
+                                "api/reservations/table/**",
+                                "api/reservations/available-hours/**",
+                                "api/reservations/available-hours/",
+                                "api/reservations/**")
+                        .hasAuthority("USER_PRIVILEGE")
 
                         .requestMatchers( // admin can access all endpoints
-                            "/**"
-                        ).hasAuthority("ADMIN_PRIVILEGE")
+                                "**")
+                        .hasAuthority("ADMIN_PRIVILEGE")
 
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable) // enable this after testing in production
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager())

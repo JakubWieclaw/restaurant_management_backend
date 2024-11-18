@@ -1,12 +1,17 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.AccessDeniedException;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
+import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,7 +36,8 @@ public class CustomerUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND_CUSTOMER_WITH_EMAIL + email));
         Set<GrantedAuthority> authorities = convertPrivilegesToAuthorities(customer.getPrivilege());
 
-        return new org.springframework.security.core.userdetails.User(customer.getEmail(), customer.getPasswordHash(), authorities);
+        return new org.springframework.security.core.userdetails.User(customer.getEmail(), customer.getPasswordHash(),
+                authorities);
     }
 
     private Set<GrantedAuthority> convertPrivilegesToAuthorities(Privilege privilege) {
@@ -59,6 +65,24 @@ public class CustomerUserDetailsService implements UserDetailsService {
     public Optional<Customer> getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
+
+    // public Customer getCustomerByIdForAuthenticatedUser(Long id) { // EXPERIMENT, MAY BE USEFUL LATER OR NOT
+    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //     String currentUserEmail = authentication.getName(); // Extract user info from token
+
+    //     final var currentCustomerPrivileges = customerRepository.findByEmail(currentUserEmail).get().getPrivilege();
+
+    //     Customer customer = customerRepository.findById(id)
+    //             .orElseThrow(() -> new NotFoundException(NOT_FOUND_CLIENT_ID + id));
+
+    //     // if current user is not an admin and tries to access other user's data
+    //     if (!currentCustomerPrivileges.getPrivilegeName().equals(PrivilegeName.ADMIN_PRIVILEGE)
+    //             && !customer.getEmail().equals(currentUserEmail)) {
+    //         throw new AccessDeniedException("{}");
+    //     }
+
+    //     return customer;
+    // }
 
     public Optional<Customer> getCustomerByResetToken(String resetToken) {
         return customerRepository.findByResetToken(resetToken);
