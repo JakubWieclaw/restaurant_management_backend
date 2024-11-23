@@ -19,7 +19,7 @@ public class JwtUtils {
 
     @Getter
     private final SecretKey secretKey;
-    private final long validationTime = Duration.ofHours(10).getSeconds();
+    private final long validationTime = Duration.ofHours(10).toMillis();
 
     public JwtUtils() {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
@@ -43,7 +43,8 @@ public class JwtUtils {
                     .getBody();
         } catch (Exception e) {
             // Token is invalid or expired, return null
-            return null;
+            throw new IllegalStateException("Nieprawidłowy token");
+            // return null;
         }
     }
 

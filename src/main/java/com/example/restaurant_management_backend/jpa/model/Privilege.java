@@ -1,9 +1,12 @@
 package com.example.restaurant_management_backend.jpa.model;
 
+import org.springframework.security.access.method.P;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,9 +20,10 @@ public class Privilege {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String privilegeName;
+    @NotNull
+    private PrivilegeName privilegeName;
 
-    public Privilege(String privilegeName) {
+    public Privilege(PrivilegeName privilegeName) {
         this.privilegeName = privilegeName;
     }
 }

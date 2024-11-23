@@ -27,30 +27,73 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsService customerUserDetailsService;
-    private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter authFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**",
+                        .requestMatchers( // endpoints available without authentication
+                                "/swagger-ui/**", // swagger - to be removed in the end
+                                "/v3/api-docs/**", // swagger
+                                "/swagger-resources/**", // swagger
+                                "/webjars/**", // swagger
                                 "/auth/**",
-                                "/api/**",
-                                "/admin/api/config/**",
+                                "/api/categories/all",
+                                "/api/categories/get/**",
+                                "/admin/api/config/delivery-prices",
+                                "/admin/api/config/opening-hours",
+                                "/api/contact-form/send",
+                                "api/categories/all",
+                                "api/categories/get/**",
+                                "api/customer/add",
+                                "api/meals/all",
+                                "api/meals/get**", // no slash in the end is intentional
+                                "api/meals/search",
+                                "api/opinions/average-rating/**",
+                                "api/opinions/meal/**",
+                                "api/orders/add",
+                                "api/photos/download",
+
                                 "/error")
                         .permitAll()
 
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers( // endpoints available only for authenticated users
+                                "api/customer/delete/**",
+                                "api/customer/update/**",
+                                "api/coupos/deactivate/**",
+                                "api/coupons/validate",
+                                "api/coupons/apply",
+                                "api/coupons/customer/**",
+                                "api/customer/get/**",
+                                "api/opinions/add",
+                                "api/opinions/customer/**",
+                                "api/opinions/update",
+                                "api/orders/customer/**",
+                                "api/orders/delete/**",
+                                "api/orders/update/**",
+                                "api/orders/add-to-reservation",
+                                "api/qr/table/**",
+                                "api/tables/all",
+                                "api/tables/**",
+                                "api/reservations",
+                                "api/reservations/day/**",
+                                "api/reservations/customer/**",
+                                "api/reservations/table/**",
+                                "api/reservations/available-hours/**",
+                                "api/reservations/**")
+                        .hasAuthority("USER_PRIVILEGE")
+
+                        .requestMatchers( // admin can access all endpoints
+                                "**")
+                        .hasAuthority("ADMIN_PRIVILEGE")
+
+                        .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable) // enable this after testing in production
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
