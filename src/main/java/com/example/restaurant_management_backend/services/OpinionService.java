@@ -27,7 +27,8 @@ public class OpinionService {
     private final OpinionMapper opinionMapper;
 
     public OpinionResponseDTO addOpinion(OpinionAddCommand opinionAddCommand) {
-        Customer customer = customerService.getCurrentCustomer();
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(opinionAddCommand.getCustomerId());
+        Customer customer = customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId());
 
         if (opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), customer.getId())) {
             throw new ResourceConflictException(OPINION_ALREADY_EXISTS);

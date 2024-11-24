@@ -115,6 +115,7 @@ public class OrderService {
     }
 
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(orderAddCommand.getCustomerId());
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
@@ -123,7 +124,7 @@ public class OrderService {
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
-        existingOrder.setCustomerId(1L);
+        existingOrder.setCustomerId(orderAddCommand.getCustomerId());
         existingOrder.setType(orderAddCommand.getType());
         existingOrder.setStatus(orderAddCommand.getStatus());
         existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());
