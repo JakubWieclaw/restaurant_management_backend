@@ -1,6 +1,7 @@
 package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
+import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.Table;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
@@ -32,6 +33,8 @@ class TableReservationServiceTest {
     private TableService tableService;
     @Mock
     private TableReservationRepository tableReservationRepository;
+    @Mock
+    private CustomerUserDetailsService customerService;
 
     @BeforeEach
     void setUp() {
@@ -46,6 +49,7 @@ class TableReservationServiceTest {
         }
         when(configService.getOpeningHours()).thenReturn(openingHours);
         when(tableReservationRepository.findAllByDay(any())).thenReturn(Collections.emptyList());
+        when(customerService.getCustomerByIdOrThrowException(anyLong())).thenReturn(new Customer());
     }
 
 

@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -29,6 +33,10 @@ class CustomerUserDetailsServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        SecurityContextHolder.setContext(securityContext);
+        Authentication authentication = new TestingAuthenticationToken("test@example.com", null);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
     }
 
     // Test for loadUserByUsername method - valid case
@@ -97,6 +105,7 @@ class CustomerUserDetailsServiceTest {
         Long id = 1L;
         Customer customer = createMockCustomer("test@example.com");
         when(customerRepository.findById(id)).thenReturn(Optional.of(customer));
+        when(customerRepository.findByEmail("test@example.com")).thenReturn(Optional.of(customer));
 
         // When
         Customer result = customerUserDetailsService.getCustomerByIdOrThrowException(id);
@@ -111,7 +120,6 @@ class CustomerUserDetailsServiceTest {
         // Given
         Long id = 1L;
         when(customerRepository.findById(id)).thenReturn(Optional.empty());
-
         // When & Then
         assertThrows(NotFoundException.class, () -> customerUserDetailsService.getCustomerByIdOrThrowException(id));
     }

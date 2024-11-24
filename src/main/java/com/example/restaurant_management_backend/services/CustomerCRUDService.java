@@ -34,9 +34,6 @@ public class CustomerCRUDService {
 
     public Customer updateCustomer(Long id, RegisterCustomerCommand registerCustomerCommand) {
         customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(id);
-        if (!customerRepository.existsById(id)) {
-            throw new NotFoundException("Nie znaleziono klienta o id " + id);
-        }
         // validate email domain if it is changed
         Customer customer = customerService.getCustomerByIdOrThrowException(id);
         if (!customer.getEmail().equals(registerCustomerCommand.getEmail())) {
