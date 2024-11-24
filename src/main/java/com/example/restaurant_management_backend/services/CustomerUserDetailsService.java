@@ -1,13 +1,14 @@
 package com.example.restaurant_management_backend.services;
 
 // import com.example.restaurant_management_backend.exceptions.AccessDeniedException;
+
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import lombok.RequiredArgsConstructor;
-
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,7 +33,7 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Customer customer = customerRepository.findByEmail(email)
+        Customer customer = getCustomerByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(NOT_FOUND_CUSTOMER_WITH_EMAIL + email));
         Set<GrantedAuthority> authorities = convertPrivilegesToAuthorities(customer.getPrivilege());
 
@@ -44,12 +45,11 @@ public class CustomerUserDetailsService implements UserDetailsService {
         return Set.of(new SimpleGrantedAuthority(privilege.getPrivilegeName().name()));
     }
 
-    public Optional<Customer> getCustomerById(Long id) {
-        return customerRepository.findById(id);
-    }
+
 
     public Customer getCustomerByIdOrThrowException(Long id) {
-        return customerRepository.findById(id)
+        checkIfCustomerIsNotTryingToAccessDifferentCustomer(id);
+        return getCustomerById(id)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_CLIENT_ID + id));
     }
 
@@ -58,31 +58,9 @@ public class CustomerUserDetailsService implements UserDetailsService {
     }
 
     public Customer getCustomerByEmailOrThrowException(String email) {
-        return customerRepository.findByEmail(email)
+        return getCustomerByEmail(email)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_CUSTOMER_WITH_EMAIL + email));
     }
-
-    public Optional<Customer> getCustomerByEmail(String email) {
-        return customerRepository.findByEmail(email);
-    }
-
-    // public Customer getCustomerByIdForAuthenticatedUser(Long id) { // EXPERIMENT, MAY BE USEFUL LATER OR NOT
-    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    //     String currentUserEmail = authentication.getName(); // Extract user info from token
-
-    //     final var currentCustomerPrivileges = customerRepository.findByEmail(currentUserEmail).get().getPrivilege();
-
-    //     Customer customer = customerRepository.findById(id)
-    //             .orElseThrow(() -> new NotFoundException(NOT_FOUND_CLIENT_ID + id));
-
-    //     // if current user is not an admin and tries to access other user's data
-    //     if (!currentCustomerPrivileges.getPrivilegeName().equals(PrivilegeName.ADMIN_PRIVILEGE)
-    //             && !customer.getEmail().equals(currentUserEmail)) {
-    //         throw new AccessDeniedException("{}");
-    //     }
-
-    //     return customer;
-    // }
 
     public Optional<Customer> getCustomerByResetToken(String resetToken) {
         return customerRepository.findByResetToken(resetToken);
@@ -99,5 +77,30 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     public long countAll() {
         return customerRepository.count();
+    }
+
+    public Customer getCurrentCustomer() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return getCustomerByEmailOrThrowException(email);
+    }
+
+    public void checkIfCustomerIsNotTryingToAccessDifferentCustomer(Long customerId) {
+        Customer customer = getCurrentCustomer();
+        if (PrivilegeName.ADMIN_PRIVILEGE.equals(customer.getPrivilege().getPrivilegeName())) {
+            return; // Admin can access any customer
+        }
+        if (!customer.getId().equals(customerId)) {
+            throw new AccessDeniedException("Próbujesz uzyskać dostęp do danych innego klienta!");
+        }
+    }
+
+    public Optional<Customer> getCustomerById(Long id) {
+        return customerRepository.findById(id);
+    }
+
+
+    public Optional<Customer> getCustomerByEmail(String email) {
+        return customerRepository.findByEmail(email);
     }
 }

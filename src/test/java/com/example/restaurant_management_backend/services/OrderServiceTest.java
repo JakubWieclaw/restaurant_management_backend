@@ -3,7 +3,6 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
-import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ public class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private CustomerUserDetailsService customerService;
 
     @Mock
     private ConfigService configService;
@@ -54,6 +53,9 @@ public class OrderServiceTest {
         deliveryPricing.setMaximumRange(5);
         deliveryPricing.setPrice(5.0);
         when(configService.getDeliveryPrices()).thenReturn(Collections.singletonList(deliveryPricing));
+        Customer customer = new Customer();
+        customer.setId(1L);
+        when(customerService.getCustomerByIdOrThrowException(anyLong())).thenReturn(customer);
     }
 
     @Test
@@ -97,25 +99,12 @@ public class OrderServiceTest {
 
         Long customerId = 1L;
         Order order = new Order();
-        when(customerRepository.existsById(customerId)).thenReturn(true);
         when(orderRepository.findByCustomerId(customerId)).thenReturn(Collections.singletonList(order));
 
         List<Order> result = orderService.getAllOrdersOfCustomer(customerId);
 
         assertThat(result).containsExactly(order);
         verify(orderRepository, times(1)).findByCustomerId(customerId);
-    }
-
-    @Test
-    public void testGetAllOrdersOfCustomer_ShouldThrowNotFoundException_WhenCustomerDoesNotExist() {
-
-        Long customerId = 1L;
-        when(customerRepository.existsById(customerId)).thenReturn(false);
-
-        assertThatThrownBy(() -> orderService.getAllOrdersOfCustomer(customerId))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage("Klient o identyfikatorze " + customerId + " nie istnieje");
-        verify(customerRepository, times(1)).existsById(customerId);
     }
 
     @Test

@@ -50,7 +50,7 @@ public class Meal {
     private Long categoryId;
 
     @ElementCollection
-    private List<String> allergens = new ArrayList<>(); // List of allergens
+    private List<String> allergens; // List of allergens
 
     @Positive(message = "Kalorie muszą być dodatnie")
     @Valid

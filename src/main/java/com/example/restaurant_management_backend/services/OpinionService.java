@@ -4,6 +4,7 @@ import com.example.restaurant_management_backend.dto.AverageRatingResponseDTO;
 import com.example.restaurant_management_backend.dto.OpinionResponseDTO;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
+import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Opinion;
 import com.example.restaurant_management_backend.jpa.model.command.OpinionAddCommand;
 import com.example.restaurant_management_backend.jpa.repositories.OpinionRepository;
@@ -18,7 +19,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OpinionService {
     public static final String NOT_FOUND_OPINIONS = "Nie znaleziono opinii";
-    public static final String CLIENT_NOT_FOUND = "Nie znaleziono klienta";
     public static final String OPINION_ALREADY_EXISTS = "Opinia dla tego dania już istnieje";
 
     private final MealService mealService;
@@ -27,15 +27,16 @@ public class OpinionService {
     private final OpinionMapper opinionMapper;
 
     public OpinionResponseDTO addOpinion(OpinionAddCommand opinionAddCommand) {
-        checkIfCustomerExists(opinionAddCommand.getCustomerId());
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(opinionAddCommand.getCustomerId());
+        Customer customer = customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId());
 
-        if (opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())) {
+        if (opinionRepository.existsByMealIdAndCustomerId(opinionAddCommand.getMealId(), customer.getId())) {
             throw new ResourceConflictException(OPINION_ALREADY_EXISTS);
         }
 
         Opinion opinion = new Opinion();
         opinion.setMeal(mealService.getMealById(opinionAddCommand.getMealId()));
-        opinion.setCustomer(customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId()));
+        opinion.setCustomer(customer);
         opinion.setRating(opinionAddCommand.getRating());
         opinion.setComment(opinionAddCommand.getComment());
 
@@ -56,7 +57,7 @@ public class OpinionService {
     }
 
     public List<OpinionResponseDTO> getOpinionsForCustomer(Long customerId) {
-        checkIfCustomerExists(customerId);
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         return opinionRepository.findByCustomerId(customerId).stream()
                 .map(opinionMapper::mapToDto)
                 .collect(Collectors.toList());
@@ -69,9 +70,10 @@ public class OpinionService {
     }
 
     public OpinionResponseDTO updateOpinion(OpinionAddCommand opinionAddCommand) {
-        checkIfCustomerExists(opinionAddCommand.getCustomerId());
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(opinionAddCommand.getCustomerId());
+        Customer customer = customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId());
 
-        Opinion opinion = opinionRepository.findByMealIdAndCustomerId(opinionAddCommand.getMealId(), opinionAddCommand.getCustomerId())
+        Opinion opinion = opinionRepository.findByMealIdAndCustomerId(opinionAddCommand.getMealId(), customer.getId())
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_OPINIONS));
 
         opinion.setRating(opinionAddCommand.getRating());
@@ -79,11 +81,5 @@ public class OpinionService {
         opinionRepository.save(opinion);
 
         return opinionMapper.mapToDto(opinion);
-    }
-
-    private void checkIfCustomerExists(Long customerId) {
-        if (customerService.getCustomerById(customerId).isEmpty()) {
-            throw new NotFoundException(CLIENT_NOT_FOUND);
-        }
     }
 }

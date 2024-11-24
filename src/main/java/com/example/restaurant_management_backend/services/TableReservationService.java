@@ -30,6 +30,7 @@ public class TableReservationService {
     private final ConfigService configService;
     private final TableService tableService;
     private final TableReservationRepository tableReservationRepository;
+    private final CustomerUserDetailsService customerService;
 
     public List<LocalTime> checkPossibleHoursForDay(LocalDate day, int reservationDuration, int minutesToAdd, int numberOfPeople) {
         List<LocalTime> possibleReservationStartHour = new ArrayList<>();
@@ -163,6 +164,7 @@ public class TableReservationService {
     }
 
     private TableReservation fillTableReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId, Table tableForReservation) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         TableReservation tableReservation = new TableReservation();
 
         tableReservation.setTableId(tableForReservation.getId());

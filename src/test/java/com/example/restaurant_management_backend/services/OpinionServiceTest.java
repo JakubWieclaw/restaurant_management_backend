@@ -42,6 +42,9 @@ class OpinionServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        Customer customer = new Customer();
+        customer.setId(1L);
+        when(customerService.getCustomerByIdOrThrowException(anyLong())).thenReturn(customer);
     }
 
     // Test for addOpinion - valid case
@@ -52,7 +55,6 @@ class OpinionServiceTest {
         Long mealId = 1L;
         OpinionAddCommand opinionAddCommand = createMockOpinionAddCommand(customerId, mealId);
 
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.of(new Customer()));
         when(opinionRepository.existsByMealIdAndCustomerId(mealId, customerId)).thenReturn(false);
         when(mealService.getMealById(mealId)).thenReturn(new Meal());
         when(opinionMapper.mapToDto(any(Opinion.class))).thenReturn(new OpinionResponseDTO(1L, 0, null));
@@ -73,13 +75,13 @@ class OpinionServiceTest {
         Long mealId = 1L;
         OpinionAddCommand opinionAddCommand = createMockOpinionAddCommand(customerId, mealId);
 
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.of(new Customer()));
         when(opinionRepository.existsByMealIdAndCustomerId(mealId, customerId)).thenReturn(true);
 
         // When & Then
         assertThrows(ResourceConflictException.class, () -> opinionService.addOpinion(opinionAddCommand));
         verify(opinionRepository, never()).save(any(Opinion.class));
     }
+
 
     // Test for addOpinion - customer not found
     @Test
@@ -88,7 +90,7 @@ class OpinionServiceTest {
         Long customerId = 1L;
         OpinionAddCommand opinionAddCommand = createMockOpinionAddCommand(customerId, 1L);
 
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.empty());
+        when(customerService.getCustomerByIdOrThrowException(customerId)).thenCallRealMethod();
 
         // When & Then
         assertThrows(NotFoundException.class, () -> opinionService.addOpinion(opinionAddCommand));
@@ -137,7 +139,6 @@ class OpinionServiceTest {
         // Given
         Long customerId = 1L;
         List<Opinion> opinions = List.of(createMockOpinion(5), createMockOpinion(3));
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.of(new Customer()));
         when(opinionRepository.findByCustomerId(customerId)).thenReturn(opinions);
         when(opinionMapper.mapToDto(any(Opinion.class))).thenReturn(new OpinionResponseDTO(1L, 4, null));
 
@@ -173,7 +174,6 @@ class OpinionServiceTest {
         OpinionAddCommand opinionAddCommand = createMockOpinionAddCommand(customerId, mealId);
         Opinion opinion = createMockOpinion(5);
 
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.of(new Customer()));
         when(opinionRepository.findByMealIdAndCustomerId(mealId, customerId)).thenReturn(Optional.of(opinion));
         when(opinionMapper.mapToDto(opinion)).thenReturn(new OpinionResponseDTO(1L, 4, null));
 
@@ -193,7 +193,7 @@ class OpinionServiceTest {
         Long mealId = 1L;
         OpinionAddCommand opinionAddCommand = createMockOpinionAddCommand(customerId, mealId);
 
-        when(customerService.getCustomerById(customerId)).thenReturn(Optional.of(new Customer()));
+        when(customerService.getCustomerByIdOrThrowException(customerId)).thenReturn(new Customer());
         when(opinionRepository.findByMealIdAndCustomerId(mealId, customerId)).thenReturn(Optional.empty());
 
         // When & Then

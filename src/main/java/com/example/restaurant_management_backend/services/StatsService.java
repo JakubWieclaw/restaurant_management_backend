@@ -1,19 +1,17 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.exceptions.NoDataException;
+import com.example.restaurant_management_backend.jpa.model.Meal;
+import com.example.restaurant_management_backend.jpa.model.MealQuantity;
+import com.example.restaurant_management_backend.jpa.model.Order;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
-import com.example.restaurant_management_backend.jpa.model.Meal;
-import com.example.restaurant_management_backend.jpa.model.MealQuantity;
-import com.example.restaurant_management_backend.jpa.model.Order;
-import com.example.restaurant_management_backend.exceptions.IllegalStateException;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +43,7 @@ public class StatsService {
         List<Order> orders = orderService.getOrders();
 
         if (orders.isEmpty()) {
-            throw new IllegalStateException(NO_ORDERS_FOUND);
+            throw new NoDataException(NO_ORDERS_FOUND);
         }
 
         // iterate through list of orders and get all meals mentioned in mealIds list
@@ -75,7 +73,8 @@ public class StatsService {
 
         // Sort the map by values (either ascending or descending) and collect the first
         // `n` results
-        LinkedHashMap<String, Integer> sortedMeals = result.entrySet().stream()
+
+        return result.entrySet().stream()
                 .sorted((mostLeast.equals("most"))
                         ? Map.Entry.<String, Integer>comparingByValue().reversed() // For "most", sort descending
                         : Map.Entry.comparingByValue()) // For "least", sort ascending
@@ -86,8 +85,6 @@ public class StatsService {
                         (e1, e2) -> e1, // Merge function, not needed but required by toMap
                         LinkedHashMap::new // Ensure insertion order is maintained
                 ));
-
-        return sortedMeals;
     }
 
     public HashMap<String, Integer> getAmountOfOrdersByDayAndHour() {
@@ -95,7 +92,7 @@ public class StatsService {
         List<Order> orders = orderService.getOrders();
 
         if (orders.isEmpty()) {
-            throw new IllegalStateException(NO_ORDERS_FOUND);
+            throw new NoDataException(NO_ORDERS_FOUND);
         }
 
         // Create a dictionary to store the amount of orders by day and hour
@@ -127,7 +124,7 @@ public class StatsService {
 
         // if orders are empty, throw IllegalState exception
         if (orders.isEmpty()) {
-            throw new IllegalStateException(NO_ORDERS_FOUND);
+            throw new NoDataException(NO_ORDERS_FOUND);
         }
 
         // Create a dictionary to store the earnings by year and month
@@ -169,7 +166,7 @@ public class StatsService {
         List<Meal> meals = mealService.getAllMeals();
 
         if (meals.isEmpty()) {
-            throw new IllegalStateException("Nie znaleziono żadnych posiłków");
+            throw new NoDataException("Nie znaleziono żadnych posiłków");
         }
 
         // for every meal in meals use getOpinionsForMeal to count the average rating
@@ -184,9 +181,7 @@ public class StatsService {
             final var mealId = meal.getId();
             final var mealName = meal.getName();
             final var opinions = opinionService.getOpinionsForMeal(mealId);
-            if (opinions.isEmpty()) {
-                continue;
-            } else {
+            if (!opinions.isEmpty()) {
                 double average = 0;
                 for (var opinion : opinions) {
                     average += opinion.rating();
@@ -198,7 +193,7 @@ public class StatsService {
 
         // Sort the map by values (either ascending or descending) and collect the first
 
-        LinkedHashMap<String, Double> sortedMeals = result.entrySet().stream()
+        return result.entrySet().stream()
         .sorted((mostLeast.equals("best"))
                 ? Map.Entry.<String, Double>comparingByValue().reversed()  // Sort descending for "best"
                 : Map.Entry.comparingByValue())  // Sort ascending for "worst"
@@ -209,60 +204,37 @@ public class StatsService {
                 (e1, e2) -> e1,  // Merge function, not needed but required
                 LinkedHashMap::new  // Ensure insertion order is maintained
         ));
-
-        return sortedMeals;
     }
 
     private String intDayToString(int day) {
-        switch (day) {
-            case 1:
-                return "Poniedziałek";
-            case 2:
-                return "Wtorek";
-            case 3:
-                return "Środa";
-            case 4:
-                return "Czwartek";
-            case 5:
-                return "Piątek";
-            case 6:
-                return "Sobota";
-            case 7:
-                return "Niedziela";
-            default:
-                return "Niepoprawny dzień";
-        }
+        return switch (day) {
+            case 1 -> "Poniedziałek";
+            case 2 -> "Wtorek";
+            case 3 -> "Środa";
+            case 4 -> "Czwartek";
+            case 5 -> "Piątek";
+            case 6 -> "Sobota";
+            case 7 -> "Niedziela";
+            default -> "Niepoprawny dzień";
+        };
     }
 
     private String engMonthToPolMonth(String month) {
-        switch (month) {
-            case "JANUARY":
-                return "Styczeń";
-            case "FEBRUARY":
-                return "Luty";
-            case "MARCH":
-                return "Marzec";
-            case "APRIL":
-                return "Kwiecień";
-            case "MAY":
-                return "Maj";
-            case "JUNE":
-                return "Czerwiec";
-            case "JULY":
-                return "Lipiec";
-            case "AUGUST":
-                return "Sierpień";
-            case "SEPTEMBER":
-                return "Wrzesień";
-            case "OCTOBER":
-                return "Październik";
-            case "NOVEMBER":
-                return "Listopad";
-            case "DECEMBER":
-                return "Grudzień";
-            default:
-                return "Niepoprawny miesiąc";
-        }
+        return switch (month) {
+            case "JANUARY" -> "Styczeń";
+            case "FEBRUARY" -> "Luty";
+            case "MARCH" -> "Marzec";
+            case "APRIL" -> "Kwiecień";
+            case "MAY" -> "Maj";
+            case "JUNE" -> "Czerwiec";
+            case "JULY" -> "Lipiec";
+            case "AUGUST" -> "Sierpień";
+            case "SEPTEMBER" -> "Wrzesień";
+            case "OCTOBER" -> "Październik";
+            case "NOVEMBER" -> "Listopad";
+            case "DECEMBER" -> "Grudzień";
+            default -> "Niepoprawny miesiąc";
+        };
     }
 
 }

@@ -4,7 +4,6 @@ import com.example.restaurant_management_backend.exceptions.InvalidReservationEx
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.*;
 import com.example.restaurant_management_backend.jpa.model.command.OrderAddCommand;
-import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.OrderRepository;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -22,18 +21,17 @@ import java.util.Optional;
 public class OrderService {
 
     public static final String NOT_FOUND_ORDER = "Nie znaleziono zamówienia";
-    public static final String INVALID_ID = "Niepoprawne ID klienta";
     private final MealService mealService;
     private final OrderRepository orderRepository;
-    private final CustomerRepository customerRepository;
+    private final CustomerUserDetailsService customerService;
     private final ConfigService configService;
     private final TableReservationService tableReservationService;
     private final CouponService couponService;
 
-    public OrderService(MealService mealService, OrderRepository orderRepository, CustomerRepository customerRepository, ConfigService configService, TableReservationService tableReservationService, CouponService couponService) {
+    public OrderService(MealService mealService, OrderRepository orderRepository, CustomerUserDetailsService customerService, ConfigService configService, TableReservationService tableReservationService, CouponService couponService) {
         this.mealService = mealService;
         this.orderRepository = orderRepository;
-        this.customerRepository = customerRepository;
+        this.customerService = customerService;
         this.configService = configService;
         this.tableReservationService = tableReservationService;
         this.couponService = couponService;
@@ -53,12 +51,7 @@ public class OrderService {
     }
 
     public List<Order> getAllOrdersOfCustomer(Long customerId) {
-        if (customerId == null || customerId < 0) {
-            throw new IllegalArgumentException(INVALID_ID);
-        }
-        if (!customerRepository.existsById(customerId)) {
-            throw new NotFoundException("Klient o identyfikatorze " + customerId + " nie istnieje");
-        }
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         return orderRepository.findByCustomerId(customerId);
     }
 
@@ -122,6 +115,7 @@ public class OrderService {
     }
 
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(orderAddCommand.getCustomerId());
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ORDER));
 
@@ -150,11 +144,6 @@ public class OrderService {
     }
 
     private void validateOrderAddCommand(OrderAddCommand orderAddCommand) {
-        // Check if customer ID is valid
-        if (orderAddCommand.getCustomerId() == null) {
-            throw new IllegalArgumentException("Nie podano ID klienta\nPodaj 0 jeśli klient jest niezarejestrowany");
-        }
-
         // Validate the list of mealId and quantity pairs
         final var mealIds = orderAddCommand.getMealIds();
         if (mealIds == null || mealIds.isEmpty()) {

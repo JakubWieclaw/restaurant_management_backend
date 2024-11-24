@@ -1,9 +1,5 @@
 package com.example.restaurant_management_backend.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
@@ -16,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CustomerCRUDServiceTest {
@@ -29,6 +27,9 @@ public class CustomerCRUDServiceTest {
 
     @Mock
     private EmailService mockEmailService;
+
+    @Mock
+    private CustomerUserDetailsService customerService;
 
     @InjectMocks
     private CustomerCRUDService customerCRUDService;
@@ -65,9 +66,7 @@ public class CustomerCRUDServiceTest {
         when(customerRepository.existsById(1L)).thenReturn(false);
 
         // Act & Assert
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            customerCRUDService.deleteCustomerById(1L);
-        });
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> customerCRUDService.deleteCustomerById(1L));
         assertEquals("Nie znaleziono klienta o id 1", exception.getMessage());
         verify(customerRepository, never()).deleteById(1L);
     }
@@ -79,15 +78,11 @@ public class CustomerCRUDServiceTest {
         // Arrange
         RegisterCustomerCommand registerCustomerCommand = new RegisterCustomerCommand("Jane", "Doe",
                 "testemail@testingtesttest.com", "987654321", "newPassword");
-        when(customerRepository.existsById(1L)).thenReturn(true);
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
-        when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
-        when(customerRepository.existsById(1L)).thenReturn(true);
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(existingCustomer));
         when(passwordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
 
         // Mock the save method to return the updated customer
         when(customerRepository.save(existingCustomer)).thenReturn(existingCustomer);
+        when(customerService.getCustomerByIdOrThrowException(1L)).thenReturn(existingCustomer);
 
         // Act
         Customer updatedCustomer = customerCRUDService.updateCustomer(1L, registerCustomerCommand);
@@ -107,12 +102,10 @@ public class CustomerCRUDServiceTest {
         // Arrange
         RegisterCustomerCommand registerUserCommand = new RegisterCustomerCommand("Jane", "Doe", "jane.doe@example.com",
                 "987654321", "newPassword");
-        when(customerRepository.existsById(1L)).thenReturn(false);
+        when(customerService.getCustomerByIdOrThrowException(1L)).thenThrow(new NotFoundException("Nie znaleziono klienta o id 1"));
 
         // Act & Assert
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            customerCRUDService.updateCustomer(1L, registerUserCommand);
-        });
+        NotFoundException exception = assertThrows(NotFoundException.class, () -> customerCRUDService.updateCustomer(1L, registerUserCommand));
         assertEquals("Nie znaleziono klienta o id 1", exception.getMessage());
         verify(customerRepository, never()).save(any(Customer.class));
     }
