@@ -4,10 +4,8 @@ import com.example.restaurant_management_backend.exceptions.CouponInvalidExcepti
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
 import com.example.restaurant_management_backend.jpa.model.Coupon;
-import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.repositories.CouponRepository;
-import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,23 +25,20 @@ public class CouponServiceTest {
     private CouponRepository couponRepository;
 
     @Mock
-    private CustomerRepository customerRepository;
+    private MealRepository mealRepository;
 
     @Mock
-    private MealRepository mealRepository;
+    private CustomerUserDetailsService customerService;
 
     @InjectMocks
     private CouponService couponService;
 
-    private Customer customer;
     private Meal meal;
     private Coupon coupon;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        customer = new Customer();
-        customer.setId(1L);
 
         meal = new Meal();
         meal.setId(2L);
@@ -52,7 +47,6 @@ public class CouponServiceTest {
                 .id(3L)
                 .code("POZNAN20")
                 .discountPercentage(20.0)
-                .customer(customer)
                 .meal(meal)
                 .expiryDate(LocalDateTime.now().plusDays(1))
                 .active(true)
@@ -61,7 +55,6 @@ public class CouponServiceTest {
 
     @Test
     void testCreateCouponSuccess() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(mealRepository.findById(2L)).thenReturn(Optional.of(meal));
         when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.empty());
         when(couponRepository.save(any(Coupon.class))).thenReturn(coupon);
@@ -75,8 +68,7 @@ public class CouponServiceTest {
 
     @Test
     void testCreateCouponCustomerNotFound() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.empty());
-
+        when(mealRepository.findById(2L)).thenReturn(Optional.of(meal));
         NotFoundException thrown = assertThrows(NotFoundException.class, () ->
                 couponService.createCoupon("POZNAN20", 20.0, 1L, 2L, LocalDateTime.now().plusDays(1)));
 
@@ -85,7 +77,6 @@ public class CouponServiceTest {
 
     @Test
     void testCreateCouponAlreadyExists() {
-        when(customerRepository.findById(1L)).thenReturn(Optional.of(customer));
         when(mealRepository.findById(2L)).thenReturn(Optional.of(meal));
         when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.of(coupon));
 
