@@ -70,7 +70,8 @@ public class OpinionService {
     }
 
     public OpinionResponseDTO updateOpinion(OpinionAddCommand opinionAddCommand) {
-        Customer customer = customerService.getCurrentCustomer();
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(opinionAddCommand.getCustomerId());
+        Customer customer = customerService.getCustomerByIdOrThrowException(opinionAddCommand.getCustomerId());
 
         Opinion opinion = opinionRepository.findByMealIdAndCustomerId(opinionAddCommand.getMealId(), customer.getId())
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_OPINIONS));
