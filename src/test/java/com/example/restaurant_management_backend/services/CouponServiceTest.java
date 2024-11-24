@@ -69,6 +69,7 @@ public class CouponServiceTest {
     @Test
     void testCreateCouponCustomerNotFound() {
         when(mealRepository.findById(2L)).thenReturn(Optional.of(meal));
+        when(customerService.getCustomerByIdOrThrowException(1L)).thenThrow(new NotFoundException("Nie znaleziono klienta"));
         NotFoundException thrown = assertThrows(NotFoundException.class, () ->
                 couponService.createCoupon("POZNAN20", 20.0, 1L, 2L, LocalDateTime.now().plusDays(1)));
 
