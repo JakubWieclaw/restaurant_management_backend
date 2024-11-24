@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.security;
 
+import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,7 +63,7 @@ public class SecurityConfig {
                         .requestMatchers( // endpoints available only for authenticated users
                                 "api/customer/delete/**",
                                 "api/customer/update/**",
-                                "api/coupos/deactivate/**",
+                                "api/coupons/deactivate/**",
                                 "api/coupons/validate",
                                 "api/coupons/apply",
                                 "api/coupons/customer/**",
@@ -83,17 +84,15 @@ public class SecurityConfig {
                                 "api/reservations/table/**",
                                 "api/reservations/available-hours/**",
                                 "api/reservations/**")
-                        .hasAuthority("USER_PRIVILEGE")
-
-                        .requestMatchers( // admin can access all endpoints
-                                "**")
-                        .hasAuthority("ADMIN_PRIVILEGE")
-
+                        .hasAnyAuthority(PrivilegeName.USER_PRIVILEGE.name(), PrivilegeName.ADMIN_PRIVILEGE.name()) // Users and admins can access these
+                        .requestMatchers("**").hasAuthority(PrivilegeName.ADMIN_PRIVILEGE.name()) // Admins can access everything
                         .anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable) // enable this after testing in production
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager())
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint())) // Use custom entry point
                 .build();
     }
 
@@ -121,4 +120,10 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+    @Bean
+    public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
+    }
+
 }

@@ -1,7 +1,5 @@
 package com.example.restaurant_management_backend.jpa.model;
 
-import org.springframework.security.access.method.P;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -7,7 +7,6 @@ import com.example.restaurant_management_backend.jpa.model.Coupon;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.repositories.CouponRepository;
-import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,18 +20,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CouponService {
 
-    public static final String CLIENT_NOT_FOUND = "Nie znaleziono klienta";
     public static final String MEAL_NOT_FOUND = "Nie znaleziono posiłku";
     public static final String COUPON_NOT_FOUND_WITH_CODE = "Nie znaleziono kuponu o kodzie ";
     public static final String COUPON_INACTIVE = "Kupon jest nieaktywny lub wygasł";
     public static final String COUPON_NOT_VALID_FOR_THIS_MEAL = "Kupon nie jest ważny dla tego posiłku";
     private final CouponRepository couponRepository;
-    private final CustomerRepository customerRepository;
     private final MealRepository mealRepository;
+    private final CustomerUserDetailsService customerService;
 
     public Coupon createCoupon(String code, Double discountPercentage, Long customerId, Long mealId, LocalDateTime expiryDate) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new NotFoundException(CLIENT_NOT_FOUND));
+        Customer customer = customerService.getCustomerByIdOrThrowException(customerId);
 
         Meal meal = mealRepository.findById(mealId)
                 .orElseThrow(() -> new NotFoundException(MEAL_NOT_FOUND));
@@ -61,6 +58,7 @@ public class CouponService {
     }
 
     public boolean isCouponValid(String code, Long customerId, Long mealId) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         Coupon coupon = getCoupon(code, customerId);
 
         if (!coupon.getActive() || coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
@@ -75,6 +73,7 @@ public class CouponService {
     }
 
     public double applyCoupon(String code, Long customerId, Long mealId, double originalPrice) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         if (isCouponValid(code, customerId, mealId)) {
             Coupon coupon = getCoupon(code, customerId);
             double discountAmount = originalPrice * (coupon.getDiscountPercentage() / 100);
@@ -88,11 +87,13 @@ public class CouponService {
     }
 
     public Coupon getCoupon(String code, Long customerId) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         return couponRepository.findByCodeAndCustomerId(code, customerId)
                 .orElseThrow(() -> new NotFoundException(COUPON_NOT_FOUND_WITH_CODE + code));
     }
 
     public List<Coupon> getCouponsForCustomer(Long customerId) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
         return couponRepository.findByCustomerId(customerId);
     }
 

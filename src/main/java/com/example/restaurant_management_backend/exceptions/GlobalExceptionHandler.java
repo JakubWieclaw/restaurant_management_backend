@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.transaction.TransactionSystemException;
@@ -209,10 +210,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<String> handleIllegalStateException(IllegalStateException ex) {
-        // logger.warn("Confirmation email failed to send, but the primary request was successful", ex);
+    @ExceptionHandler(NoDataException.class)
+    public ResponseEntity<String> handleIllegalStateException(NoDataException ex) {
+        logger.error("Illegal state", ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.ACCEPTED);
     }
-    
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException ex) {
+        logger.error("Access denied", ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
 }

@@ -1,21 +1,18 @@
 package com.example.restaurant_management_backend.services;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
 import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterCustomerCommand;
 import com.example.restaurant_management_backend.jpa.repositories.CustomerRepository;
-
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 
 @RequiredArgsConstructor
 @Service
 public class CustomerCRUDService {
-
+    private final CustomerUserDetailsService customerService;
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
@@ -28,21 +25,23 @@ public class CustomerCRUDService {
     }
 
     public void deleteCustomerById(Long id) {
-    if (!customerRepository.existsById(id)) {
-        throw new NotFoundException("Nie znaleziono klienta o id " + id);
-    }
-    customerRepository.deleteById(id);
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(id);
+        if (!customerRepository.existsById(id)) {
+            throw new NotFoundException("Nie znaleziono klienta o id " + id);
+        }
+        customerRepository.deleteById(id);
     }
 
     public Customer updateCustomer(Long id, RegisterCustomerCommand registerCustomerCommand) {
+        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(id);
         if (!customerRepository.existsById(id)) {
             throw new NotFoundException("Nie znaleziono klienta o id " + id);
         }
         // validate email domain if it is changed
-        if (!customerRepository.findById(id).get().getEmail().equals(registerCustomerCommand.getEmail())) {
+        Customer customer = customerService.getCustomerByIdOrThrowException(id);
+        if (!customer.getEmail().equals(registerCustomerCommand.getEmail())) {
             validateEmail(registerCustomerCommand.getEmail());
         }
-        Customer customer = customerRepository.findById(id).get();
         customer.setName(registerCustomerCommand.getName());
         customer.setSurname(registerCustomerCommand.getSurname());
         customer.setEmail(registerCustomerCommand.getEmail());
