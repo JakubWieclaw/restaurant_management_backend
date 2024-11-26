@@ -36,54 +36,56 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults()) // by default use a bean by the name of corsConfigurationSource
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers( // endpoints available without authentication
-                                "/swagger-ui/**", // swagger - to be removed in the end
-                                "/v3/api-docs/**", // swagger
-                                "/swagger-resources/**", // swagger
-                                "/webjars/**", // swagger
-                                "/auth/**",
-                                "/api/categories/all",
-                                "/api/categories/get/**",
-                                "/admin/api/config/delivery-prices",
-                                "/admin/api/config/opening-hours",
-                                "/api/contact-form/send",
+                                "swagger-ui/**", // swagger - to be removed in the end
+                                "v3/api-docs/**", // swagger
+                                "swagger-resources/**", // swagger
+                                "webjars/**", // swagger
+                                "auth/**",
+                                "api/categories/all",
+                                "api/categories/get/**",
+                                "admin/api/config",
+                                "admin/api/config/delivery-prices",
+                                "admin/api/config/opening-hours",
+                                "api/contact-form/send",
                                 "api/categories/all",
                                 "api/categories/get/**",
                                 "api/customer/add",
                                 "api/meals/all",
-                                "api/meals/get**", // no slash in the end is intentional
+                                "api/meals/get/**",
+                                "api/meals/get-meals/**",
                                 "api/meals/search",
                                 "api/opinions/average-rating/**",
                                 "api/opinions/meal/**",
                                 "api/orders/add",
                                 "api/photos/download",
-
-                                "/error")
+                                "error")
                         .permitAll()
 
                         .requestMatchers( // endpoints available only for authenticated users
+                                "api/customer/get/**",
                                 "api/customer/delete/**",
                                 "api/customer/update/**",
                                 "api/coupons/deactivate/**",
                                 "api/coupons/validate",
                                 "api/coupons/apply",
                                 "api/coupons/customer/**",
-                                "api/customer/get/**",
                                 "api/opinions/add",
                                 "api/opinions/customer/**",
                                 "api/opinions/update",
                                 "api/orders/customer/**",
                                 "api/orders/delete/**",
+                                "api/orders/get/customer/**",
                                 "api/orders/update/**",
                                 "api/orders/add-to-reservation",
                                 "api/qr/table/**",
                                 "api/tables/all",
                                 "api/tables/**",
                                 "api/reservations",
+                                "api/reservations/**",
                                 "api/reservations/day/**",
                                 "api/reservations/customer/**",
                                 "api/reservations/table/**",
-                                "api/reservations/available-hours/**",
-                                "api/reservations/**")
+                                "api/reservations/available-hours/**")
                         .hasAnyAuthority(PrivilegeName.USER_PRIVILEGE.name(), PrivilegeName.ADMIN_PRIVILEGE.name()) // Users and admins can access these
                         .requestMatchers("**").hasAuthority(PrivilegeName.ADMIN_PRIVILEGE.name()) // Admins can access everything
                         .anyRequest().authenticated())
