@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "api/opinions/average-rating/**",
                                 "api/opinions/meal/**",
                                 "api/orders/add",
+                                "api/orders/get/**",
                                 "api/photos/download",
                                 "error")
                         .permitAll()
