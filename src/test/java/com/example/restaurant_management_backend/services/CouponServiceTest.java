@@ -130,7 +130,7 @@ public class CouponServiceTest {
     @Test
     void testApplyCouponSuccess() {
         when(couponRepository.findByCodeAndCustomerId("POZNAN20", 1L)).thenReturn(Optional.of(coupon));
-
+        when(couponRepository.findById(coupon.getId())).thenReturn(Optional.of(coupon));
         double discountedPrice = couponService.applyCoupon("POZNAN20", 1L, 2L, 100.0);
 
         assertEquals(80.0, discountedPrice);
