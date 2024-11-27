@@ -81,6 +81,7 @@ public class CouponService {
 
             // Format the result to 2 decimal places using BigDecimal
             BigDecimal formattedPrice = new BigDecimal(finalPrice).setScale(2, RoundingMode.HALF_UP);
+            deactivateCoupon(coupon.getId());
             return formattedPrice.doubleValue();
         }
         return originalPrice; // Return original price if coupon is not valid
