@@ -1,4 +1,4 @@
-package com.example.restaurant_management_backend.common;
+package com.example.restaurant_management_backend.jpa.model.command.common;
 
 import jakarta.validation.*;
 

@@ -1,10 +1,10 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
 import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
+import com.example.restaurant_management_backend.jpa.model.command.common.SelfValidating;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;

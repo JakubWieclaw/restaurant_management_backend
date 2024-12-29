@@ -1,8 +1,8 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.DeliveryPricing;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
+import com.example.restaurant_management_backend.jpa.model.command.common.SelfValidating;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

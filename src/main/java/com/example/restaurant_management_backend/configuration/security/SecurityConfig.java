@@ -1,4 +1,4 @@
-package com.example.restaurant_management_backend.security;
+package com.example.restaurant_management_backend.configuration.security;
 
 import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import lombok.RequiredArgsConstructor;

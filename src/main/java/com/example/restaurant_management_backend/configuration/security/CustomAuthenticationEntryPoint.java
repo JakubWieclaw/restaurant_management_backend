@@ -1,4 +1,4 @@
-package com.example.restaurant_management_backend.security;
+package com.example.restaurant_management_backend.configuration.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
