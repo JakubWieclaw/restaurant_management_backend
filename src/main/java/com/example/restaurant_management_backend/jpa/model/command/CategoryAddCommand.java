@@ -1,6 +1,6 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
+import com.example.restaurant_management_backend.jpa.model.command.common.SelfValidating;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;

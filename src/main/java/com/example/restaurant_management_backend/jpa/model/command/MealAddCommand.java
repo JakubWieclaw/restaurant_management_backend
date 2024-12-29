@@ -1,7 +1,7 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.common.SelfValidating;
 import com.example.restaurant_management_backend.jpa.model.UnitType;
+import com.example.restaurant_management_backend.jpa.model.command.common.SelfValidating;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.ElementCollection;
 import jakarta.validation.constraints.NotBlank;

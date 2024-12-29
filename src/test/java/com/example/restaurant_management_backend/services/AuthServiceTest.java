@@ -1,5 +1,6 @@
 package com.example.restaurant_management_backend.services;
 
+import com.example.restaurant_management_backend.configuration.security.JwtUtils;
 import com.example.restaurant_management_backend.dto.LoginResponseDTO;
 import com.example.restaurant_management_backend.dto.RegisterResponseDTO;
 import com.example.restaurant_management_backend.exceptions.ResourceConflictException;
@@ -7,7 +8,6 @@ import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.Privilege;
 import com.example.restaurant_management_backend.jpa.model.PrivilegeName;
 import com.example.restaurant_management_backend.jpa.model.command.RegisterUserCommand;
-import com.example.restaurant_management_backend.security.JwtUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
