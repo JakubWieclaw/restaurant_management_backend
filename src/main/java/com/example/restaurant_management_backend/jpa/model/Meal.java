@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
@@ -46,8 +45,9 @@ public class Meal {
     @Enumerated(EnumType.STRING)
     private UnitType unitType; // Unit type, mandatory if weightOrVolume is provided
 
-    @NotNull(message = "Kategoria nie może być pusta")
-    private Long categoryId;
+    @OneToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    private Category category;
 
     @ElementCollection
     private List<String> allergens; // List of allergens
@@ -61,7 +61,7 @@ public class Meal {
         this.price = price;
     }
 
-    public Meal(String name, double price, String photographUrl, List<String> ingredients, List<String> removableIngredList, Double weightOrVolume, UnitType unitType, Long categoryId, List<String> allergens, int calories) {
+    public Meal(String name, double price, String photographUrl, List<String> ingredients, List<String> removableIngredList, Double weightOrVolume, UnitType unitType, Category category, List<String> allergens, int calories) {
         this.name = name;
         this.price = price;
         this.photographUrl = photographUrl;
@@ -69,7 +69,7 @@ public class Meal {
         this.removableIngredList = removableIngredList;
         this.weightOrVolume = weightOrVolume;
         this.unitType = unitType;
-        this.categoryId = categoryId;
+        this.category = category;
         this.allergens = allergens;
         this.calories = calories;
     }

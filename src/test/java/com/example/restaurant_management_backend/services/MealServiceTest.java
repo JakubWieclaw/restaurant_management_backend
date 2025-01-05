@@ -1,10 +1,12 @@
 package com.example.restaurant_management_backend.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
-
+import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.jpa.model.Category;
+import com.example.restaurant_management_backend.jpa.model.Meal;
+import com.example.restaurant_management_backend.jpa.model.UnitType;
+import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
+import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
+import com.example.restaurant_management_backend.mappers.MealMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,17 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.example.restaurant_management_backend.jpa.model.UnitType;
-import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
-import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
-import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
-import com.example.restaurant_management_backend.mappers.MealMapper;
-import com.example.restaurant_management_backend.exceptions.NotFoundException;
-import com.example.restaurant_management_backend.jpa.model.Meal;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MealServiceTest {
@@ -31,7 +30,7 @@ public class MealServiceTest {
     private MealRepository mealRepository;
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
     @Mock
     private MealMapper mealMapper;
@@ -42,11 +41,21 @@ public class MealServiceTest {
     private Meal meal;
     private MealAddCommand mealAddCommand;
 
+    private static Category buildCategory() {
+        Category category = new Category();
+        category.setId(1L);
+        category.setPhotographUrl("http://image.url");
+        category.setName("Name");
+        return category;
+    }
+
     @BeforeEach
     void setUp() {
         final var ingredientsList = List.of("Tomato", "Cheese");
         final var removableIngredientsList = List.of("Cheese");
         final var allergensList = List.of("Gluten");
+
+        Category category = buildCategory();
 
         meal = new Meal();
         meal.setName("Pasta");
@@ -56,7 +65,7 @@ public class MealServiceTest {
         meal.setRemovableIngredList(removableIngredientsList);
         meal.setWeightOrVolume(250.0);
         meal.setUnitType(UnitType.GRAMY);
-        meal.setCategoryId(1L);
+        meal.setCategory(category);
         meal.setAllergens(allergensList);
         meal.setCalories(350);
 
@@ -67,8 +76,7 @@ public class MealServiceTest {
 
     @Test
     void shouldAddMealSuccessfully() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(true);
-        when(mealMapper.toMeal(any(MealAddCommand.class))).thenReturn(meal);
+        when(mealMapper.toMeal(any(MealAddCommand.class), any())).thenReturn(meal);
         when(mealRepository.save(any(Meal.class))).thenReturn(meal);
 
         Meal savedMeal = mealService.addMeal(mealAddCommand);
@@ -80,7 +88,7 @@ public class MealServiceTest {
 
     @Test
     void shouldThrowExceptionWhenAddingMealWithInvalidCategory() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(false);
+        when(categoryService.getCategoryById(any())).thenThrow(new NotFoundException("Kategoria o id 1 nie istnieje"));
 
         Exception exception = assertThrows(NotFoundException.class, () -> {
             mealService.addMeal(mealAddCommand);
@@ -93,7 +101,6 @@ public class MealServiceTest {
     @Test
     void shouldUpdateMealSuccessfully() {
         when(mealRepository.findById(anyLong())).thenReturn(Optional.of(meal));
-        when(categoryRepository.existsById(anyLong())).thenReturn(true);
         when(mealRepository.save(any(Meal.class))).thenReturn(meal);
 
         Meal updatedMeal = mealService.updateMeal(1L, mealAddCommand);
@@ -147,7 +154,6 @@ public class MealServiceTest {
 
     @Test
     void shouldGetMealsByCategoryId() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(true);
         when(mealRepository.findByCategoryId(anyLong())).thenReturn(Collections.singletonList(meal));
 
         List<Meal> meals = mealService.getMealsByCategoryId(1L);
@@ -159,20 +165,18 @@ public class MealServiceTest {
 
     @Test
     void shouldThrowExceptionWhenGettingMealsByInvalidCategoryId() {
-        when(categoryRepository.existsById(anyLong())).thenReturn(false);
+        when(categoryService.getCategoryById(2L)).thenThrow(new NotFoundException("Kategoria o id 2 nie istnieje"));
 
         Exception exception = assertThrows(NotFoundException.class, () -> {
-            mealService.getMealsByCategoryId(1L);
+            mealService.getMealsByCategoryId(2L);
         });
 
         assertTrue(exception.getMessage().contains("Kategoria o id"));
     }
 
     @Test
-    public void testAddMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() throws Exception {
+    public void testAddMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() {
         Exception exception = assertThrows(NotFoundException.class, () -> {
-            when(categoryRepository.existsById(anyLong())).thenReturn(true);
-
             final var mealAddCommand = new MealAddCommand(
                     "Pasta",
                     12.5,
@@ -192,9 +196,8 @@ public class MealServiceTest {
 
 
     @Test
-    public void testUpdateMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() throws Exception {
+    public void testUpdateMeal_ShouldNotAdd_WhenRemovableIngredients_Contain_Ingredient_ThatDoesNotExist() {
         Exception exception = assertThrows(NotFoundException.class, () -> {
-            when(categoryRepository.existsById(anyLong())).thenReturn(true);
             when(mealRepository.findById(anyLong())).thenReturn(Optional.of(meal));
             // when(mealService.getMealById(anyLong())).thenReturn(new Meal());
 
