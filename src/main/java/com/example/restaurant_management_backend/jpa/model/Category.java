@@ -6,7 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 @Entity
@@ -27,10 +29,5 @@ public class Category {
 
     public Category(String name) {
         this.name = name;
-    }
-
-    public Category(String name, String photographUrl) {
-        this.name = name;
-        this.photographUrl = photographUrl;
     }
 }

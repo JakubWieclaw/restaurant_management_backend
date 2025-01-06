@@ -107,12 +107,18 @@ public class OrderServiceTest {
         verify(orderRepository, times(1)).findByCustomerId(customerId);
     }
 
-    private static Category buildCategory() {
+    private Category buildCategory() {
         Category category = new Category();
         category.setId(1L);
         category.setPhotographUrl("http://image.url");
         category.setName("Name");
         return category;
+    }
+
+    private Customer buildCustomer() {
+        Customer customer = new Customer();
+        customer.setId(1L);
+        return customer;
     }
 
     @Test
@@ -268,7 +274,7 @@ public class OrderServiceTest {
         // Arrange
         Long orderId = 1L;
         Order existingOrder = new Order();
-        existingOrder.setCustomerId(1L);
+        existingOrder.setCustomer(buildCustomer());
         existingOrder.setMealIds(Collections.singletonList(new MealQuantity(1L, 2)));
         existingOrder.setDeliveryAddress("Old Address");
 

@@ -78,12 +78,13 @@ public class OrderService {
             }
         }
 
+
         // Create the Order object without saving it yet
         Order order = new Order(
                 request.getMealIds(),
                 orderPrice,
                 deliveryPrice,
-                request.getCustomerId(),
+                customerService.getCustomerById(request.getCustomerId()).orElse(null),
                 request.getType(),
                 request.getStatus(),
                 now,
@@ -124,7 +125,7 @@ public class OrderService {
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
-        existingOrder.setCustomerId(orderAddCommand.getCustomerId());
+        existingOrder.setCustomer(customerService.getCustomerById(orderAddCommand.getCustomerId()).orElse(null));
         existingOrder.setType(orderAddCommand.getType());
         existingOrder.setStatus(orderAddCommand.getStatus());
         existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());

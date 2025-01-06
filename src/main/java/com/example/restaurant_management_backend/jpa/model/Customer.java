@@ -1,13 +1,16 @@
 package com.example.restaurant_management_backend.jpa.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "customer")
 @Builder
 @Getter
 @Setter
@@ -42,4 +45,7 @@ public class Customer {
     // Fields for password reset
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
+
+    @OneToMany(mappedBy = "customer")
+    private List<TableReservation> tableReservations;
 }

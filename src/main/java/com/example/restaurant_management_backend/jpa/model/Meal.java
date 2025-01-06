@@ -20,6 +20,7 @@ import java.util.List;
 public class Meal {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     private Long id;
 
     @NotBlank(message = "Nazwa nie może być pusta")
