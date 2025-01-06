@@ -146,7 +146,7 @@ public class OrderServiceTest {
 
     @Test
     public void testAddOrder_ShouldSaveOrderSuccessfully() {
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
+        OrderAddCommand.MealWithQuantityCommand mealQuantity = new OrderAddCommand.MealWithQuantityCommand(1L, 2);
         OrderAddCommand command = new OrderAddCommand(
                 Collections.singletonList(mealQuantity),
                 1L,
@@ -179,7 +179,7 @@ public class OrderServiceTest {
     @Test
     public void testAddOrder_ShouldMakeTableReservation_WhenTableIdIsProvided() {
         // Arrange
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
+        OrderAddCommand.MealWithQuantityCommand mealQuantity = new OrderAddCommand.MealWithQuantityCommand(1L, 2);
         OrderAddCommand command = new OrderAddCommand(
                 Collections.singletonList(mealQuantity),
                 1L,
@@ -235,7 +235,7 @@ public class OrderServiceTest {
     @Test
     public void testAddOrder_ShouldNotMakeTableReservation_WhenTableIdIsNotProvided() {
         // Arrange
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
+        OrderAddCommand.MealWithQuantityCommand mealQuantity = new OrderAddCommand.MealWithQuantityCommand(1L, 2);
         OrderAddCommand command = new OrderAddCommand(
                 Collections.singletonList(mealQuantity),
                 1L,
@@ -272,16 +272,23 @@ public class OrderServiceTest {
     @Test
     public void testUpdateOrder_ShouldNotMakeTableReservation_WhenTableIdIsNotUpdated() {
         // Arrange
+        Meal meal = new Meal();
+        meal.setName("Pasta");
+        meal.setPrice(12.5);
+        meal.setPhotographUrl(null);
+        meal.setWeightOrVolume(250.0);
+        meal.setUnitType(UnitType.GRAMY);
+        meal.setCalories(350);
         Long orderId = 1L;
         Order existingOrder = new Order();
         existingOrder.setCustomer(buildCustomer());
-        existingOrder.setMealIds(Collections.singletonList(new MealQuantity(1L, 2)));
+        existingOrder.setMealIds(Collections.singletonList(new MealQuantity(meal, 2)));
         existingOrder.setDeliveryAddress("Old Address");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(existingOrder));
 
         OrderAddCommand command = new OrderAddCommand(
-                Collections.singletonList(new MealQuantity(1L, 2)),
+                Collections.singletonList(new OrderAddCommand.MealWithQuantityCommand(1L, 2)),
                 1L,
                 OrderType.DOSTAWA,
                 OrderStatus.OCZEKUJĄCE,
@@ -309,7 +316,7 @@ public class OrderServiceTest {
     @Test
     void testIfCouponIsApplied() {
         // Arrange
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
+        OrderAddCommand.MealWithQuantityCommand mealQuantity = new OrderAddCommand.MealWithQuantityCommand(1L, 2);
         OrderAddCommand command = new OrderAddCommand(
                 Collections.singletonList(mealQuantity),
                 1L,
