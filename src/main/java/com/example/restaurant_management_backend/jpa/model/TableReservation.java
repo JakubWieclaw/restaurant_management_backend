@@ -20,7 +20,9 @@ public class TableReservation {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String tableId;
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "id")
+    private Table table;
 
     @NotNull
     private int people;
@@ -36,7 +38,9 @@ public class TableReservation {
 
     private long duration;
 
-    private Long customerId;
+    @ManyToOne
+    @JoinColumn(referencedColumnName = "id") // Foreign key column for customer
+    private Customer customer;
 
     @OneToMany(mappedBy = "tableReservation", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties("tableReservation")

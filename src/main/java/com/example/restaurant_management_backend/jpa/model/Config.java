@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Config {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Schema(description = "Name of the restaurant", example = "Restauracja pod niebem")

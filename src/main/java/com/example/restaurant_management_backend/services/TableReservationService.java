@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.Table;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
@@ -110,7 +111,7 @@ public class TableReservationService {
         // Check if a suitable reservation already exists
         List<TableReservation> existingReservations = getTableReservationsForDay(day);
         for (TableReservation reservation : existingReservations) {
-            if (reservation.getPeople() == numberOfPeople && reservation.getCustomerId().equals(customerId) && reservation.getTableId().equals(requestedTableId) &&
+            if (reservation.getPeople() == numberOfPeople && reservation.getCustomer().getId().equals(customerId) && reservation.getTable().getId().equals(requestedTableId) &&
                     startTime.isBefore(reservation.getEndTime()) && endTime.isAfter(reservation.getStartTime())) {
                 return reservation; // Return existing reservation if found
             }
@@ -138,7 +139,7 @@ public class TableReservationService {
 
     private Table getTableForReservation(List<TableReservation> reservationsInConflict, List<Table> tables) {
         List<String> takenTables = reservationsInConflict.stream()
-                .map(TableReservation::getTableId)
+                .map(x -> x.getTable().getId())
                 .toList();
         return tables.stream()
                 .filter(table -> !takenTables.contains(table.getId()))
@@ -148,7 +149,7 @@ public class TableReservationService {
 
     private Table checkIfRequestedTableIsValid(List<TableReservation> reservationsInConflict, List<Table> tables, String requestedTableId) {
         List<String> idsOfTakenTables = reservationsInConflict.stream()
-                .map(TableReservation::getTableId)
+                .map(x -> x.getTable().getId())
                 .toList();
         if (idsOfTakenTables.contains(requestedTableId)) {
             throw new InvalidReservationException(TABLE_WITH_THIS_ID_IS_ALREADY_TAKEN);
@@ -164,14 +165,14 @@ public class TableReservationService {
     }
 
     private TableReservation fillTableReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId, Table tableForReservation) {
-        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
+        Customer currentCustomer = customerService.getCurrentCustomer();
         TableReservation tableReservation = new TableReservation();
 
-        tableReservation.setTableId(tableForReservation.getId());
+        tableReservation.setTable(tableForReservation);
         tableReservation.setEndTime(endTime);
         tableReservation.setStartTime(startTime);
         tableReservation.setPeople(numberOfPeople);
-        tableReservation.setCustomerId(customerId);
+        tableReservation.setCustomer(currentCustomer);
         tableReservation.setDay(day);
         tableReservation.setDuration(ChronoUnit.MINUTES.between(startTime, endTime));
 

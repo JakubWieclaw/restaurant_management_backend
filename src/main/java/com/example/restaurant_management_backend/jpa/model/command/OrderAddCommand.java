@@ -1,6 +1,5 @@
 package com.example.restaurant_management_backend.jpa.model.command;
 
-import com.example.restaurant_management_backend.jpa.model.MealQuantity;
 import com.example.restaurant_management_backend.jpa.model.OrderStatus;
 import com.example.restaurant_management_backend.jpa.model.OrderType;
 import com.example.restaurant_management_backend.jpa.model.UnwantedIngredient;
@@ -18,12 +17,12 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
 
     @Schema(description = "Quantities and ids of the meal", example = """
             [
-                {"mealId":"1", "quantity":"2"},
-                {"mealId":"2", "quantity":"1"}
+                {"mealId":1, "quantity":2},
+                {"mealId":2, "quantity":1}
             ]
             """)
     @NotNull(message = "Lista identyfikatorów posiłków nie może być pusta")
-    private final List<MealQuantity> mealIds;
+    private final List<MealWithQuantityCommand> mealIds; // We use a new DTO here for mealId and quantity
 
     @Schema(description = "Client id for the order", example = "1")
     @PositiveOrZero(message = "Identyfikator klienta musi być dodatni, lub zero dla niezalogowanego klienta")
@@ -60,7 +59,7 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
     @Schema(description = "Coupon id for the order. Empty if not used")
     private final String couponCode;
 
-    public OrderAddCommand(List<MealQuantity> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation, String couponCode) {
+    public OrderAddCommand(List<MealWithQuantityCommand> mealIds, Long customerId, OrderType type, OrderStatus status, List<UnwantedIngredient> unwantedIngredients, String deliveryAddress, double deliveryDistance, String tableId, Integer people, Integer minutesForReservation, String couponCode) {
         this.mealIds = mealIds;
         this.customerId = customerId;
         this.type = type;
@@ -73,5 +72,21 @@ public class OrderAddCommand extends SelfValidating<OrderAddCommand> {
         this.minutesForReservation = minutesForReservation;
         this.couponCode = couponCode;
         validateSelf();
+    }
+
+    @Getter
+    public static class MealWithQuantityCommand {
+        @Schema(description = "Meal ID", example = "1")
+        @NotNull
+        private final Long mealId;
+
+        @Schema(description = "Quantity of the meal", example = "2")
+        @NotNull
+        private final Integer quantity;
+
+        public MealWithQuantityCommand(Long mealId, Integer quantity) {
+            this.mealId = mealId;
+            this.quantity = quantity;
+        }
     }
 }

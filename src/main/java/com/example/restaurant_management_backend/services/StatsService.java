@@ -64,8 +64,7 @@ public class StatsService {
         for (Order order : orders) {
             final var mealIds = order.getMealIds();
             for (MealQuantity mealQuantity1 : mealIds) {
-                final var mealId = mealQuantity1.getMealId();
-                final var mealName = mealService.getMealById(mealId).getName();
+                final var mealName = mealQuantity1.getMeal().getName();
                 final var quantity = mealQuantity1.getQuantity();
                 result.put(mealName, result.get(mealName) + quantity);
             }
