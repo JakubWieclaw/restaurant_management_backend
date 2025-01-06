@@ -3,6 +3,7 @@ package com.example.restaurant_management_backend.services;
 import com.example.restaurant_management_backend.dto.PossibleReservationHoursForDayDTO;
 import com.example.restaurant_management_backend.exceptions.InvalidReservationException;
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
+import com.example.restaurant_management_backend.jpa.model.Customer;
 import com.example.restaurant_management_backend.jpa.model.OpeningHour;
 import com.example.restaurant_management_backend.jpa.model.Table;
 import com.example.restaurant_management_backend.jpa.model.TableReservation;
@@ -164,14 +165,14 @@ public class TableReservationService {
     }
 
     private TableReservation fillTableReservation(LocalDate day, LocalTime startTime, LocalTime endTime, int numberOfPeople, Long customerId, Table tableForReservation) {
-        customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(customerId);
+        Customer currentCustomer = customerService.getCurrentCustomer();
         TableReservation tableReservation = new TableReservation();
 
         tableReservation.setTable(tableForReservation);
         tableReservation.setEndTime(endTime);
         tableReservation.setStartTime(startTime);
         tableReservation.setPeople(numberOfPeople);
-        tableReservation.setCustomer(customerService.getCustomerById(customerId).orElse(null));
+        tableReservation.setCustomer(currentCustomer);
         tableReservation.setDay(day);
         tableReservation.setDuration(ChronoUnit.MINUTES.between(startTime, endTime));
 

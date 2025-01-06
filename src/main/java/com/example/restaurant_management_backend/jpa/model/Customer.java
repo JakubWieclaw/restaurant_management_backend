@@ -1,6 +1,7 @@
 package com.example.restaurant_management_backend.jpa.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -46,6 +47,8 @@ public class Customer {
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
 
-    @OneToMany(mappedBy = "customer")
+    // Updated relationship: One customer can have many reservations
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("customer")
     private List<TableReservation> tableReservations;
 }

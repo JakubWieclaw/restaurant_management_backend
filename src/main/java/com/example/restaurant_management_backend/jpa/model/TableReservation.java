@@ -39,7 +39,7 @@ public class TableReservation {
     private long duration;
 
     @ManyToOne
-    @JoinColumn(referencedColumnName = "id")
+    @JoinColumn(referencedColumnName = "id") // Foreign key column for customer
     private Customer customer;
 
     @OneToMany(mappedBy = "tableReservation", cascade = CascadeType.ALL, orphanRemoval = true)

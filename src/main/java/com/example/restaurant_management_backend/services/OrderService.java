@@ -84,7 +84,7 @@ public class OrderService {
                 request.getMealIds(),
                 orderPrice,
                 deliveryPrice,
-                customerService.getCustomerById(request.getCustomerId()).orElse(null),
+                customerService.getCurrentCustomer(),
                 request.getType(),
                 request.getStatus(),
                 now,
@@ -125,7 +125,7 @@ public class OrderService {
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
         existingOrder.setMealIds(orderAddCommand.getMealIds());
-        existingOrder.setCustomer(customerService.getCustomerById(orderAddCommand.getCustomerId()).orElse(null));
+        existingOrder.setCustomer(customerService.getCurrentCustomer());
         existingOrder.setType(orderAddCommand.getType());
         existingOrder.setStatus(orderAddCommand.getStatus());
         existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());
