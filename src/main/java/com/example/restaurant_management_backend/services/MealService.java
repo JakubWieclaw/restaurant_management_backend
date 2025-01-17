@@ -1,9 +1,9 @@
 package com.example.restaurant_management_backend.services;
 
 import com.example.restaurant_management_backend.exceptions.NotFoundException;
-import com.example.restaurant_management_backend.jpa.model.Category;
 import com.example.restaurant_management_backend.jpa.model.Meal;
 import com.example.restaurant_management_backend.jpa.model.command.MealAddCommand;
+import com.example.restaurant_management_backend.jpa.repositories.CategoryRepository;
 import com.example.restaurant_management_backend.jpa.repositories.MealRepository;
 import com.example.restaurant_management_backend.mappers.MealMapper;
 import jakarta.transaction.Transactional;
@@ -16,8 +16,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MealService {
     public static final String NOT_FOUND_MEAL_ID = "Nie znaleziono dania o id ";
+    public static final String CATEGORY_WITH_ID = "Kategoria o id ";
+    public static final String DOES_NOT_EXIST = " nie istnieje";
     private final MealRepository mealRepository;
-    private final CategoryService categoryService;
+    private final CategoryRepository categoryRepository;
     private final MealMapper mealMapper;
 
     public List<Meal> searchMealsByName(String name) {
@@ -34,17 +36,17 @@ public class MealService {
     }
 
     public Meal addMeal(MealAddCommand mealAddCommand) {
+        validateCategory(mealAddCommand.getCategoryId());
         validateRemovableIngredients(mealAddCommand);
-        Category category = categoryService.getCategoryById(mealAddCommand.getCategoryId());
-        Meal meal = mealMapper.toMeal(mealAddCommand, category);
+        Meal meal = mealMapper.toMeal(mealAddCommand);
         return mealRepository.save(meal);
     }
 
     public Meal updateMeal(Long id, MealAddCommand mealAddCommand) {
         Meal meal = getMealById(id);
+        validateCategory(mealAddCommand.getCategoryId());
         validateRemovableIngredients(mealAddCommand);
-        Category category = categoryService.getCategoryById(mealAddCommand.getCategoryId());
-        mealMapper.updateMeal(meal, mealAddCommand, category);
+        mealMapper.updateMeal(meal, mealAddCommand);
         return mealRepository.save(meal);
     }
 
@@ -57,12 +59,25 @@ public class MealService {
 
     @Transactional
     public void deleteMealsByCategoryId(Long categoryId) {
+        validateCategory(categoryId);
         mealRepository.deleteByCategoryId(categoryId);
     }
 
     public List<Meal> getMealsByCategoryId(Long categoryId) {
-        categoryService.getCategoryById(categoryId);
+        validateCategory(categoryId);
         return mealRepository.findByCategoryId(categoryId);
+    }
+
+    public boolean mealContainsIngredients(Long mealId, List<String> ingredients) {
+        Meal meal = getMealById(mealId);
+        // Check if all ingredients are present in the meal
+        return meal.getIngredients().containsAll(ingredients);
+    }
+
+    private void validateCategory(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new NotFoundException(CATEGORY_WITH_ID + categoryId + DOES_NOT_EXIST);
+        }
     }
 
     public boolean mealExists(Long mealId) {

@@ -107,12 +107,36 @@ public class OrderServiceTest {
         verify(orderRepository, times(1)).findByCustomerId(customerId);
     }
 
-    private static Category buildCategory() {
-        Category category = new Category();
-        category.setId(1L);
-        category.setPhotographUrl("http://image.url");
-        category.setName("Name");
-        return category;
+    @Test
+    public void testAddOrder_ShouldSaveOrderSuccessfully() {
+        MealQuantity mealQuantity = new MealQuantity(1L, 2);
+        OrderAddCommand command = new OrderAddCommand(
+                Collections.singletonList(mealQuantity),
+                1L,
+                OrderType.DOSTAWA,
+                OrderStatus.OCZEKUJĄCE,
+                null,
+                "Some Address",
+                5.0,
+                null,
+                null,
+                null,
+                null
+        );
+
+        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), Collections.emptyList(), 0.5, UnitType.GRAMY,
+                1L,
+                Collections.emptyList(), 100);
+        when(mealService.mealExists(1L)).thenReturn(true);
+        when(mealService.getMealById(1L)).thenReturn(meal);
+        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(configService.isSystemInitialized()).thenReturn(true);
+
+        Order result = orderService.addOrder(command);
+
+        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2
+        assertThat(result.getDeliveryPrice()).isEqualTo(5.0);
+        verify(orderRepository, times(1)).save(any(Order.class));
     }
 
     @Test
@@ -139,38 +163,6 @@ public class OrderServiceTest {
     }
 
     @Test
-    public void testAddOrder_ShouldSaveOrderSuccessfully() {
-        MealQuantity mealQuantity = new MealQuantity(1L, 2);
-        OrderAddCommand command = new OrderAddCommand(
-                Collections.singletonList(mealQuantity),
-                1L,
-                OrderType.DOSTAWA,
-                OrderStatus.OCZEKUJĄCE,
-                null,
-                "Some Address",
-                5.0,
-                null,
-                null,
-                null,
-                null
-        );
-
-        Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), Collections.emptyList(), 0.5, UnitType.GRAMY,
-                buildCategory(),
-                Collections.emptyList(), 100);
-        when(mealService.mealExists(1L)).thenReturn(true);
-        when(mealService.getMealById(1L)).thenReturn(meal);
-        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
-        when(configService.isSystemInitialized()).thenReturn(true);
-
-        Order result = orderService.addOrder(command);
-
-        assertThat(result.getOrderPrice()).isEqualTo(40.0); // 20.0 * 2
-        assertThat(result.getDeliveryPrice()).isEqualTo(5.0);
-        verify(orderRepository, times(1)).save(any(Order.class));
-    }
-
-    @Test
     public void testAddOrder_ShouldMakeTableReservation_WhenTableIdIsProvided() {
         // Arrange
         MealQuantity mealQuantity = new MealQuantity(1L, 2);
@@ -189,7 +181,7 @@ public class OrderServiceTest {
         );
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), Collections.emptyList(), 0.5, UnitType.GRAMY,
-                buildCategory(),
+                1L,
                 Collections.emptyList(), 100);
 
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -245,7 +237,7 @@ public class OrderServiceTest {
         );
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), Collections.emptyList(), 0.5, UnitType.GRAMY,
-                buildCategory(),
+                1L,
                 Collections.emptyList(), 100);
 
         when(mealService.mealExists(1L)).thenReturn(true);
@@ -289,7 +281,7 @@ public class OrderServiceTest {
 
         when(mealService.mealExists(1L)).thenReturn(true);
         when(mealService.getMealById(1L)).thenReturn(new Meal("Meal", 20.0, null, Collections.emptyList(),
-                Collections.emptyList(), 0.5, UnitType.GRAMY, buildCategory(), Collections.emptyList(), 100));
+                Collections.emptyList(), 0.5, UnitType.GRAMY, 1L, Collections.emptyList(), 100));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArguments()[0]);
         when(configService.isSystemInitialized()).thenReturn(true);
 
@@ -319,7 +311,7 @@ public class OrderServiceTest {
         );
 
         Meal meal = new Meal("Meal", 20.0, null, Collections.emptyList(), Collections.emptyList(), 0.5, UnitType.GRAMY,
-                buildCategory(),
+                1L,
                 Collections.emptyList(), 100);
         meal.setId(1L);
         when(mealService.mealExists(1L)).thenReturn(true);
