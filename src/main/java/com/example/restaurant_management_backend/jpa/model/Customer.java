@@ -1,17 +1,13 @@
 package com.example.restaurant_management_backend.jpa.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "customer")
 @Builder
 @Getter
 @Setter
@@ -46,9 +42,4 @@ public class Customer {
     // Fields for password reset
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
-
-    // Updated relationship: One customer can have many reservations
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties("customer")
-    private List<TableReservation> tableReservations;
 }

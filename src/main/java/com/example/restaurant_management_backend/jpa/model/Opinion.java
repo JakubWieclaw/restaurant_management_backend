@@ -14,7 +14,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class Opinion {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne

@@ -12,7 +12,7 @@ import lombok.Data;
 @Entity
 public class DeliveryPricing {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotNull(message = "Maksymalny zasięg dostawy nie może być pusty (km)")

@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @Entity
 public class OpeningHour {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull(message = "Dzień tygodnia nie może być pusty")

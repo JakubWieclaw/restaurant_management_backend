@@ -12,7 +12,10 @@ import com.stripe.param.PaymentIntentCreateParams;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -55,8 +58,6 @@ public class OrderService {
     public Order addOrder(OrderAddCommand request) {
         validateOrderAddCommand(request);
 
-        List<MealQuantity> mealQuantitiesOrder = getMealQuantities(request);
-
         // Calculate order and delivery prices
         double orderPrice = calculateOrderPrice(request.getMealIds(), request.getCouponCode(), request.getCustomerId());
         double deliveryPrice = countDeliveryPrice(request.getDeliveryDistance());
@@ -77,13 +78,12 @@ public class OrderService {
             }
         }
 
-
         // Create the Order object without saving it yet
         Order order = new Order(
-                mealQuantitiesOrder,
+                request.getMealIds(),
                 orderPrice,
                 deliveryPrice,
-                customerService.getCurrentCustomer(),
+                request.getCustomerId(),
                 request.getType(),
                 request.getStatus(),
                 now,
@@ -114,19 +114,6 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    private List<MealQuantity> getMealQuantities(OrderAddCommand request) {
-        List<MealQuantity> mealQuantitiesOrder = new ArrayList<>();
-
-        request.getMealIds().forEach(mealWithQuantityCommand -> {
-            MealQuantity mealQuantity = new MealQuantity();
-            mealQuantity.setMeal(mealService.getMealById(mealWithQuantityCommand.getMealId()));
-            mealQuantity.setQuantity(mealWithQuantityCommand.getQuantity());
-            mealQuantitiesOrder.add(mealQuantity);
-        });
-
-        return mealQuantitiesOrder;
-    }
-
     public Order updateOrder(Long id, OrderAddCommand orderAddCommand) {
         customerService.checkIfCustomerIsNotTryingToAccessDifferentCustomer(orderAddCommand.getCustomerId());
         Order existingOrder = orderRepository.findById(id)
@@ -136,8 +123,8 @@ public class OrderService {
         double newOrderPrice = calculateOrderPrice(orderAddCommand.getMealIds(), orderAddCommand.getCouponCode(), orderAddCommand.getCustomerId());
         double newDeliveryPrice = countDeliveryPrice(orderAddCommand.getDeliveryDistance());
 
-        existingOrder.setMealIds(getMealQuantities(orderAddCommand));
-        existingOrder.setCustomer(customerService.getCurrentCustomer());
+        existingOrder.setMealIds(orderAddCommand.getMealIds());
+        existingOrder.setCustomerId(orderAddCommand.getCustomerId());
         existingOrder.setType(orderAddCommand.getType());
         existingOrder.setStatus(orderAddCommand.getStatus());
         existingOrder.setUnwantedIngredients(orderAddCommand.getUnwantedIngredients());
@@ -197,7 +184,7 @@ public class OrderService {
             throw new IllegalArgumentException("Adres dostawy może być podany tylko dla zamówienia typu DOSTAWA");
         }
 
-        for (OrderAddCommand.MealWithQuantityCommand mealQuantity : mealIds) {
+        for (final MealQuantity mealQuantity : mealIds) {
             // getMealID provides integer, cast it to Long
             final var mealId = mealQuantity.getMealId();
             final var quantity = mealQuantity.getQuantity();
@@ -240,7 +227,7 @@ public class OrderService {
         }
     }
 
-    private List<String> getIngredients(UnwantedIngredient unwantedIngredient, int mealIndex, List<OrderAddCommand.MealWithQuantityCommand> mealIds) {
+    private List<String> getIngredients(UnwantedIngredient unwantedIngredient, int mealIndex, List<MealQuantity> mealIds) {
         final var ingredients = unwantedIngredient.getIngredients();
 
         // Validate mealIndex
@@ -256,7 +243,7 @@ public class OrderService {
         return ingredients;
     }
 
-    private double calculateOrderPrice(List<OrderAddCommand.MealWithQuantityCommand> mealQuantities, String couponCode, Long customerId) {
+    private double calculateOrderPrice(List<MealQuantity> mealQuantities, String couponCode, Long customerId) {
         return mealQuantities.stream()
                 .mapToDouble(mealQuantity -> {
                     Long mealId = mealQuantity.getMealId();

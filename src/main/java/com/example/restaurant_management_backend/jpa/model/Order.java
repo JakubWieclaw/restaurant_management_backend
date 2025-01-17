@@ -31,9 +31,8 @@ public class Order {
     @PositiveOrZero(message = "Cena nie może być ujemna")
     private double orderPrice;
 
-    @OneToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
-    private Customer customer;
+    @PositiveOrZero(message = "Identifikator klienta musi być null, dodatni, lub zero")
+    private Long customerId;
 
     @NotNull(message = "Typ zamówienia nie może być pusty")
     private OrderType type;
@@ -63,12 +62,13 @@ public class Order {
     @JoinColumn(name = "reservation_id")
     private TableReservation tableReservation;
 
-    public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Customer customer, OrderType type,
+    public Order(List<MealQuantity> mealIds, double orderPrice, double deliveryPrice, Long customerId, OrderType type,
                  OrderStatus status, LocalDateTime dateTime, List<UnwantedIngredient> unwantedIngredients,
                  String deliveryAddress, double deliveryDistance, TableReservation tableReservation) {
         this.mealIds = mealIds;
         this.orderPrice = orderPrice;
         this.deliveryPrice = deliveryPrice;
+        this.customerId = customerId;
         this.type = type;
         this.status = status;
         this.dateTime = dateTime;
@@ -76,6 +76,5 @@ public class Order {
         this.deliveryAddress = deliveryAddress;
         this.deliveryDistance = deliveryDistance;
         this.tableReservation = tableReservation;
-        this.customer = customer;
     }
 }
